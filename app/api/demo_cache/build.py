@@ -17,11 +17,14 @@ from vision import crao_model, quality, segment
 
 API = pathlib.Path(__file__).resolve().parents[1]
 DATA = API.parents[1] / "data" / "raw" / "mendeley_rao" / "RFMiD_RAO"
+RAW57 = API.parents[1] / "data" / "raw" / "demo57"
 OUT = API / "demo_cache" / "images"
 CASES = {  # upload name -> source file (licences in SOURCES.md)
     "rao_rfmid_716.png": DATA / "716.png",
     "rao_rfmid_892.png": DATA / "892.png",
     "screening_automorph_100.png": segment.AUTOMORPH / "images" / "100.png",
+    "normal_nei_eda06.jpg": RAW57 / "normal-1.jpg",
+    "mimic_brvo_ku2011.jpg": RAW57 / "brvo-1.jpg",
 }
 POOR = ("poor_quality_rfmid_217.png", DATA / "217.png")  # derived: darkened and blurred
 

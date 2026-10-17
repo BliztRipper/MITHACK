@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retina CVD/CRAO: one retinal photo, two readings</title>
+<meta name="description" content="A hackathon prototype of retinal-photo clinical decision support: 10-year cardiovascular risk for screening and an eye-stroke triage card for emergencies. Decision support, not diagnosis.">
+<link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<main id="main">
+  <div class="split">
+
+    <figure class="stage" aria-label="Fundus photograph with the app's segmentation layers">
+      <div class="stage-pic">
+        <img class="layer base" src="assets/img/fundus.jpg" width="1000" height="1074" alt="Colour fundus photograph of a right eye: the optic disc sits at the right edge and the vessels arch around the darker macula.">
+        <img class="layer" data-name="vessel" src="assets/img/layer-vessel.png" width="1000" height="1074" alt="" aria-hidden="true">
+        <img class="layer" data-name="artery-vein" src="assets/img/layer-artery-vein.png" width="1000" height="1074" alt="" aria-hidden="true">
+        <svg class="layer" data-name="disc" viewBox="0 0 1000 1074" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="874" cy="503" r="77" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="12 9"/></svg>
+      </div>
+      <figcaption class="stage-cap">
+        <span class="stage-layer"><span class="tech" id="layer-name">photo only</span></span>
+        <span class="stage-credit"><span class="credit-long">AutoMorph sample image 100.png (Apache-2.0). Layers: this app's AutoMorph segmentation output.</span><span class="credit-short">AutoMorph sample, Apache-2.0</span></span>
+      </figcaption>
+    </figure>
+
+    <div class="column">
+      <header class="hero" data-layer="photo only">
+        <div class="hero-card">
+          <div class="bands" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
+          <p class="wordmark">Retina CVD/CRAO</p>
+          <h1>One retinal photo, two readings.</h1>
+          <p class="lead">Decision support for Thai frontline clinicians: a 10-year cardiovascular risk for screening, and an eye-stroke triage card for emergencies. Every result stays preliminary until a clinician signs it.</p>
+          <a class="btn btn-primary" href="#limits">Read what it cannot do <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span></a>
+          <nav class="hero-links" aria-label="Sections">
+            <a href="#outputs">Outputs</a><a href="#flow">Flow</a><a href="#records">Records</a><a href="#limits">Limits</a>
+          </nav>
+          <p class="hero-foot">Siriraj x MIT Hackathon, cardiovascular track. A prototype on synthetic patients; not a medical device.</p>
+        </div>
+      </header>
+
+      <section class="intro" aria-label="Why the retina" data-layer="vessel">
+        <p class="first">Thailand already photographs the retina at scale. Community hospitals run diabetic-retinopathy screening cameras. This tool uses retinal cameras already in diabetic-eye screening; no new camera is assumed.</p>
+        <p>Cardiovascular disease causes about 120,000 deaths a year in Thailand (GBD estimate, via the World Heart Federation). Many high-risk people are never assessed, because a full work-up needs labs and a clinician's time.</p>
+        <p>On the acute side, central retinal artery occlusion, an eye stroke, is missed by non-ophthalmologists in the hours when stroke work-up matters most.</p>
+        <p>So one capture flow serves both: Screening for the slow risk, Emergency for the fast one. The software prepares the case; a clinician decides it.</p>
+      </section>
+
+      <section class="features" aria-labelledby="features-h">
+        <h2 id="features-h">What a case returns</h2>
+
+        <article class="module" data-layer="artery-vein">
+          <div class="panel"><img src="assets/img/risk-panel.png" width="436" height="624" alt="Screenshot of the Screening risk panel: PCE 19.9 % 10-year ASCVD risk, intermediate band, the Asian-population caveat, a retinal enhancer flag and the vessel measurements table." loading="lazy"></div>
+          <div class="module-text">
+            <h3>Screening: a risk number with its caveat</h3>
+            <p>The 2013 ACC/AHA Pooled Cohort Equations give the 10-year risk for ages 40 to 79. The 2018 AHA/ACC statin groups come first: known ASCVD, LDL of 190 mg/dL or more, or diabetes at 40 to 75 bypass the calculator.</p>
+            <p>The artery-to-vein ratio sits beside it as an investigational enhancer. It never changes the number.</p>
+          </div>
+        </article>
+
+        <article class="module" data-layer="disc">
+          <div class="panel"><img src="assets/img/triage-card.png" width="436" height="562" alt="Screenshot of the Emergency triage card: ESCALATE, specialist review. First action: no model loaded, send image to tele-ophthalmology. Reasons and limitation sentences below." loading="lazy"></div>
+          <div class="module-text">
+            <h3>Emergency: a triage card with its reasons</h3>
+            <p>Fixed, unit-tested rules turn photo quality, onset time and symptoms into one of five levels and an ordered list of actions.</p>
+            <p>This build has no trained CRAO model, so the card says so and escalates every gradable case to an ophthalmologist.</p>
+          </div>
+        </article>
+
+        <article class="module" data-layer="artery-vein">
+          <div class="panel panel-wide"><img src="assets/img/review-queue.png" width="1168" height="392" alt="Screenshot of the review queue: six cases, each marked PRELIMINARY, with triage level, mode, synthetic patient, minutes waiting and conclusion." loading="lazy"></div>
+          <div class="module-text">
+            <h3>A queue for the reviewer</h3>
+            <p>Each case waits as preliminary, with its level and how long it has waited.</p>
+            <p>The patient names in these screenshots are synthetic Thai demo patients from the seed data.</p>
+          </div>
+        </article>
+
+        <article class="module" data-layer="vessel">
+          <div class="panel panel-wide"><img src="assets/img/monitoring.png" width="1168" height="952" alt="Screenshot of the monitoring page: calibration shows insufficient data (0 of 30), no drift alerts, one open incident, and metrics per model version." loading="lazy"></div>
+          <div class="module-text">
+            <h3>A watch after release</h3>
+            <p>Quality rejections, the uncertain band, agreement and overrides are counted per model version, with drift alerts over a window of 50 cases.</p>
+            <p>Agreement near 100% is flagged as possible rubber-stamping.</p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <section class="showcase" id="outputs" aria-labelledby="outputs-h">
+    <h2 id="outputs-h" class="visually-hidden">Outputs</h2>
+    <div class="index" role="tablist" aria-label="Outputs">
+      <button role="tab" id="t-screen" aria-controls="s-screen" aria-selected="true">Screening result</button>
+      <button role="tab" id="t-emerg" aria-controls="s-emerg" aria-selected="false" tabindex="-1">Emergency card</button>
+      <button role="tab" id="t-signed" aria-controls="s-signed" aria-selected="false" tabindex="-1">Signed report</button>
+      <button role="tab" id="t-summary" aria-controls="s-summary" aria-selected="false" tabindex="-1">Patient summary</button>
+    </div>
+
+    <div class="sheet-stage">
+      <!-- Screening: the live thing. Band edges and texts are copied from app/api/config.yaml and rules/templates/en.json. -->
+      <article class="sheet" id="s-screen" role="tabpanel" aria-labelledby="t-screen" data-ui>
+        <p class="sheet-meta"><span>Screening · PCE (white)</span><span class="stamp">PRELIMINARY · AI-assisted, not a diagnosis</span></p>
+        <p class="risk-line"><output id="risk-out" for="risk-in" class="risk-num">8.0</output><span class="risk-unit"> % 10-year ASCVD risk · </span><strong id="band-out">intermediate</strong></p>
+        <div class="band-bar" aria-hidden="true">
+          <span data-band="low">&lt;5 %</span><span data-band="borderline">5–&lt;7.5</span><span data-band="intermediate">7.5–&lt;20</span><span data-band="high">≥20</span>
+        </div>
+        <label class="risk-label" for="risk-in">Move the 10-year risk</label>
+        <div class="range"><span class="range-fill"></span><input id="risk-in" type="range" min="0" max="40" step="0.1" value="8" aria-describedby="risk-note"></div>
+        <p class="sug-label">Suggestion (for clinician–patient discussion)</p>
+        <p id="sug-out" class="sug">A moderate-intensity statin is reasonable; risk enhancers favour starting. Reinforce lifestyle change.</p>
+        <p id="enh-out" class="enh">In the 5–7.5% band, risk enhancers favour a statin discussion. Enhancers do not change the calculated risk.</p>
+        <p class="caveat">PCE was not derived in Asian populations and may overestimate risk.</p>
+        <p class="caveat">This number does not decide treatment for everyone. Known atherosclerotic CVD is secondary prevention: risk calculators do not apply. LDL cholesterol of 190 mg/dL or higher, or diabetes at 40–75 (with LDL 70 mg/dL or higher), skip the calculator: a statin is indicated regardless of calculated risk. For diabetes, the PCE number informs statin intensity only; it is not the basis for treatment.</p>
+        <p id="risk-note" class="sheet-foot">This control sets the risk value directly; it does not compute PCE. Band edges <span class="tech">5.0 / 7.5 / 20.0 %</span> from the 2018 AHA/ACC cholesterol guideline, as in <span class="tech">config.yaml</span>.</p>
+        <noscript><p class="sheet-foot">Bands: below 5 % low; 5 to under 7.5 % borderline; 7.5 to under 20 % intermediate; 20 % and above high.</p></noscript>
+      </article>
+
+      <article class="sheet" id="s-emerg" role="tabpanel" aria-labelledby="t-emerg" data-ui>
+        <p class="sheet-meta"><span>Emergency · model <span class="tech">no-model</span></span><span class="stamp">PRELIMINARY · AI-assisted, not a diagnosis</span></p>
+        <p class="level">ESCALATE: specialist review</p>
+        <ol class="actions"><li>No model loaded: send image to tele-ophthalmology</li></ol>
+        <p class="why">Why this level</p>
+        <p class="reasons tech">sudden painless one-eye vision loss reported<br>quality 0.97 ≥ 0.5 (placeholder)<br>no model loaded: no probability<br>onset 2.0 h</p>
+        <p class="limit">The model was trained on established (not hyperacute) retinal artery occlusions. An early CRAO can look normal on a fundus photo.</p>
+        <p class="why">The five levels the rules can return</p>
+        <dl class="levels">
+          <dt>Stroke pathway</dt><dd>Likely CRAO within 4.5 h, no arteritis signs: activate the stroke team.</dd>
+          <dt>Urgent</dt><dd>Likely CRAO later or onset unknown: same-day stroke work-up.</dd>
+          <dt>Escalate</dt><dd>Uncertain image, a normal-looking photo with a fitting story, or no model loaded.</dd>
+          <dt>Retake</dt><dd>Photo fails the quality gate; never delay referral for a retake.</dd>
+          <dt>Routine</dt><dd>CRAO unlikely and the story does not fit.</dd>
+        </dl>
+        <p class="sheet-foot">In this build, with no model loaded, only Retake and Escalate can occur. Thresholds <span class="tech">p 0.30 / 0.70</span> are placeholders.</p>
+      </article>
+
+      <article class="sheet" id="s-signed" role="tabpanel" aria-labelledby="t-signed" data-ui>
+        <p class="sheet-meta"><span>Emergency · report 8948</span><span class="stamp stamp-final">FINAL · signed by gp1 · 17 Oct, 21:03</span></p>
+        <p class="level">Clinician decision</p>
+        <dl class="decision">
+          <dt>Decision</dt><dd>Overrode AI result</dd>
+          <dt>Finding</dt><dd>not CRAO</dd>
+          <dt>Reason</dt><dd>clinical findings disagree</dd>
+          <dt>CRAO (clinical)</dt><dd>No, not CRAO</dd>
+          <dt>AI output</dt><dd>ESCALATE: No model loaded: send image to tele-ophthalmology</dd>
+        </dl>
+        <p class="why">AI-assisted, not a diagnosis</p>
+        <p>The image analysis, probability and suggested actions were produced by software and checked by the clinician named above. Thresholds marked placeholder are not clinically validated.</p>
+        <p class="sheet-foot">Saved as one FHIR transaction Bundle: <span class="tech">DiagnosticReport</span>, <span class="tech">Provenance</span> (device and author), <span class="tech">AuditEvent</span>.</p>
+      </article>
+
+      <article class="sheet sheet-narrow" id="s-summary" role="tabpanel" aria-labelledby="t-summary" data-ui>
+        <p class="sheet-meta"><span>Patient summary · English</span></p>
+        <p>Your doctor has reviewed your eye photo and will explain the result and the next step.</p>
+        <p><strong>Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking.</strong></p>
+        <p class="why">The same summary in Thai, as the app shows it</p>
+        <img src="assets/img/patient-summary.png" width="436" height="226" alt="Screenshot of the patient summary in Thai, with a Thai and English language switch." loading="lazy">
+        <p class="sheet-foot">Summaries are fixed templates in Thai and English. No language model writes them.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="flow" id="flow" aria-labelledby="flow-h">
+    <div class="flow-fields">
+      <div class="flow-clause">
+        <h2 id="flow-h" class="visually-hidden">The flow</h2>
+        <p class="clause" id="clause" aria-live="polite">First, consent is recorded.</p>
+        <p class="clause-note" id="clause-note">Retinal photos are biometric health data under Thai PDPA section 26. Care use and model improvement are separate ticks, and refusing the second changes nothing about care.</p>
+      </div>
+      <div class="flow-frag">
+        <img id="frag" src="assets/img/consent-gate.png" width="684" height="442" alt="Screenshot of the consent step: care use (required), use for model improvement (optional), retention in years, right to withdraw explained." loading="lazy">
+      </div>
+    </div>
+    <div class="flow-control">
+      <label class="visually-hidden" for="stage-in">Stage of the flow</label>
+      <div class="range" style="--f:0"><span class="range-fill"></span><input id="stage-in" type="range" min="0" max="3" step="1" value="0" aria-valuetext="Consent"></div>
+      <ol class="stage-names">
+        <li class="on">Consent</li><li>Quality gate</li><li>Preliminary</li><li>Signed</li>
+      </ol>
+    </div>
+    <noscript>
+      <ol class="sheet-foot noscript-stages">
+        <li>Then the photo is checked. EXIF and GPS are stripped, and a dark or blurred photo is refused with a reason to retake, plus a note never to delay referral for it.</li>
+        <li>Next, a result with reasons. The level arrives with every reason behind it and the label AI-assisted, not a diagnosis. Nothing is final yet.</li>
+        <li>Last, a clinician signs. Confirm or override, with a reason. An override is kept as a labelled case for offline retraining only with the patient's model-improvement consent; the deployed model never learns at runtime.</li>
+      </ol>
+    </noscript>
+  </section>
+
+  <section class="records" id="records" aria-labelledby="records-h">
+    <h2 id="records-h" class="stepped"><span>Fourteen resources,</span><span class="indent">one store</span></h2>
+    <p class="records-lead">InterSystems IRIS for Health, as a FHIR R4 server, is the only clinical store. Each case save is one transaction Bundle, all or nothing, and every read and write is audited.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">Group</th><th scope="col">Resource</th><th scope="col">What it holds</th><th scope="col">Protection</th></tr></thead>
+      <tbody>
+        <tr><td>People</td><td class="tech">Patient</td><td>Synthetic Thai demo patients, seeded by conditional create</td><td>Role-based access</td></tr>
+        <tr><td></td><td class="tech">Practitioner</td><td>The clinician who signs</td><td>30-minute sessions</td></tr>
+        <tr><td></td><td class="tech">Organization</td><td>Subject of drift and incident flags</td><td>R4 rule</td></tr>
+        <tr class="gap" aria-hidden="true"><td colspan="4"></td></tr>
+        <tr><td>Visit</td><td class="tech">Consent</td><td>Care use and model improvement, as separate purposes</td><td>Required before upload</td></tr>
+        <tr><td></td><td class="tech">Encounter</td><td>The case and its mode</td><td>Audited</td></tr>
+        <tr><td></td><td class="tech">Condition</td><td>Conditions recorded with the case, such as diabetes</td><td>Audited</td></tr>
+        <tr><td></td><td class="tech">Observation</td><td>Risk-factor inputs and vessel measurements</td><td>Out-of-range rejected</td></tr>
+        <tr class="gap" aria-hidden="true"><td colspan="4"></td></tr>
+        <tr><td>Image</td><td class="tech">Media</td><td>The fundus photo and its overlays, EXIF and GPS stripped</td><td>AES-256-GCM, a key per patient</td></tr>
+        <tr class="gap" aria-hidden="true"><td colspan="4"></td></tr>
+        <tr><td>AI output</td><td class="tech">Device</td><td>The model version behind every output</td><td>Locked, versioned</td></tr>
+        <tr><td></td><td class="tech">RiskAssessment</td><td>PCE risk with its method</td><td>Preliminary until signed</td></tr>
+        <tr><td></td><td class="tech">DiagnosticReport</td><td>The preliminary and the final report</td><td>Signed text kept on withdrawal</td></tr>
+        <tr class="gap" aria-hidden="true"><td colspan="4"></td></tr>
+        <tr><td>Oversight</td><td class="tech">Provenance</td><td>Which device produced it, which clinician signed</td><td>On every output</td></tr>
+        <tr><td></td><td class="tech">AuditEvent</td><td>Every access to a record or an image</td><td>Append-only through the app</td></tr>
+        <tr><td></td><td class="tech">Flag</td><td>Drift alerts and AI safety incidents</td><td>Shown on monitoring</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="records-note">When consent is withdrawn, the images are deleted and the patient's key is destroyed. FHIR keeps version history, so the old copies remain but can no longer be decrypted.</p>
+  </section>
+
+  <section class="limits" id="limits" aria-labelledby="limits-h">
+    <h2 id="limits-h">Honest limits</h2>
+    <div class="answers">
+      <p><b>Is it clinically validated?</b> No. It is a hackathon prototype on synthetic Thai patients: not a medical device, not validated, not for patient care. It is decision support, not diagnosis.</p>
+      <p><b>Does it detect CRAO?</b> Not yet. There is no trained CRAO model in this build. It runs with no model loaded, so there is no probability and no heatmap, and every gradable Emergency case goes to an ophthalmologist.</p>
+      <p><b>What would a model learn from?</b> About 151 public images of established retinal artery occlusion (Mendeley RAO v2) plus RFMiD 1.0, both CC BY 4.0. No public hyperacute images exist, so no claim is made for the first 4.5 hours.</p>
+      <p><b>Are the thresholds validated?</b> No. The probability bands, the quality cut-off, the time windows and the artery-to-vein reference interval are placeholders, and the app labels them so.</p>
+      <p><b>Does PCE fit Thai patients?</b> It was derived in US populations and may overestimate risk for Thai patients; every result says so. The coefficients are not yet checked against the published paper. AHA PREVENT was considered and left for later.</p>
+      <p><b>Does the retina change the risk number?</b> No. Vessel measurements are investigational enhancers for discussion. On the gradable demo images the ratio, 0.55 to 0.59, falls below the placeholder interval, so every one is flagged.</p>
+      <p><b>Does a normal-looking photo reassure?</b> No. Sudden painless loss of vision in one eye within 24 hours, or with unknown onset, is escalated whatever the photo shows.</p>
+      <p><b>Who makes the decision?</b> A clinician signs every result. Signing is a click, so monitoring flags agreement near 100% over 50 cases, after the fact.</p>
+      <p><b>Can records be altered?</b> An IRIS superuser can edit records and the audit log, which is not tamper-evident. Demo users live in a file; there is no real identity provider.</p>
+      <p><b>Can it be sold?</b> Not as built. RETFound weights are CC BY-NC 4.0, for demo and research only; a swap to FLAIR (Apache-2.0) is documented, not built. No regulatory route has been assessed.</p>
+      <p><b>Does a language model write anything?</b> No. Triage is readable rules, and every explanation is a fixed template.</p>
+      <p><b>How fast is it?</b> The demo cache holds 4 of 6 planned images. An uncached analysis can take more than 90 seconds.</p>
+    </div>
+  </section>
+
+  <section class="cta" aria-label="Try it">
+    <p>Set a risk value and read exactly what a clinician would see.</p>
+    <a class="btn btn-amber" href="#outputs">Try the risk bands</a>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="credits"><b>Pictures.</b> Fundus photograph: AutoMorph sample <span class="tech">images/100.png</span>, github.com/rmaphoh/AutoMorph, Apache-2.0 (original dataset not stated upstream). Overlays: this app's AutoMorph segmentation of that image; the disc ring is drawn from its measured position. Interface screenshots: the project's own app, with synthetic patients. Deaths: 120,370 a year in Thailand, IHME GBD via World Heart Federation, World Heart Observatory (labelled 2024, source note 2021). Fonts: Inter and JetBrains Mono, SIL Open Font License.</p><!-- taste-skill-ignore: font credit -->
+  <div class="foot-line">
+    <span>Retina CVD/CRAO, a hackathon prototype</span>
+    <nav aria-label="Footer"><a href="#outputs">Outputs</a><a href="#flow">Flow</a><a href="#records">Records</a><a href="#limits">Limits</a></nav>
+    <span class="foot-right">2026 · No tracking on this page</span>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+</body>
+</html>

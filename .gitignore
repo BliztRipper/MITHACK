@@ -33,3 +33,5 @@ test-results/
 
 # Third-party papers: keep local only (redistribution rights unconfirmed)
 papers/*.pdf
+# tasteskill working files
+.taste-skill/

@@ -14,6 +14,8 @@ const CACHED = [ // dev server serves these from app/api/demo_cache/images (vite
   ['rao_rfmid_892.png', 'Cached: RAO example (RFMiD 892)'],
   ['screening_automorph_100.png', 'Cached: screening example'],
   ['poor_quality_rfmid_217.png', 'Cached: poor quality'],
+  ['normal_nei_eda06.jpg', 'Cached: Retake demo: low-resolution normal (NEI, public domain)'],
+  ['mimic_brvo_ku2011.jpg', 'Cached: BRVO — CRAO mimic (CC BY 2.0)'],
 ]
 const sentence = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -101,7 +103,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
   const pickCached = async (name: string): Promise<void> => {
     const r = await fetch(`/demo-images/${name}`)
     if (!r.ok) return setErrors({ _: `Cached image ${name} is not available (run python -m demo_cache.build).` })
-    pick(new File([await r.blob()], name, { type: 'image/png' }))
+    pick(new File([await r.blob()], name, { type: name.endsWith('.jpg') ? 'image/jpeg' : 'image/png' }))
   }
   const next = (): void => {
     if (step === 2) {
