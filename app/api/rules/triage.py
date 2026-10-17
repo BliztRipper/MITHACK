@@ -27,8 +27,12 @@ class Triage:
     reasons: list[str] = field(default_factory=list)
 
 
-def triage(c: Case) -> Triage:
-    t = _triage(c, {k: v["value"] for k, v in CONFIG["triage"].items()})
+def triage(c: Case, thresholds: tuple[float, float] | None = None) -> Triage:
+    """thresholds = (p_low, p_high) from the loaded model's checkpoint; None -> config.yaml."""
+    cfg = {k: v["value"] for k, v in CONFIG["triage"].items()}
+    if thresholds:
+        cfg["p_low"], cfg["p_high"] = thresholds
+    t = _triage(c, cfg)
     if c.gca_symptoms:  # GCA step first at every exit: it changes treatment
         t.actions.sort(key=lambda a: "arteritis" not in a)
     return t

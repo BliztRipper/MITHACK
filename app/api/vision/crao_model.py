@@ -12,6 +12,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
+from rules.text import CONFIG
 from vision.preprocess import preprocess
 
 ARCHS = ("efficientnet_b0", "retfound_vit_l")
@@ -82,6 +83,14 @@ class CraoModel:
     def probability(self, rgb: np.ndarray) -> float:
         """Calibrated P(CRAO): softmax of temperature-scaled logits."""
         return torch.softmax(self.logits(rgb) / self.temperature, 1)[0, 0].item()
+
+    def thresholds(self) -> tuple[float, float]:
+        """(p_low, p_high): the checkpoint's calibrated values, else config.yaml. Pass the same pair to
+        band() and rules.triage.triage() so the displayed band and the triage level cannot disagree."""
+        c, cfg = self.ckpt, CONFIG["triage"]
+        if c.get("p_low") is not None and c.get("p_high") is not None:
+            return float(c["p_low"]), float(c["p_high"])
+        return cfg["p_low"]["value"], cfg["p_high"]["value"]
 
     def info(self) -> dict:
         """Shown next to every probability (spec: model identifier, version and calibration date)."""

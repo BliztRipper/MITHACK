@@ -90,3 +90,27 @@ def test_retfound_constructed_model_loads_and_heatmap_matches_input_size(tmp_pat
     cam, png = heatmap.heatmap(m, rgb(300, 400))
     assert cam.shape == (300, 400)
     assert png_shape(png) == ("RGBA", (400, 300))
+
+
+def test_checkpoint_thresholds_drive_band_and_triage_together(tmp_path):
+    """Checkpoint P_LOW/P_HIGH differ from config; the shown band and the triage level must agree."""
+    import torch
+    from rules.triage import Case, triage
+    from vision import crao_model
+    net = crao_model.build("efficientnet_b0", pretrained=False)
+    torch.save({"arch": "efficientnet_b0", "state": net.state_dict(), "p_low": 0.10, "p_high": 0.20}, tmp_path / "m.pt")
+    m = crao_model.load(tmp_path / "m.pt", "cpu")
+    assert m.thresholds() == (0.10, 0.20)
+    for p, band, level in ((0.25, "likely", "STROKE_PATHWAY"), (0.15, "uncertain", "ESCALATE")):
+        # 0.25 is "uncertain" under config (0.30/0.70); only the checkpoint thresholds make it likely
+        assert crao_model.band(p, *m.thresholds()) == band
+        assert triage(Case(p, 0.9, 2.0), thresholds=m.thresholds()).level == level
+    assert triage(Case(0.05, 0.9, 72.0), thresholds=m.thresholds()).level == "ROUTINE"
+
+
+def test_uncalibrated_checkpoint_falls_back_to_config_thresholds(tmp_path):
+    import torch
+    from vision import crao_model
+    net = crao_model.build("efficientnet_b0", pretrained=False)
+    torch.save({"arch": "efficientnet_b0", "state": net.state_dict()}, tmp_path / "m.pt")
+    assert crao_model.load(tmp_path / "m.pt", "cpu").thresholds() == (0.30, 0.70)
