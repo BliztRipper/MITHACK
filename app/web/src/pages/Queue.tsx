@@ -29,7 +29,7 @@ export default function Queue(): ReactNode {
                     <td className={`pr-4 ${em ? 'font-semibold' : ''}`}>{em ? 'EMERGENCY' : 'Screening'}</td>
                     <td className="pr-4"><Link href={`/cases/${c.report_id}`} className="text-accent hover:underline">{c.patient?.name || `Case ${c.report_id}`}</Link>
                       <span className="ml-2 font-mono text-sm text-muted">{c.patient?.hn ?? '—'}</span></td>
-                    <td className={`pr-4 font-mono tabular-nums ${late ? 'font-semibold text-triage-urgent-fg' : ''}`}>
+                    <td className={`whitespace-nowrap pr-4 font-mono tabular-nums ${late ? 'font-semibold text-triage-urgent-fg' : ''}`}>
                       {late && <Clock size={16} className="mr-1 inline align-text-bottom" aria-label="waiting over 30 minutes" />}
                       {c.waiting_minutes === null ? '—' : `${Math.round(c.waiting_minutes)} min`}</td>
                     <td className="max-w-[28ch] truncate pr-4" title={c.conclusion ?? ''}>{c.conclusion}</td>

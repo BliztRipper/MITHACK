@@ -128,8 +128,8 @@ export default function Monitoring(): ReactNode {
               <table className="text-left"><thead className="text-sm text-muted"><tr className="border-b border-rule-strong">
                 <th className="py-1 pr-6 font-medium">Band</th><th className="pr-6 font-medium">n</th><th className="pr-6 font-medium">Mean predicted p</th><th className="font-medium">Observed CRAO rate</th></tr></thead>
                 <tbody>{Object.entries(data.calibration.bands).map(([b, v]) => (
-                  <tr key={b} className="border-b border-rule"><td className="py-1 pr-6">{b}</td><td className="pr-6 font-mono">{v.n}</td>
-                    <td className="pr-6 font-mono">{v.mean_p ?? '—'}</td><td className="font-mono">{pct(v.observed_crao_rate)}</td></tr>))}</tbody>
+                  <tr key={b} className="border-b border-rule"><td className="py-1 pr-6">{b}</td><td className="pr-6 font-mono tabular-nums">{v.n}</td>
+                    <td className="pr-6 font-mono tabular-nums">{v.mean_p === null ? '—' : v.mean_p.toFixed(2)}</td><td className="font-mono">{pct(v.observed_crao_rate)}</td></tr>))}</tbody>
               </table>
             )}
           </section>

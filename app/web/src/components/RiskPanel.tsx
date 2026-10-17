@@ -25,9 +25,9 @@ const Note = ({ children }: { children: ReactNode }): ReactNode =>
 function MeasureRow({ name, m }: { name: string; m: Measure }): ReactNode {
   return (
     <tr className="border-b border-rule">
-      <th className="py-1 pr-4 text-left font-medium">{name}</th>
-      <td className="pr-4 font-mono">{m.value === null ? '—' : m.value.toFixed(m.unit === 'px' ? 1 : 2)}{m.unit ? ` ${m.unit}` : ''}</td>
-      <td className="pr-4 font-mono">{m.reference ? <>{m.reference[0]}–{m.reference[1]} <Placeholder /></> : '—'}</td>
+      <th className="py-1 pr-3 text-left font-medium">{name}</th>
+      <td className="whitespace-nowrap pr-3 text-right font-mono tabular-nums">{m.value === null ? '—' : m.value.toFixed(m.unit === 'px' ? 1 : 2)}{m.unit ? ` ${m.unit}` : ''}</td>
+      <td className="pr-3 text-right font-mono tabular-nums">{m.reference ? <>{m.reference[0]}–{m.reference[1]} <Placeholder /></> : '—'}</td>
       <td>{m.flag === 'not_assessed' ? `not assessed (${m.reason})` : m.flag ?? '—'}</td>
     </tr>
   )
@@ -80,7 +80,7 @@ export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
           <h3 className="mb-1 font-semibold">Retinal vessel measurements</h3>
           <table className="w-full text-sm">
             <thead className="text-muted"><tr className="border-b border-rule-strong text-left">
-              <th className="py-1 pr-4 font-medium">Measure</th><th className="pr-4 font-medium">Value</th><th className="pr-4 font-medium">Reference</th><th className="font-medium">Flag</th></tr></thead>
+              <th className="py-1 pr-3 font-medium">Measure</th><th className="whitespace-nowrap pr-3 text-right font-medium">Value</th><th className="pr-3 text-right font-medium">Reference</th><th className="font-medium">Flag</th></tr></thead>
             <tbody>
               <MeasureRow name="AVR" m={r.measurements.avr} />
               <MeasureRow name="CRAE" m={r.measurements.crae} />

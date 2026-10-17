@@ -57,13 +57,13 @@ export default function SignDialog({ c, layers, open, onClose, onSigned }: { c: 
   }
 
   const radio = (name: string, value: string, label: string, checked: boolean, set: () => void, first = false): ReactNode => (
-    <label className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 ${checked ? 'border-accent bg-accent-tint' : 'border-rule-strong'}`}>
+    <label className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 ${checked ? 'border-accent bg-accent-tint' : 'border-rule-strong hover:bg-sunken'}`}>
       <input type="radio" className="check" name={name} value={value} checked={checked} onChange={set} autoFocus={first} />{label}
     </label>
   )
 
   return (
-    <dialog ref={ref} onClose={onClose} aria-labelledby="sign-h" className="m-auto w-[560px] max-w-[calc(100vw-2rem)] rounded-lg bg-surface p-0 text-ink shadow-pop">
+    <dialog ref={ref} onClose={onClose} aria-labelledby="sign-h" className="m-auto w-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface p-0 text-ink shadow-pop">
       <form onSubmit={submit} className="flex flex-col gap-4 p-6">
         <h2 id="sign-h" className="text-xl font-semibold">Sign result</h2>
         <div className="rounded-md bg-sunken p-3 text-sm">

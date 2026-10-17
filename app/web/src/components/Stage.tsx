@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Columns2, Info } from 'lucide-react'
+import { useSession } from './ui'
 import type { CaseResult, OverlayKind, SignedLayers } from '../api'
 
 export interface Layers { vessels: 'off' | 'all' | 'av'; disc: boolean; heatmap: boolean; opacity: number }
@@ -62,10 +63,10 @@ function Picture({ fundus, overlays, seg, layers, bare, label }: Omit<Props, 'se
   )
 }
 
-function Switch({ label, swatch, pattern, on, disabled, onChange }: { label: string; swatch: string; pattern: string; on: boolean; disabled?: boolean; onChange: (v: boolean) => void }): ReactNode {
+function Switch({ label, swatch, pattern, on, disabled, why, onChange }: { label: string; why?: string; swatch: string; pattern: string; on: boolean; disabled?: boolean; onChange: (v: boolean) => void }): ReactNode {
   return (
-    <button role="switch" aria-checked={on} disabled={disabled} onClick={() => onChange(!on)}
-      className="flex items-center gap-2 rounded-md border border-stage-muted px-3 py-1.5 text-left disabled:opacity-60">
+    <button role="switch" aria-checked={on} disabled={disabled} aria-describedby={disabled ? why : undefined} onClick={() => onChange(!on)}
+      className="flex items-center gap-2 rounded-md border border-stage-muted px-3 py-1.5 text-left hover:bg-stage-ink/10 disabled:opacity-60 disabled:hover:bg-transparent">
       <span className="size-3 shrink-0 rounded-sm" style={{ background: swatch }} aria-hidden />
       <span>{label} <span className="text-stage-muted">({pattern})</span></span>
       <span className="ml-2 font-mono text-sm">{on ? 'On' : 'Off'}</span>
@@ -87,6 +88,8 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
     ['av', 'Artery / vein', 'linear-gradient(90deg, var(--color-overlay-artery) 50%, var(--color-overlay-vein) 50%)', 'two colours'],
   ]
   const discFound = Boolean(seg?.disc_found)
+  const vesselOff = (v: Layers['vessels']): boolean => (v === 'all' ? !overlays.vessel : v === 'av' ? !overlays.artery_vein : false)
+  const { storeDown } = useSession()
 
   return (
     <div className="stage bg-stage p-4 text-stage-ink">
@@ -103,24 +106,27 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
           <legend className="mb-1 text-sm text-stage-muted">Vessels</legend>
           <div className="flex flex-wrap gap-2">
             {vesselOpts.map(([v, label, swatch, pattern]) => (
-              <label key={v} className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 ${layers.vessels === v ? 'border-focus-dark bg-stage-ink/10' : 'border-stage-muted'}`}>
+              <label key={v} className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 ${layers.vessels === v ? 'border-focus-dark bg-stage-ink/10' : 'border-stage-muted hover:bg-stage-ink/10'}`}>
                 <input type="radio" name="vessels" className="size-4" checked={layers.vessels === v} onChange={() => set({ vessels: v })}
-                  disabled={v === 'all' ? !overlays.vessel : v === 'av' ? !overlays.artery_vein : false} />
+                  disabled={vesselOff(v)} aria-describedby={vesselOff(v) ? 'vessel-why' : undefined} />
                 {v !== 'off' && <span className="size-3 rounded-sm" style={{ background: swatch }} aria-hidden />}
                 {label}{pattern && <span className="text-stage-muted">({pattern})</span>}
               </label>
             ))}
           </div>
+          {(vesselOff('all') || vesselOff('av')) && (
+            <p id="vessel-why" className="mt-1 text-sm">Vessel layer not available{storeDown ? ': record store unavailable' : ' for this case'}.</p>
+          )}
         </fieldset>
         <div className="flex flex-wrap gap-2">
-          <Switch label="Optic disc" swatch="var(--color-overlay-disc)" pattern="dashed ring" on={layers.disc && discFound} disabled={!discFound} onChange={(v) => set({ disc: v })} />
-          <Switch label="Model attention (heatmap)" swatch="var(--color-overlay-heatmap)" pattern="glow" on={layers.heatmap && Boolean(overlays.heatmap)} disabled={!overlays.heatmap} onChange={(v) => set({ heatmap: v })} />
-          <button className="flex items-center gap-2 rounded-md border border-stage-muted px-3 py-1.5" aria-pressed={compare} onClick={() => setCompare(!compare)}>
+          <Switch label="Optic disc" swatch="var(--color-overlay-disc)" pattern="dashed ring" on={layers.disc && discFound} disabled={!discFound} why="disc-why" onChange={(v) => set({ disc: v })} />
+          <Switch label="Model attention (heatmap)" swatch="var(--color-overlay-heatmap)" pattern="glow" on={layers.heatmap && Boolean(overlays.heatmap)} disabled={!overlays.heatmap} why="heat-why" onChange={(v) => set({ heatmap: v })} />
+          <button className="flex items-center gap-2 rounded-md border border-stage-muted px-3 py-1.5 hover:bg-stage-ink/10" aria-pressed={compare} onClick={() => setCompare(!compare)}>
             <Columns2 size={20} aria-hidden />{compare ? 'Exit compare' : 'Compare side by side'}
           </button>
         </div>
-        {!discFound && seg && <p className="text-sm">Optic disc not located; region-based explanation omitted.</p>}
-        {!overlays.heatmap && <p className="text-sm text-stage-muted">Heatmap not available for this case.</p>}
+        {!discFound && seg && <p id="disc-why" className="text-sm">Optic disc not located; region-based explanation omitted.</p>}
+        {!overlays.heatmap && <p id="heat-why" className="text-sm text-stage-muted">Heatmap not available for this case.</p>}
         {!seg && <p className="text-sm">Segmentation not available for this image: no vessel or disc layers.</p>}
         <label className="flex items-center gap-3">
           <span>Overlay opacity</span>
@@ -128,7 +134,7 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
           <span className="font-mono text-sm tabular-nums">{layers.opacity} %</span>
         </label>
       </div>
-      <p className="hidden text-sm print:block">{caption ?? layerCaption('Layers shown', toSigned(layers, overlays, discFound))}</p>
+      <p className="hidden text-sm text-stage-ink print:block print:text-black">{caption ?? layerCaption('Layers shown', toSigned(layers, overlays, discFound))}</p>
     </div>
   )
 }
