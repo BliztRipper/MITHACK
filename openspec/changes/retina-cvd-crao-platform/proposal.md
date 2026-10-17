@@ -9,7 +9,7 @@ The team has a working CRAO triage prototype (`experiments/crao-prototype/`: qua
 ## What Changes
 
 - New clinician web app (FastAPI backend + React frontend) with **one shared capture flow and two modes**:
-  - **Screening mode:** fundus photo + clinical risk factors → 10-year CVD risk from the **Thai CV Risk Score** (headline, locally validated) and **ACC/AHA Pooled Cohort Equations** (shown alongside so the ACC/AHA 5 / 7.5 / 20% statin thresholds apply). **Retinal vascular markers** (artery/vein calibre, artery-to-vein ratio) act as *risk enhancers*, not as the risk number.
+  - **Screening mode:** fundus photo + clinical risk factors → 10-year ASCVD risk from the **2013 ACC/AHA Pooled Cohort Equations** (the equations behind the ACC/AHA ASCVD Risk Estimator Plus), with the 2018 AHA/ACC statin thresholds (5 / 7.5 / 20%) and a caveat that PCE was not derived in Asian populations. **Retinal vascular markers** (artery/vein calibre, artery-to-vein ratio) act as *investigational* risk enhancers, not as the risk number and not as guideline-listed enhancers.
   - **Emergency mode:** fundus photo + onset time + symptoms → CRAO probability → deterministic triage card (the existing `triage.py` rules, migrated).
 - **Visual evidence on every read:** vessel / artery-vein / optic-disc segmentation overlay, plus a model-attention heatmap in emergency mode, with opacity controls and a side-by-side view.
 - **Calibrated confidence with a plain-language explanation:** temperature-scaled probability, a three-band display (unlikely / uncertain / likely), an abstain band, and a templated explanation naming the anatomical region the heatmap focused on and the known limitations. No LLM makes or words a clinical decision.
@@ -26,7 +26,7 @@ The team has a working CRAO triage prototype (`experiments/crao-prototype/`: qua
 ### New Capabilities
 - `retinal-image-intake`: consented capture of a fundus photo with mode selection, EXIF stripping and the image quality gate (accept / retake with reason).
 - `retinal-image-analysis`: model inference over an accepted image. Produces segmentation overlays, an attention heatmap, a calibrated probability with confidence band and abstain, and a region-based explanation.
-- `cvd-risk-assessment`: 10-year CVD risk from Thai CV Risk Score and PCE with input-range validation, retinal risk enhancers, clinical-factor prompts (such as arcus senilis), and guideline-based management suggestions.
+- `cvd-risk-assessment`: 10-year ASCVD risk from the 2013 ACC/AHA Pooled Cohort Equations with input-range validation, statin benefit groups (known ASCVD, LDL ≥190 mg/dL, diabetes aged 40–75), investigational retinal risk enhancers, clinical-factor prompts (such as arcus senilis), and 2018 AHA/ACC guideline-based management suggestions.
 - `crao-emergency-triage`: deterministic rules that turn CRAO probability, image quality, onset time and red-flag symptoms into a triage level and an ordered action list.
 - `clinician-review`: preliminary results, clinician confirm/override with reason, sign-off into a final report, and the review queue.
 - `fhir-clinical-records`: persistence and retrieval of patients, consent, images, inputs, AI outputs and reports as FHIR R4 resources on IRIS for Health, plus seeded synthetic Thai patients.

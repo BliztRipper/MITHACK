@@ -11,7 +11,6 @@ Current state:
 - AutoMorph (Apache-2.0) pins Python 3.11 and torch 2.3.1, says a GPU (CUDA or Apple MPS) is essential, and runs as a folder-in / CSV-out batch pipeline, not as a library.
 - RETFound weights (`YukunZhou/RETFound_mae_natureCFP`) are gated on Hugging Face and licensed CC BY-NC 4.0.
 - InterSystems kit (MIT): IRIS for Health Community in Docker, with FHIR R4 at `http://localhost:32783/csp/healthshare/demo/fhir/r4`.
-- Thai CV Risk equations come from the official Ramathibodi calculator script (`thai_cv_risk_score/scripts/formular.js`, fetched 2026-10-17). There are three variants (total cholesterol, waist-to-height, waist). Sex is coded 1 = male, the valid age range is 30–70, and the baseline survival is 0.964588.
 
 Corrected user flow (replaces the original diagram). Consent and clinical inputs come before capture, and clinician sign-off sits between AI output and action:
 
@@ -19,7 +18,7 @@ Corrected user flow (replaces the original diagram). Consent and clinical inputs
 patient arrives → clinician picks mode → consent check (PDPA) → clinical inputs
   → fundus capture/upload → EXIF strip → quality gate ──fail──→ RETAKE (+ urgent-referral fallback in Emergency)
   → segmentation (vessels, A/V, disc, fovea)
-      ├─ Screening: vascular measurements → Thai CV Risk + PCE → enhancers → suggestions
+      ├─ Screening: vascular measurements → PCE → statin groups → enhancers → suggestions
       └─ Emergency: CRAO probability + heatmap → calibrated band → triage rules
   → explanation (templates) → PRELIMINARY result
   → clinician confirm / override (+reason) → FINAL report + patient summary (TH/EN)
@@ -46,7 +45,7 @@ patient arrives → clinician picks mode → consent check (PDPA) → clinical i
 ```
 app/
   api/        FastAPI service (Python 3.11): routes, rules, model wrappers, FHIR client
-    rules/    triage.py (migrated), risk.py (Thai CV + PCE + enhancers), explain.py, templates/{th,en}.json
+    rules/    triage.py (migrated), risk.py (PCE + statin benefit groups + enhancers), explain.py, templates/{th,en}.json
     vision/   quality.py + preprocess.py (migrated vision.py), segment.py (AutoMorph), crao_model.py, heatmap.py
     fhir/     client.py, mapping.py, seed.py
     tests/
@@ -73,7 +72,7 @@ AutoMorph is vendored as a git submodule under `app/api/vision/automorph/` and c
 Fovea = disc centre + 2.5 disc diameters toward the temporal side. Laterality is inferred from the disc position in the image, and the fovea is placed 0.3 DD inferior. Regions are circles: disc (r = 1 DD), macula (r = 1 DD around the fovea), arcades (vessel mask dilated, excluding the first two regions) and periphery (the rest of the field of view). `explain.py` computes the fraction of heatmap mass in each region, picks the top region, and fills fixed sentences from `templates/{en,th}.json` keyed by (mode, band, region). The limitation sentences are always appended. If no disc is found, only the probability, band and limitations are reported.
 
 ### D7. Risk equations as pure functions with oracle tests
-`risk.py`: `thai_cv(inputs) -> Result(variant, risk)` ports `formular.js` (TC variant if TC is present, otherwise waist-to-height). `pce(inputs) -> Result` uses the Goff 2013 coefficients (white equation unless the patient is African American). `categorise()` and `suggestions()` turn bands into suggestion text. Test oracles: (a) a fixture of 20 input/expected rows generated once by running the downloaded `formular.js` in Node, with source URL and date recorded in the fixture header; (b) the four 2013 ACC/AHA published worked examples. Input ranges: Thai CV ages 30–70 and SBP 70–220; PCE ages 40–79, TC 130–320, HDL 20–100 and SBP 90–200. Values outside a range produce "not valid", never a clamped number.
+`risk.py`: `pce(inputs) -> Result` uses the Goff 2013 coefficients (white equation unless the patient is African American). `categorise()` and `suggestions()` turn bands into suggestion text. `statin_group()` returns the 2018 AHA/ACC statin benefit group (known ASCVD, LDL ≥190, diabetes 40–75 with LDL ≥70) before any band is used. Test oracle: the four 2013 ACC/AHA published worked examples. Input ranges: PCE ages 40–79, TC 130–320, HDL 20–100 and SBP 90–200. Values outside a range produce "not valid", never a clamped number. *Alternative:* the AHA PREVENT equations (2023). Rejected for demo scope: PCE is built and matches the published examples, while PREVENT needs eGFR and BMI inputs and new equations.
 
 ### D8. FHIR as the only clinical store
 `fhir/client.py` is a thin `httpx` wrapper over FHIR REST that works on plain dicts. Each case save is one **transaction Bundle**, so it is all or nothing (spec: no partial saves). The mapping follows the spec's resource list. AI outputs reference one `Device` per model version. Clinicians are `Practitioner` resources, and app users map to them. Drift alerts and incidents are `Flag` resources (category `drift` / `ai-incident`). Monitoring queries DiagnosticReport and Observation by `device` and date and aggregates in Python, which is fine at demo volume. *Alternatives:* SQLite plus a FHIR export. Rejected because the user chose FHIR as the database. The `fhir.resources` pydantic models were also rejected as needless weight for about 12 resource shapes.
@@ -101,7 +100,8 @@ Pages: Login · Patients (search) · Patient · New case wizard (mode → consen
 - [AutoMorph is slow or brittle] → Latency spike first, then the M2-only path, the demo cache, and Frangi as a last resort.
 - [RETFound access is not granted in time] → Use the EfficientNet-B0 fallback, which needs the same interface and no code change.
 - [RETFound CC BY-NC blocks commercial use] → Use it only for the demo, and put the licence or FLAIR swap in pitch notes.
-- [PCE overestimates risk for Thai patients] → Make Thai CV Risk the headline and carry the PCE population caveat.
+- [PCE overestimates risk for Thai patients] → Show the PCE Asian-population caveat on every result. Ages 30–39 get no risk number.
+- [PCE coefficients were transcribed without access to the paper] → Check them against Goff 2013 Table A before the demo.
 - [AVR reference intervals for Thai adults are unverified] → Use literature placeholders labelled as such, and list them as an open question.
 - [IRIS is down on stage] → Run a start-up health check that shows a clear banner. The analysis still renders and saving is blocked, with no silent loss.
 - [Automation bias with GPs accepting every AI output] → Overrides need reasons, monitor the agreement rate, and alert on near-100% agreement as a rubber-stamping signal (same drift mechanism).
@@ -115,6 +115,6 @@ Pages: Login · Patients (search) · Patient · New case wizard (mode → consen
 ## Open Questions
 
 - AVR reference interval for Thai adults: literature placeholder until a Thai or Asian cohort value is found. Only a config value changes.
-- Thai thresholds for statin suggestions under the RCPT 2024 dyslipidemia guideline: the suggestion text is config and can be updated without code changes.
+- Suggestion text follows the 2018 AHA/ACC cholesterol guideline. Any local adaptation is config text, with no code change.
 - Whether Thai medical-record law requires keeping the signed report after withdrawal: current behaviour keeps the report text and erases images, which a legal check should confirm.
 - RETFound Hugging Face access timing: this decides which backbone ships, but there is no code impact (D2).

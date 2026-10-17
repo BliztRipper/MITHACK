@@ -22,7 +22,7 @@ The system SHALL map data to FHIR R4 resources: Patient; Consent; Encounter; Med
 
 #### Scenario: Screening case resources
 - **WHEN** a Screening-mode case is signed
-- **THEN** the server holds an Encounter linking the Media, input Observations, two RiskAssessments (Thai CV Risk and PCE, each naming its method) and a final DiagnosticReport
+- **THEN** the server holds an Encounter linking the Media, input Observations, a PCE RiskAssessment naming its method and a final DiagnosticReport
 
 #### Scenario: Standard codes used
 - **WHEN** vital-sign and lab Observations are written
