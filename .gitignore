@@ -25,3 +25,5 @@ data/
 .harness-mem/
 .claude/memory/session-log.md
 .serena/
+**/.claude/state/
+**/.harness-mem/
