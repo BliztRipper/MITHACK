@@ -56,7 +56,7 @@ export function LevelBadge({ level }: { level: string | null }): ReactNode {
   return <span className={`chip py-0.5 font-medium ${l.badge}`}><Icon size={16} aria-hidden />{l.label}</span>
 }
 
-export function StatusBadge({ status, signer }: { status: string; signer?: string }): ReactNode {
+export function StatusBadge({ status, signer, signedAt }: { status: string; signer?: string; signedAt?: string | null }): ReactNode {
   if (status === 'preliminary')
     return (
       <span className="chip py-1 text-sm border-[1.5px] border-dashed border-status-preliminary-border bg-status-preliminary-tint text-status-preliminary">
@@ -65,7 +65,7 @@ export function StatusBadge({ status, signer }: { status: string; signer?: strin
     )
   return (
     <span className="chip py-1 text-sm bg-status-final text-paper [print-color-adjust:exact] print:bg-black print:text-white">
-      <FileCheck2 size={16} aria-hidden />FINAL{signer ? ` · signed by ${signer}` : ''}{status === 'amended' ? ' · amended' : ''}
+      <FileCheck2 size={16} aria-hidden />FINAL{signer ? ` · signed by ${signer}` : ''}{signedAt ? ` · ${fmtTime(signedAt)}` : ''}{status === 'amended' ? ' · amended' : ''}
     </span>
   )
 }

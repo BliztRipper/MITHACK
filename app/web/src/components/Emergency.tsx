@@ -68,9 +68,9 @@ export function TriageCard({ triage }: { triage: Triage }): ReactNode {
       </ol>
       <div>
         <h3 className="mb-1 font-semibold">Why this level</h3>
-        <dl className="font-mono text-sm">
-          {triage.reasons.map((r) => <dd key={r}>{r}{PLACEHOLDER_RULE.test(r) && ' (placeholder)'}</dd>)}
-        </dl>
+        <ul className="font-mono text-sm">
+          {triage.reasons.map((r) => <li key={r}>{r}{PLACEHOLDER_RULE.test(r) && ' (placeholder)'}</li>)}
+        </ul>
       </div>
       <p className={`flex gap-2 rounded-md p-3 text-sm ${solid ? 'border border-paper/70' : 'bg-sunken text-ink'}`}>
         <Info size={16} className="mt-0.5 shrink-0" aria-hidden />

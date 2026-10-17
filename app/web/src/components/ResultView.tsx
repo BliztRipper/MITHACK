@@ -34,6 +34,7 @@ interface Props {
   patient: { name: string; hn: string | null }
   status: string
   signer?: string
+  signedAt?: string | null
   issued?: string | null
   layers: Layers
   setLayers: (l: Layers) => void
@@ -42,7 +43,7 @@ interface Props {
 }
 
 /** The result screen (design §3.8). DOM order is the print order; CSS order gives the screen layout. */
-export default function ResultView({ r, fundus, overlays, patient, status, signer, issued, layers, setLayers, caption, children }: Props): ReactNode {
+export default function ResultView({ r, fundus, overlays, patient, status, signer, signedAt, issued, layers, setLayers, caption, children }: Props): ReactNode {
   const q = r.quality
   return (
     <div className="flex flex-col gap-6">
@@ -55,7 +56,8 @@ export default function ResultView({ r, fundus, overlays, patient, status, signe
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <StatusBadge status={status} signer={signer} />
+          <StatusBadge status={status} signer={signer} signedAt={signedAt} />
+          {status === 'amended' && <a href="#history" className="text-sm text-accent underline-offset-2 hover:underline print:hidden">Amendment history</a>}
           {status !== 'preliminary' && <span className="text-sm">{r.label}</span>}
         </div>
         {r.save_error && (

@@ -31,7 +31,7 @@ function CaseScreen({ c, reload }: { c: CaseRecord; reload: () => void }): React
     <>
       <style>{pageStyle(c.report_id, preliminary)}</style>
       <ResultView r={r} fundus={fundus ? mediaUrl(fundus.id) : ''} overlays={overlays} patient={c.patient} status={c.status}
-        signer={sign?.user} issued={c.issued} layers={layers} setLayers={setLayers} caption={caption}>
+        signer={sign?.user} signedAt={sign?.at} issued={c.issued} layers={layers} setLayers={setLayers} caption={caption}>
         <div className="flex flex-wrap items-start gap-2 print:hidden">
           {preliminary && (
             <div>

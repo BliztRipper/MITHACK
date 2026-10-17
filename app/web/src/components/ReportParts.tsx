@@ -81,11 +81,16 @@ export function Amend({ c, onDone, disabled }: { c: CaseRecord; onDone: () => vo
   return (
     <div className="flex flex-col gap-3 print:hidden">
       {history.data && history.data.length > 0 && (
-        <details className="text-sm"><summary className="cursor-pointer text-accent">History ({history.data.length} versions)</summary>
+        <details id="history" open={c.status === 'amended'} className="scroll-mt-24 text-sm"><summary className="cursor-pointer text-accent">History ({history.data.length} versions)</summary>
           <ol className="mt-1 list-decimal pl-5">{history.data.map((h) => <li key={h.version}>{h.status} · {fmtTime(h.updated)} · {h.conclusion}</li>)}</ol>
         </details>
       )}
-      {!open ? <button className="btn-secondary self-start" disabled={disabled} onClick={() => setOpen(true)}>Amend report</button> : (
+      {!open ? (
+        <div>
+          <button className="btn-secondary" disabled={disabled} aria-describedby={disabled ? 'amend-why' : undefined} onClick={() => setOpen(true)}>Amend report</button>
+          {disabled && <p id="amend-why" className="mt-1 text-sm text-muted">Cannot amend: record store unavailable.</p>}
+        </div>
+      ) : (
         <form onSubmit={submit} className="card flex flex-col gap-3">
           <label className="flex flex-col gap-1">Amended finding<input className="input" value={finding} onChange={(e) => setFinding(e.target.value)} /></label>
           <label className="flex flex-col gap-1">Reason for amendment<input className="input" value={why} onChange={(e) => setWhy(e.target.value)} /></label>
@@ -117,7 +122,12 @@ export function IncidentForm({ rid, disabled }: { rid: string; disabled: boolean
     }
   }
   if (done) return <p className="text-sm print:hidden">Incident flagged for the monitoring dashboard.</p>
-  return !open ? <button className="btn-secondary self-start print:hidden" disabled={disabled} onClick={() => setOpen(true)}>Flag AI safety incident</button> : (
+  return !open ? (
+    <div className="print:hidden">
+      <button className="btn-secondary" disabled={disabled} aria-describedby={disabled ? 'incident-why' : undefined} onClick={() => setOpen(true)}>Flag AI safety incident</button>
+      {disabled && <p id="incident-why" className="mt-1 text-sm text-muted">Cannot flag: record store unavailable.</p>}
+    </div>
+  ) : (
     <form onSubmit={submit} className="card flex flex-col gap-3 print:hidden">
       <label className="flex flex-col gap-1">What happened? (required)
         <textarea className="input h-auto py-2" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
