@@ -114,9 +114,9 @@
         <div class="range"><span class="range-fill"></span><input id="risk-in" type="range" min="0" max="40" step="0.1" value="8" aria-describedby="risk-note"></div>
         <p class="sug-label">Suggestion (for clinician–patient discussion)</p>
         <p id="sug-out" class="sug">A moderate-intensity statin is reasonable; risk enhancers favour starting. Reinforce lifestyle change.</p>
-        <p id="enh-out" class="enh" hidden>In the 5–7.5% band, risk enhancers favour a statin discussion. Enhancers do not change the calculated risk.</p>
+        <p id="enh-out" class="enh">In the 5–7.5% band, risk enhancers favour a statin discussion. Enhancers do not change the calculated risk.</p>
         <p class="caveat">PCE was not derived in Asian populations and may overestimate risk.</p>
-        <p class="caveat">This number does not decide treatment for everyone. Known atherosclerotic CVD, LDL cholesterol of 190 mg/dL or higher, or diabetes at 40–75 (with LDL 70 mg/dL or higher) skip the calculator: a statin is indicated regardless of calculated risk. For diabetes, the PCE number informs statin intensity only; it is not the basis for treatment.</p>
+        <p class="caveat">This number does not decide treatment for everyone. Known atherosclerotic CVD is secondary prevention: risk calculators do not apply. LDL cholesterol of 190 mg/dL or higher, or diabetes at 40–75 (with LDL 70 mg/dL or higher), skip the calculator: a statin is indicated regardless of calculated risk. For diabetes, the PCE number informs statin intensity only; it is not the basis for treatment.</p>
         <p id="risk-note" class="sheet-foot">This control sets the risk value directly; it does not compute PCE. Band edges <span class="tech">5.0 / 7.5 / 20.0 %</span> from the 2018 AHA/ACC cholesterol guideline, as in <span class="tech">config.yaml</span>.</p>
         <noscript><p class="sheet-foot">Bands: below 5 % low; 5 to under 7.5 % borderline; 7.5 to under 20 % intermediate; 20 % and above high.</p></noscript>
       </article>
@@ -187,7 +187,7 @@
       <ol class="sheet-foot noscript-stages">
         <li>Then the photo is checked. EXIF and GPS are stripped, and a dark or blurred photo is refused with a reason to retake, plus a note never to delay referral for it.</li>
         <li>Next, a result with reasons. The level arrives with every reason behind it and the label AI-assisted, not a diagnosis. Nothing is final yet.</li>
-        <li>Last, a clinician signs. Confirm or override, with a reason. An override is kept as a labelled case for offline retraining; the deployed model never learns at runtime.</li>
+        <li>Last, a clinician signs. Confirm or override, with a reason. An override is kept as a labelled case for offline retraining only with the patient's model-improvement consent; the deployed model never learns at runtime.</li>
       </ol>
     </noscript>
   </section>
