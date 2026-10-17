@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.12.1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CVD Problem Definition — Thailand</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      color: light-dark(#1a1a1a, #fdfdfd);
+      background-color: #fdfdfd;
+      background-color: light-dark(#fdfdfd, #1a1a1a);
+      color-scheme: light only;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        color-scheme: light only;
+      }
+      html, body, pre, code {
+        background-color: transparent;
+      }
+      body, a, a:visited, blockquote {
+        color: black;
+      }
+      pre, code {
+        padding: 0;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a, a:visited {
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid;
+      border-color: #e6e6e6;
+      border-color: light-dark(#e6e6e6, #4c4c4c);
+      color: #606060;
+      color: light-dark(#606060, #b6b6b6);
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid currentColor;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+    }
+    th {
+      border-top: 1px solid currentColor;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <style>
+  body{max-width:1000px;margin:2rem auto;padding:0 1.5rem;font:16px/1.6 -apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;color:#222}
+  h1,h2,h3{color:#8b1a1a;line-height:1.25}h2{border-bottom:2px solid #eee;padding-bottom:.3rem;margin-top:2.5rem}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem;display:block;overflow-x:auto}
+  th,td{border:1px solid #ddd;padding:.5rem .7rem;vertical-align:top;text-align:left}th{background:#f6f0f0}tr:nth-child(even) td{background:#fafafa}
+  blockquote{border-left:4px solid #c44;margin:1rem 0;padding:.5rem 1rem;background:#fdf5f5;color:#444}
+  a{color:#1a5fb4;word-break:break-word}hr{border:0;border-top:1px solid #eee;margin:2rem 0}
+  pre.mermaid{background:none;text-align:center}
+  html,body{background:#fff!important;color:#222!important}</style>
+<script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true});</script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">CVD Problem Definition — Thailand</h1>
+</header>
+<h2 id="executive-summary">Executive summary</h2>
+<ul>
+<li><strong>The single biggest “leak” in Thai cardiovascular care
+happens before anyone feels sick.</strong> In the 2019–20 national
+health examination survey, 25.7% of Thai adults had hypertension. Only
+51.5% of them knew it, and only 22.7% had it under control. Control had
+<em>fallen</em> from 30% in 2014, even though universal coverage makes
+hypertension treatment free [11].</li>
+<li><strong>The second leak is the hours between symptom onset and the
+hospital door.</strong> In a northern Thai study, 70% of older adults
+with ischaemic stroke arrived more than 3 hours after onset [15]. In a
+2025 sample, the mean delay was 253 minutes (about 4.2 hours), which
+researchers say “effectively precluded” thrombolysis for most of them
+[16]. Hospital-side fast tracks cannot recover time that was lost at
+home.</li>
+<li><strong>The third leak is the first month after discharge.</strong>
+In a national cohort of 888,003 Thai ischaemic-stroke patients, more
+died within 30 days after discharge (8.2%) than in hospital (6.4%) [9].
+Only 32% of Thai stroke patients received rehabilitation [10].</li>
+<li><strong>Recommended problem for the team (inference from the
+evidence weighting in §2):</strong> <em>Most Thai adults with high blood
+pressure are not diagnosed or not controlled, and nothing currently
+notices or acts on that between clinic visits, even though treatment is
+free.</em> It sits upstream of heart attack, stroke and PAD, it has the
+strongest national data, it is getting worse, and its benefit is
+quantified: each 10 mmHg drop in systolic BP cuts major CV events by
+about 20% [35].</li>
+<li><strong>Alternate problems</strong> with full 5 Ws are given for (B)
+stroke recognition-to-door delay and (C) the post-discharge danger
+window.</li>
+<li><strong>Hackathon numbers check:</strong> “over half a billion
+affected” [2] and “~20 million deaths a year” [1][2] are verified.
+“80,000 Thai deaths” and “one-third of Thais” are <strong>not
+verified</strong> in this run. GBD (via the World Heart Federation)
+estimates <strong>120,370</strong> CVD deaths in Thailand [5], and adult
+hypertension prevalence is about 26–29% [5][11]. Quote sourced numbers
+in the pitch, not the brief’s numbers.</li>
+</ul>
+<hr />
+<h2
+id="the-landscape-where-thai-patients-are-lost-along-the-cvd-journey">1.
+The landscape: where Thai patients are lost along the CVD journey</h2>
+<p>Globally, CVD killed an estimated 19.8 million people in 2022 (about
+32% of all deaths), 85% of them from heart attack and stroke. More than
+three-quarters of CVD deaths occur in low- and middle-income countries
+[1]. The World Heart Federation reports that more than half a billion
+people are affected and that up to 80% of premature heart attacks and
+strokes are preventable [2]. About 236.6 million people aged 25 and over
+were living with PAD in 2015, 72.9% of them in low- and middle-income
+countries [14].</p>
+<pre class="mermaid">flowchart LR
+  A[&quot;Silent risk years&lt;br/&gt;(high BP, diabetes, lipids, AF, PAD)&quot;] --&gt;|&quot;~half of hypertensives unaware;&lt;br/&gt;22.7% controlled&quot;| B[&quot;Acute event&lt;br/&gt;(stroke, heart attack, cardiac arrest)&quot;]
+  B --&gt;|&quot;70% of older stroke pts &gt;3 h to door;&lt;br/&gt;OHCA 30-day survival 3.4%&quot;| C[&quot;Hospital treatment&lt;br/&gt;(thrombolysis, PCI, stroke unit)&quot;]
+  C --&gt;|&quot;8.2% die ≤30 days after discharge;&lt;br/&gt;32% get rehab&quot;| D[&quot;Lifelong secondary prevention&quot;]
+  D --&gt;|&quot;recurrence&quot;| B</pre>
+<table>
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 67%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Key Thai evidence</th>
+<th>Size of the gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Silent risk (prevention)</td>
+<td>HTN prevalence 25.7%; aware 51.5%; treated 47.9%; controlled 22.7%
+(2019–20) [11]. Diabetes 10.1%; aware 62.8%; treated 42.9%; controlled
+20.5% (2020) [12]</td>
+<td>Large and worsening for HTN control</td>
+</tr>
+<tr>
+<td>Silent risk: AF</td>
+<td>Thai AF patients on anticoagulants: only 34.4% knew missed-dose
+management; age ≥75 linked to low knowledge (aOR 2.11) [28]</td>
+<td>Population undiagnosed AF burden <strong>not measured</strong> in
+sources found (data gap)</td>
+</tr>
+<tr>
+<td>Silent risk: PAD</td>
+<td>PAD 7.2% by ABI in Thai T2DM primary care [29]; 17.7% in Asian
+high-risk T2DM incl. Thailand [30]; critical limb ischaemia HR 5.26 for
+death vs asymptomatic PAD [31]</td>
+<td>Under-measured; detected late</td>
+</tr>
+<tr>
+<td>Acute: stroke</td>
+<td>70% of older patients &gt;3 h [15]; mean delay 253 min in a 2025
+sample [16]; early academic fast track gave rt-PA to 5.5% of ischaemic
+strokes [18]</td>
+<td>Large; national IVT rate <strong>not found</strong></td>
+</tr>
+<tr>
+<td>Acute: STEMI</td>
+<td>Registry time-to-treatment medians 240–359 min (2002–2008) [20][21];
+provinces outside Bangkok with &gt;50% PCI grew from 4 to 37
+(2011–2017); reperfusion lowers 30-day mortality by 14.1–19.6 percentage
+points [22]</td>
+<td>Improving, but uneven geographically</td>
+</tr>
+<tr>
+<td>Acute: cardiac arrest</td>
+<td>30-day survival 3.4%; bystander CPR 40.4%; bystander AED use 0.8% (3
+centres, 2017–2020) [23]</td>
+<td>Very large</td>
+</tr>
+<tr>
+<td>Post-discharge</td>
+<td>8.2% ≤30-day post-discharge mortality vs 6.4% in-hospital [9]; 32%
+received rehab; care outside Bangkok associated with higher mortality
+[10]</td>
+<td>Large</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="candidate-problem-statements-weighed">2. Candidate problem
+statements, weighed</h2>
+<p>Scoring is the lead’s judgement (inference) based on the evidence
+above. 3 = strong, 1 = weak.</p>
+<table style="width:99%;">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>A. Undetected / uncontrolled hypertension</th>
+<th>B. Stroke recognition-to-door delay</th>
+<th>C. First 30 days after discharge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Size of population affected</td>
+<td>3 (about 1 in 4 adults [11])</td>
+<td>2 (349,126 stroke patients in 2023 [6])</td>
+<td>2 (all discharged stroke/ACS pts)</td>
+</tr>
+<tr>
+<td>Strength of Thai national data</td>
+<td>3 (four NHES cycles [11])</td>
+<td>1 (small single-region studies [15][16])</td>
+<td>2 (national claims cohorts [9][10])</td>
+</tr>
+<tr>
+<td>Trend</td>
+<td>3 (worsening control [11])</td>
+<td>1 (unknown)</td>
+<td>1 (unknown)</td>
+</tr>
+<tr>
+<td>Quantified benefit if fixed</td>
+<td>3 (RCT meta-analysis [35])</td>
+<td>3 (IPD meta-analysis on time [25])</td>
+<td>1 (Thai data observational [10])</td>
+</tr>
+<tr>
+<td>Upstream of heart + brain + limbs</td>
+<td>3</td>
+<td>1 (brain only)</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Fits “agentic” between-visit support</td>
+<td>3</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>18</strong></td>
+<td><strong>10</strong></td>
+<td><strong>11</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation:</strong> lead with <strong>A</strong>. B is
+the most emotionally vivid story and could be the pitch’s opening hook.
+C is a strong alternative if the team has access to Siriraj discharge
+workflows.</p>
+<hr />
+<h2
+id="problem-a-recommended-silent-uncontrolled-high-blood-pressure">3.
+Problem A (recommended): silent, uncontrolled high blood pressure</h2>
+<h3 id="problem-statement">Problem statement</h3>
+<p>Half of Thai adults with high blood pressure don’t know they have it,
+and fewer than 1 in 4 have it under control [11]. This is true even
+though treatment is free. High BP has no symptoms, so the first sign is
+often a stroke, a heart attack or kidney damage.</p>
+<h3 id="what">What</h3>
+<ul>
+<li><strong>The actual problem:</strong> high BP goes undetected, and
+once detected it is not controlled. Of every 10 Thai adults with
+hypertension, about 5 are unaware, about 5 are treated and about 2 are
+controlled (arithmetic from NHES 2019–20 percentages [11]).</li>
+<li><strong>Impact:</strong> WHO lists high blood pressure first among
+the 10 modifiable risk factors behind most of the global stroke burden
+[4]. Thailand recorded 349,126 stroke patients and 36,214 stroke deaths
+in 2023 [6]. GBD estimates 120,370 CVD deaths in Thailand [5].</li>
+<li><strong>If not fixed:</strong> the trend already points the wrong
+way. Control fell from 30% (2014) to 22.7% (2019–20), and awareness
+slipped from 55.8% to 51.5% [11]. Diabetes prevalence rose from 7.5% to
+10.1% (2004–2020) [12]. The mean age of stroke onset in Thailand is 65
+[8], so an ageing population will turn more uncontrolled-BP years into
+strokes, heart attacks, PAD and dependency. This is an inference from
+the trends; no Thai projection was found in this run.</li>
+<li><strong>If fixed:</strong> every 10 mmHg reduction in systolic BP
+lowers major CV events by 20% (RR 0.80, 95% CI 0.77–0.83) and coronary
+heart disease by 17% (RR 0.83), per a meta-analysis of 123 trials and
+613,815 participants [35]. A community health worker-led program in
+rural Bangladesh, Pakistan and Sri Lanka achieved an extra 5.2 mmHg
+reduction over 24 months [36]. Among Thai hypertensives, IHD prevalence
+fell from 56.6 to 34.5 per 1,000 between 2011 and 2018 under universal
+coverage [37], so access helps, but the control gap remains.</li>
+<li><strong>Current solutions and shortcomings:</strong>
+<ul>
+<li><em>Free UHC primary care:</em> removes cost, not the detection or
+follow-up gap. Awareness and control stalled or fell [11].</li>
+<li><em>Thai CV risk score / DSMES education:</em> a cluster RCT (n=693)
+found no change in Thai CV risk score or HbA1c at 12 months for
+nurse-led or peer-assisted arms [38].</li>
+<li><em>Health-literacy and chatbot programs:</em> small samples (n=58
+[39], n=68 [40]). The chatbot study is non-randomised, and its authors
+call the findings “preliminary” [40].</li>
+<li><em>Village health volunteer (VHV) and community-leader
+telehealth:</em> feasible and acceptable (92–97%) [34], but outcome data
+are lacking, and VHVs face workload and policy constraints [32].</li>
+<li><em>2024 Thai HTN guideline:</em> recommends home or ambulatory BP
+to confirm diagnosis and adds a “BP at risk” (130–139/80–89) category
+[26]. Whether home BP is actually being used at scale was not
+verified.</li>
+</ul></li>
+</ul>
+<h3 id="who">Who</h3>
+<ul>
+<li>Thai adults with hypertension (prevalence 25.7%; men 26.8%, women
+24.6%), especially the roughly half who are unaware [11].</li>
+<li>Older adults and rural residents. A rural cohort showed 7.9% of
+hypertensives at &gt;20% 10-year CV risk (12.7% of men) [13]. Stroke
+mortality is higher for patients treated outside Bangkok [10].</li>
+<li>Families and caregivers who absorb disability after a stroke
+(inference; not quantified here).</li>
+<li>Front-line workers: VHVs and sub-district health-promoting hospital
+staff who do screening and follow-up [32][34].</li>
+</ul>
+<h3 id="when">When</h3>
+<ul>
+<li><strong>When it occurs:</strong> silently, over years to decades
+before an event, and between clinic visits, when no one is measuring or
+adjusting. This is an inference from the asymptomatic nature of
+hypertension [3]; the 2024 Thai guideline’s push for out-of-office BP
+supports it [26].</li>
+<li><strong>When it must be fixed:</strong> before the first event. The
+WHO target to cut uncontrolled hypertension by 25% between 2010 and 2025
+has passed its deadline [3], and the global goal to cut premature NCD
+mortality by one-third by 2030 is four years away [44].</li>
+</ul>
+<h3 id="where">Where</h3>
+<ul>
+<li>Community and home settings: villages, sub-district health-promoting
+hospitals, rural northeast and north (where several of the cited studies
+were run [13][39]). The gap is upstream of hospitals.</li>
+<li>Not mainly in tertiary hospitals like Siriraj, which see the
+consequences (inference).</li>
+</ul>
+<h3 id="why-it-matters">Why it matters</h3>
+<ul>
+<li>One upstream risk factor drives events in all three of the track’s
+organs: heart, brain and limbs [1][4][14].</li>
+<li>It is cheap to measure, effective treatment is free [11], and the
+benefit is proven [35]. The failure is in detection, follow-up and
+titration, the process gap that agentic, trustworthy AI could plausibly
+address (inference; no tool evaluated here). Any such tool must meet
+WHO’s six consensus principles for ethical AI in health [43].</li>
+</ul>
+<h3
+id="problem-pitch-illustrative-template-replace-with-a-real-story-from-your-team-or-patients">Problem
+pitch (illustrative template; replace with a real story from your team
+or patients)</h3>
+<blockquote>
+<p><em>My grandmother lives in a village in Isan. She felt fine, so she
+never went back after the health volunteer told her once that her blood
+pressure was “a bit high”. Her pills were free at the health centre, but
+nobody checked whether she took them or whether they worked. The first
+time a doctor saw her again was in the stroke unit. Half of Thais with
+high blood pressure don’t know they have it, and fewer than 1 in 4 have
+it controlled, so the first symptom is often a stroke.</em></p>
+</blockquote>
+<p>The persona is fictional. Only the closing statistics are sourced
+[11].</p>
+<hr />
+<h2 id="problem-b-alternate-stroke-recognition-to-door-delay">4. Problem
+B (alternate): stroke recognition-to-door delay</h2>
+<table>
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 96%" />
+</colgroup>
+<thead>
+<tr>
+<th>W</th>
+<th>Evidence-based answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>What</strong></td>
+<td>Older Thai patients with stroke reach hospital too late for
+clot-busting treatment: 70% arrive more than 3 h after onset (n=120,
+northern Thailand) [15], with a mean of 253 min in a 2025 sample (n=106)
+[16]. Each minute of a typical large-vessel stroke destroys about 1.9
+million neurons [24]. Alteplase within 3 h gives good outcomes in 32.9%
+vs 23.1% with control (OR 1.75). Beyond 4.5 h the benefit is no longer
+significant (OR 1.15, 95% CI 0.95–1.40) [25].</td>
+</tr>
+<tr>
+<td><strong>If not fixed</strong></td>
+<td>Fast tracks and stroke units keep improving hospital-side time
+[18][19], but late arrivers cannot benefit. Long-term burden persists:
+4-year survival after incident stroke is 66.5% [10].</td>
+</tr>
+<tr>
+<td><strong>If fixed</strong></td>
+<td>More patients reach hospital within the window where thrombolysis
+clearly helps [25].</td>
+</tr>
+<tr>
+<td><strong>Current solutions</strong></td>
+<td>F.A.S.T. public campaigns [6]; hospital stroke fast track (cut time
+to CT from ~2.5 h) [18]; stroke units in all advanced-level but only 55%
+of mid-level referral hospitals [19]; LINE sticker education for VHVs
+(knowledge outcome only) [33]; telestroke consultation (in a
+Thai-supported Lao programme only 14% of 205 patients arrived within 4.5
+h) [45]. <strong>Shortcomings:</strong> they act after the patient
+decides to go. Delay is linked to low perceived severity and distance
+from hospital [15]. In a rural southern Thai survey, 99 of 113 high-risk
+people “had a low to no chance awareness of their risk to stroke”
+[17].</td>
+</tr>
+<tr>
+<td><strong>Who</strong></td>
+<td>Older adults (mean onset age 65 [8]), people living far from
+hospital [15], family bystanders (inference).</td>
+</tr>
+<tr>
+<td><strong>When</strong></td>
+<td>In the minutes to hours after symptoms start, often at home. Must be
+fixed within the 4.5 h window [25].</td>
+</tr>
+<tr>
+<td><strong>Where</strong></td>
+<td>Homes and villages, especially rural areas; distance is a key
+predictor [15].</td>
+</tr>
+<tr>
+<td><strong>Why</strong></td>
+<td>Time-dependent benefit is among the best-proven effects in stroke
+medicine [24][25].</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Data gap:</strong> national Thai thrombolysis rate and 1669
+EMS use for stroke were not found. Ask Siriraj stroke clinicians or
+NIEMS for these at the hackathon.</p>
+<hr />
+<h2 id="problem-c-alternate-the-first-30-days-after-discharge">5.
+Problem C (alternate): the first 30 days after discharge</h2>
+<table>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 94%" />
+</colgroup>
+<thead>
+<tr>
+<th>W</th>
+<th>Evidence-based answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>What</strong></td>
+<td>After ischaemic stroke, 8.2% of Thai patients die within 30 days of
+discharge, more than the 6.4% who die in hospital (n=888,003) [9]. Only
+32% of stroke patients received rehabilitation [10]. Early
+post-discharge deaths are mostly from the stroke itself; later deaths
+are mostly from complications (pneumonia, sepsis) and comorbidities
+[9].</td>
+</tr>
+<tr>
+<td><strong>If not fixed</strong></td>
+<td>Preventable deaths and complications continue. Haemorrhagic stroke
+has the highest cost per patient, and rehabilitation was associated with
+lower costs [10].</td>
+</tr>
+<tr>
+<td><strong>If fixed</strong></td>
+<td>Rehabilitation and thrombolysis were associated with lower mortality
+in national claims [10] (observational; not proof of cause).</td>
+</tr>
+<tr>
+<td><strong>Current solutions</strong></td>
+<td>Home-based rehabilitation offered at 100% of mid-level but only 16%
+of advanced-level referral hospitals (survey with 32% response) [19]. In
+AF, patients who survive a major bleed face 4.44-fold higher adjusted
+death risk [27], and anticoagulant knowledge gaps are common [28].</td>
+</tr>
+<tr>
+<td><strong>Who</strong></td>
+<td>Stroke and ACS survivors, especially older patients and those
+treated outside Bangkok [10], plus family caregivers (inference).</td>
+</tr>
+<tr>
+<td><strong>When</strong></td>
+<td>Days 0–30 after discharge, then lifelong [9].</td>
+</tr>
+<tr>
+<td><strong>Where</strong></td>
+<td>At home, far from the treating hospital (inference).</td>
+</tr>
+<tr>
+<td><strong>Why</strong></td>
+<td>The handover from hospital to home is where the system loses track
+of the patient (inference from [9][10]).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="caveats-and-disagreements">6. Caveats and disagreements</h2>
+<ul>
+<li><strong>Prompt figures vs sources.</strong> Thai CVD deaths: 120,370
+(GBD via WHF [5]) vs “80,000” (hackathon brief, source unknown). MOPH
+registered 36,214 stroke deaths in 2023 [6], and a Thai review cites
+more than 65,000 heart-disease deaths a year [7]. Definitions differ
+(modelled vs registered causes). The WHF page labels the figure “2024”
+while its source note says 2021 [5].</li>
+<li><strong>“One-third of Thais”</strong> could not be traced. The
+closest sourced figures are adult HTN prevalence of 25.7% (NHES,
+age-standardised [11]) and about 29% (WHF, 2019 [5]). Globally, 33% of
+adults aged 30–79 have hypertension [3].</li>
+<li><strong>Control rates depend on the denominator.</strong> National
+survey control was 22.7% (all hypertensives) [11] vs 63.9% in a rural
+cohort of people already in care [13]. Both are consistent with most of
+the loss happening before people enter care (inference).</li>
+<li><strong>Problem A rests mainly on one national analysis.</strong>
+The awareness, treatment and control figures come from a single NHES
+trend paper [11]. Prevalence is corroborated by WHF/GBD [5], and the
+parallel diabetes gap [12] points the same way, but the team should
+confirm the figures with the NHES VI report or Siriraj clinicians before
+quoting them on stage.</li>
+<li><strong>Acute-care Thai data are old or small.</strong> ACS
+registries are from 2002–2008 [20][21]. Prehospital-delay studies have
+106–120 patients each [15][16].</li>
+<li><strong>Observational associations</strong> (rehab, PCI and
+mortality) may be confounded [10][22].</li>
+<li><strong>Global AI/digital evidence may not transfer.</strong> The
+Apple Heart Study was a US smartwatch population: 0.52% were notified,
+only 450 of 2,161 notified participants returned analysable ECG patches,
+and 34% of those showed AF [41]. The EAGLE AI-ECG trial (US primary
+care) raised low-EF diagnosis from 1.6% to 2.1% [42].</li>
+</ul>
+<h2 id="open-questions-to-resolve-at-the-hackathon">7. Open questions to
+resolve at the hackathon</h2>
+<ol type="1">
+<li>What is Thailand’s current national IVT rate and the share of
+stroke/STEMI patients arriving by 1669 EMS? (Not found.)</li>
+<li>What happens after a positive community BP screen: what fraction
+complete confirmation and start treatment? (Not found; this is the core
+metric for Problem A.)</li>
+<li>How many VHVs are active, which digital tools do they use, and what
+is their workload? (Not verified.)</li>
+<li>What are smartphone/LINE access and digital literacy among Thai
+adults over 60? (Not verified.)</li>
+<li>What do Thai FDA (software as a medical device) and PDPA rules
+require for an AI agent that contacts patients? (Not verified.)</li>
+<li>Where does the “80,000 deaths” figure in the brief come from?</li>
+</ol>
+<h2 id="next-steps-problem-validation-not-solution">8. Next steps
+(problem validation, not solution)</h2>
+<ul>
+<li>Interview 2–3 Siriraj clinicians (cardiology, neurology, family
+medicine) and, if possible, one VHV, using the 5 W tables above.</li>
+<li>Get one real patient or family story for the pitch. Replace the
+illustrative template.</li>
+<li>Pick one measurable outcome (e.g., % of screened-positive adults
+with confirmed diagnosis and controlled BP at 90 days) before discussing
+any solution.</li>
+</ul>
+<hr />
+<h2 id="sources">Sources</h2>
+<ol type="1">
+<li>WHO. Cardiovascular diseases (CVDs) — fact sheet. <a
+href="https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)">https://www.who.int/news-room/fact-sheets/detail/cardiovascular-diseases-(cvds)</a></li>
+<li>World Heart Federation. World Heart Report 2023: Confronting the
+World’s Number One Killer. <a
+href="https://world-heart-federation.org/wp-content/uploads/World-Heart-Report-2023.pdf">https://world-heart-federation.org/wp-content/uploads/World-Heart-Report-2023.pdf</a></li>
+<li>WHO. Hypertension — fact sheet. <a
+href="https://www.who.int/news-room/fact-sheets/detail/hypertension">https://www.who.int/news-room/fact-sheets/detail/hypertension</a></li>
+<li>WHO. Stroke — fact sheet. <a
+href="https://www.who.int/news-room/fact-sheets/detail/stroke">https://www.who.int/news-room/fact-sheets/detail/stroke</a></li>
+<li>World Heart Federation. World Heart Observatory — Thailand country
+profile (IHME GBD data). <a
+href="https://world-heart-federation.org/world-heart-observatory/countries/thailand/">https://world-heart-federation.org/world-heart-observatory/countries/thailand/</a></li>
+<li>Department of Disease Control, MOPH Thailand. World Stroke Day 2023
+press release (24 Oct 2023), in Thai. <a
+href="https://ddc.moph.go.th/brc/news.php?news=37914&amp;deptcode=brc">https://ddc.moph.go.th/brc/news.php?news=37914&amp;deptcode=brc</a></li>
+<li>Heart Disease and Stroke: Global Burden and Lessons from Thailand
+(TCI ThaiJo review). <a
+href="https://www.tci-thaijo.org/en/articles/health04-3603">https://www.tci-thaijo.org/en/articles/health04-3603</a></li>
+<li>Suwanwela NC. Stroke epidemiology in Thailand. J Stroke. 2014. <a
+href="https://pubmed.ncbi.nlm.nih.gov/24741559/">https://pubmed.ncbi.nlm.nih.gov/24741559/</a></li>
+<li>Long-term causes of death in 888,003 ischemic stroke patients in
+Thailand: nationwide retrospective study with 18-year follow-up. Ann
+Med. 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42504160/">https://pubmed.ncbi.nlm.nih.gov/42504160/</a></li>
+<li>Stroke resource utilisation and all-cause mortality in Thailand
+2017–2020. BMJ Open. 2023. <a
+href="https://pubmed.ncbi.nlm.nih.gov/37280024/">https://pubmed.ncbi.nlm.nih.gov/37280024/</a></li>
+<li>Trends in hypertension prevalence, awareness, treatment, and control
+in the Thai population, 2004 to 2020. BMC Public Health. 2024. <a
+href="https://pubmed.ncbi.nlm.nih.gov/39538168/">https://pubmed.ncbi.nlm.nih.gov/39538168/</a></li>
+<li>Diabetes trends and determinants among Thai adults from 2004 to
+2020. Sci Rep. 2025. <a
+href="https://pubmed.ncbi.nlm.nih.gov/40866600/">https://pubmed.ncbi.nlm.nih.gov/40866600/</a></li>
+<li>Clinical Epidemiology of Hypertension in Rural Thailand: A
+Nationwide Cross-Sectional Study. Glob Heart. 2025. <a
+href="https://pubmed.ncbi.nlm.nih.gov/41487451/">https://pubmed.ncbi.nlm.nih.gov/41487451/</a></li>
+<li>Song P, et al. Global, regional, and national prevalence and risk
+factors for peripheral artery disease in 2015. Lancet Glob Health. 2019.
+<a
+href="https://pubmed.ncbi.nlm.nih.gov/31303293/">https://pubmed.ncbi.nlm.nih.gov/31303293/</a></li>
+<li>Prehospital delay after acute ischemic stroke among Thai older
+adults: A cross-sectional study. Nurs Health Sci. 2023. <a
+href="https://pubmed.ncbi.nlm.nih.gov/36240046/">https://pubmed.ncbi.nlm.nih.gov/36240046/</a></li>
+<li>Factors Associated With Prehospital Delay Among Older Adults
+Surviving Ischemic Stroke. Brain Behav. 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42625133/">https://pubmed.ncbi.nlm.nih.gov/42625133/</a></li>
+<li>Knowledge and attitude towards stroke among the population of one
+rural community in southern Thailand. BMJ Open. 2024. <a
+href="https://pubmed.ncbi.nlm.nih.gov/38326263/">https://pubmed.ncbi.nlm.nih.gov/38326263/</a></li>
+<li>Stroke fast track reduces time delay to neuroimaging and increases
+use of thrombolysis in an academic medical center in Thailand. J
+Neuroimaging. 2012. <a
+href="https://pubmed.ncbi.nlm.nih.gov/21122006/">https://pubmed.ncbi.nlm.nih.gov/21122006/</a></li>
+<li>Availability of stroke services and hospital facilities at different
+hospital levels in Thailand. BMC Health Serv Res. 2022. <a
+href="https://pubmed.ncbi.nlm.nih.gov/36539806/">https://pubmed.ncbi.nlm.nih.gov/36539806/</a></li>
+<li>Demographic, management practices and in-hospital outcomes of Thai
+Acute Coronary Syndrome Registry (TACSR). J Med Assoc Thai. 2007. <a
+href="https://pubmed.ncbi.nlm.nih.gov/18431881/">https://pubmed.ncbi.nlm.nih.gov/18431881/</a></li>
+<li>Thai Registry in Acute Coronary Syndrome (TRACS). J Med Assoc Thai.
+2012. <a
+href="https://pubmed.ncbi.nlm.nih.gov/22612004/">https://pubmed.ncbi.nlm.nih.gov/22612004/</a></li>
+<li>Access to reperfusion therapy and mortality outcomes in patients
+with STEMI under universal health coverage in Thailand. BMC Cardiovasc
+Disord. 2020. <a
+href="https://pubmed.ncbi.nlm.nih.gov/32143572/">https://pubmed.ncbi.nlm.nih.gov/32143572/</a></li>
+<li>Pre-hospital survival factors of out-of-hospital cardiac arrest
+patients in Thailand. Resusc Plus. 2022. <a
+href="https://pubmed.ncbi.nlm.nih.gov/35036967/">https://pubmed.ncbi.nlm.nih.gov/35036967/</a></li>
+<li>Saver JL. Time is brain—quantified. Stroke. 2006. <a
+href="https://pubmed.ncbi.nlm.nih.gov/16339467/">https://pubmed.ncbi.nlm.nih.gov/16339467/</a></li>
+<li>Emberson J, et al. Effect of treatment delay, age, and stroke
+severity on the effects of intravenous thrombolysis with alteplase.
+Lancet. 2014. <a
+href="https://pubmed.ncbi.nlm.nih.gov/25106063/">https://pubmed.ncbi.nlm.nih.gov/25106063/</a></li>
+<li>2024 Thai guidelines on the treatment of hypertension. Asian Biomed.
+2025. <a
+href="https://pubmed.ncbi.nlm.nih.gov/41728364/">https://pubmed.ncbi.nlm.nih.gov/41728364/</a></li>
+<li>Clinical outcomes of AF patients who survived from bleeding event:
+COOL-AF Thailand Registry. Thromb Haemost. 2024. <a
+href="https://pubmed.ncbi.nlm.nih.gov/38626898/">https://pubmed.ncbi.nlm.nih.gov/38626898/</a></li>
+<li>Knowledge of NOACs and associated factors among patients with AF:
+Thailand. Healthcare (Basel). 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42793518/">https://pubmed.ncbi.nlm.nih.gov/42793518/</a></li>
+<li>Prevalence and predictors of PAD by ABI in a diabetes population in
+lower northern Thailand. Diab Vasc Dis Res. 2020. <a
+href="https://pubmed.ncbi.nlm.nih.gov/33158366/">https://pubmed.ncbi.nlm.nih.gov/33158366/</a></li>
+<li>PAD-SEARCH: prevalence of PAD in Asian type 2 diabetes patients.
+Diabetes Res Clin Pract. 2007. <a
+href="https://pubmed.ncbi.nlm.nih.gov/16950543/">https://pubmed.ncbi.nlm.nih.gov/16950543/</a></li>
+<li>Incidence and predictors of CVD and all-cause mortality in T2DM
+patients with PAD. PLoS One. 2025. <a
+href="https://pubmed.ncbi.nlm.nih.gov/40378162/">https://pubmed.ncbi.nlm.nih.gov/40378162/</a></li>
+<li>Role and mental health practices of village health volunteers in
+rural Thailand (qualitative). PLoS One. 2025. <a
+href="https://pubmed.ncbi.nlm.nih.gov/40146743/">https://pubmed.ncbi.nlm.nih.gov/40146743/</a></li>
+<li>The effectiveness of the stroke sign by sticker among village health
+volunteers. J Educ Health Promot. 2024. <a
+href="https://pubmed.ncbi.nlm.nih.gov/39297115/">https://pubmed.ncbi.nlm.nih.gov/39297115/</a></li>
+<li>Feasibility of a telehealth platform for community-based NCD risk
+assessment by community health leaders in rural northern Thailand. SAGE
+Open Med. 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42405357/">https://pubmed.ncbi.nlm.nih.gov/42405357/</a></li>
+<li>Ettehad D, et al. Blood pressure lowering for prevention of
+cardiovascular disease and death. Lancet. 2016. <a
+href="https://pubmed.ncbi.nlm.nih.gov/26724178/">https://pubmed.ncbi.nlm.nih.gov/26724178/</a></li>
+<li>Jafar TH, et al. A Community-Based Intervention for Managing
+Hypertension in Rural South Asia (COBRA-BPS). N Engl J Med. 2020. <a
+href="https://pubmed.ncbi.nlm.nih.gov/32074419/">https://pubmed.ncbi.nlm.nih.gov/32074419/</a></li>
+<li>National Trends and Factors Associated with IHD Among Individuals
+with Hypertension in Thailand, 2011–2018. Glob Heart. 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/41766720/">https://pubmed.ncbi.nlm.nih.gov/41766720/</a></li>
+<li>Self-management education and support for type 2 diabetes in
+Thailand: a cluster randomized trial. Lancet Reg Health Southeast Asia.
+2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42212245/">https://pubmed.ncbi.nlm.nih.gov/42212245/</a></li>
+<li>Transformative learning-based health literacy program for
+uncontrolled hypertension in Thailand: cluster RCT. Belitung Nurs J.
+2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42375857/">https://pubmed.ncbi.nlm.nih.gov/42375857/</a></li>
+<li>Chatbot-based hypertension management program among
+community-dwelling older adults. J Multidiscip Healthc. 2026. <a
+href="https://pubmed.ncbi.nlm.nih.gov/42820082/">https://pubmed.ncbi.nlm.nih.gov/42820082/</a></li>
+<li>Perez MV, et al. Large-Scale Assessment of a Smartwatch to Identify
+Atrial Fibrillation. N Engl J Med. 2019. <a
+href="https://pubmed.ncbi.nlm.nih.gov/31722151/">https://pubmed.ncbi.nlm.nih.gov/31722151/</a></li>
+<li>Yao X, et al. AI-enabled electrocardiograms for identification of
+patients with low ejection fraction: pragmatic RCT. Nat Med. 2021. <a
+href="https://pubmed.ncbi.nlm.nih.gov/33958795/">https://pubmed.ncbi.nlm.nih.gov/33958795/</a></li>
+<li>WHO. Ethics and governance of artificial intelligence for health.
+2021. <a
+href="https://www.who.int/publications/i/item/9789240029200">https://www.who.int/publications/i/item/9789240029200</a></li>
+<li>World Heart Federation. World Heart Report 2023 microsite (quote:
+“reducing premature mortality from NCDs by one-third by 2030”). <a
+href="https://heartreport23.world-heart-federation.org/">https://heartreport23.world-heart-federation.org/</a></li>
+<li>The First 10 Thrombolysis for Acute Ischemic Stroke in Lao PDR under
+Teleconsultation from Thailand. J Stroke Cerebrovasc Dis. 2019. <a
+href="https://pubmed.ncbi.nlm.nih.gov/31530479/">https://pubmed.ncbi.nlm.nih.gov/31530479/</a></li>
+</ol>
+</body>
+</html>
