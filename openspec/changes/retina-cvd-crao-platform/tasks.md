@@ -10,8 +10,8 @@
 
 ## 2. Clinical rules (pure Python, no I/O)
 
-- [ ] 2.1 Move `triage.py` to `app/api/rules/triage.py` and convert its 13 `__main__` asserts to `tests/test_triage.py`; verify `pytest tests/test_triage.py` passes with all 13 cases
-- [ ] 2.2 Add the Emergency-mode RETAKE urgent-referral fallback action and the reasons format from the crao-emergency-triage spec, plus tests for the quality-override and reasons scenarios; verify pytest passes
+- [x] 2.1 Move `triage.py` to `app/api/rules/triage.py` and convert its 13 `__main__` asserts to `tests/test_triage.py`; verify `pytest tests/test_triage.py` passes with all 13 cases
+- [x] 2.2 Add the Emergency-mode RETAKE urgent-referral fallback action and the reasons format from the crao-emergency-triage spec, plus tests for the quality-override and reasons scenarios; verify pytest passes
 - [ ] 2.3 Generate `tests/fixtures/thai_cv_oracle.json` (20 input/expected rows) by running the Ramathibodi `formular.js` in Node, recording source URL and fetch date in the fixture; verify the file holds 20 rows covering all three variants
 - [ ] 2.4 Implement `rules/risk.py` `thai_cv()` (TC variant, else waist-to-height, age 30–70 validity) and verify every oracle row matches within 0.1 percentage point in `tests/test_risk.py`
 - [ ] 2.5 Implement `pce()` with Goff 2013 coefficients, input ranges and the population caveat; verify the four published ACC/AHA worked examples match within 0.1 percentage point and out-of-range inputs return "not valid"
