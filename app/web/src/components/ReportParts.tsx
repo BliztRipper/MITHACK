@@ -99,3 +99,34 @@ export function Amend({ c, onDone, disabled }: { c: CaseRecord; onDone: () => vo
     </div>
   )
 }
+
+/** Any clinician can flag a suspected AI safety incident; it stays on the dashboard until an admin closes it. */
+export function IncidentForm({ rid, disabled }: { rid: string; disabled: boolean }): ReactNode {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState('')
+  const submit = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault()
+    try {
+      await api.incident(rid, text.trim())
+      setDone(true)
+      setOpen(false)
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+  if (done) return <p className="text-sm print:hidden">Incident flagged for the monitoring dashboard.</p>
+  return !open ? <button className="btn-secondary self-start print:hidden" disabled={disabled} onClick={() => setOpen(true)}>Flag AI safety incident</button> : (
+    <form onSubmit={submit} className="card flex flex-col gap-3 print:hidden">
+      <label className="flex flex-col gap-1">What happened? (required)
+        <textarea className="input h-auto py-2" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
+      </label>
+      <ErrorText>{error}</ErrorText>
+      <div className="flex gap-2">
+        <button className="btn-primary" disabled={!text.trim()}>Flag incident</button>
+        <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
+      </div>
+    </form>
+  )
+}

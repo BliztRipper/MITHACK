@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Printer } from 'lucide-react'
 import { api, mediaUrl, type CaseRecord, type OverlayKind } from '../api'
-import { Amend, Decision, Disclosure, PatientSummary } from '../components/ReportParts'
+import { Amend, Decision, Disclosure, IncidentForm, PatientSummary } from '../components/ReportParts'
 import ResultView from '../components/ResultView'
 import SignDialog from '../components/SignDialog'
 import { defaultLayers, type Layers } from '../components/Stage'
@@ -49,6 +49,7 @@ function CaseScreen({ c, reload }: { c: CaseRecord; reload: () => void }): React
         <Disclosure />
         {!preliminary && <PatientSummary rid={c.report_id} />}
         {!preliminary && <Amend c={c} onDone={reload} disabled={storeDown} />}
+        <IncidentForm rid={c.report_id} disabled={storeDown} />
       </ResultView>
       {preliminary && !signBlock && (
         <SignDialog c={c} open={signing} onClose={() => setSigning(false)} onSigned={() => {

@@ -2,27 +2,30 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { DatabaseZap, LogOut, Menu } from 'lucide-react'
 import { api, events, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
+import About from './pages/About'
+import Audit from './pages/Audit'
 import Case from './pages/Case'
 import Login from './pages/Login'
+import Monitoring from './pages/Monitoring'
 import NewCase from './pages/NewCase'
 import Patient from './pages/Patient'
 import Patients from './pages/Patients'
+import Queue from './pages/Queue'
 
 interface Route { path: RegExp; roles: Role[]; nav?: string; href?: string; page: (m: string[]) => ReactNode }
 
 // Order = rail order. A link shows only for roles the API would not refuse (design §3.2).
 const CLIN: Role[] = ['gp', 'reviewer']
-const soon = (): ReactNode => <p>Coming in the next commit.</p>
 const ROUTES: Route[] = [
   { path: /^\/patients$/, roles: CLIN, nav: 'Patients', href: '/patients', page: () => <Patients /> },
   { path: /^\/patients\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Patient key={id} id={id} /> },
   { path: /^\/new$/, roles: CLIN, nav: 'New case', href: '/new', page: () => <NewCase /> },
   { path: /^\/new\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <NewCase key={id} patientId={id} /> },
   { path: /^\/cases\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Case key={id} id={id} /> },
-  { path: /^\/queue$/, roles: CLIN, nav: 'Review queue', href: '/queue', page: soon },
-  { path: /^\/monitoring$/, roles: ['reviewer', 'admin'], nav: 'Monitoring', href: '/monitoring', page: soon },
-  { path: /^\/audit$/, roles: ['admin'], nav: 'Audit', href: '/audit', page: soon },
-  { path: /^\/about$/, roles: ['gp', 'reviewer', 'admin'], nav: 'About', href: '/about', page: soon },
+  { path: /^\/queue$/, roles: CLIN, nav: 'Review queue', href: '/queue', page: () => <Queue /> },
+  { path: /^\/monitoring$/, roles: ['reviewer', 'admin'], nav: 'Monitoring', href: '/monitoring', page: () => <Monitoring /> },
+  { path: /^\/audit$/, roles: ['admin'], nav: 'Audit', href: '/audit', page: () => <Audit /> },
+  { path: /^\/about$/, roles: ['gp', 'reviewer', 'admin'], nav: 'About', href: '/about', page: () => <About /> },
 ]
 
 function Banner(): ReactNode {
