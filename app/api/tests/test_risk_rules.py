@@ -1,5 +1,5 @@
 """One test per cvd-risk-assessment scenario handled by the pure rules (bands, bypass, enhancers, arcus).
-Thai/PCE equation scenarios live in test_risk.py / test_pce.py."""
+PCE equation scenarios live in test_risk.py / test_pce.py."""
 import pytest
 
 from rules import risk
@@ -29,21 +29,13 @@ def test_pce_band_edges(r, band):
     assert risk.pce_band(r) == band
 
 
-@pytest.mark.parametrize("r,band", [(9.9, "low"), (10, "moderate"), (19.9, "moderate"),
-                                    (20, "high"), (29.9, "high"), (30, "very_high")])
-def test_thai_band_edges(r, band):
-    assert risk.thai_band(r) == band
-
-
 def test_suggestions_are_labelled_for_discussion():
     assert "for clinician–patient discussion" in txt("risk.discussion_label")
 
 
-def test_every_band_has_a_suggestion_in_both_scales():
+def test_every_band_has_a_suggestion():
     for b in ("low", "borderline", "intermediate", "high"):
         assert txt(risk.suggestion("pce", b))
-    for b in ("low", "moderate", "high", "very_high"):
-        assert txt(risk.suggestion("thai", b))
 
 
 def test_stage1_hypertension_below_and_above_10_percent():

@@ -5,7 +5,7 @@ import { ageOf, ErrorText, fmtDate, Link, PageTitle, StatusBadge, useLoad, useSe
 export const consentWords = (c: Consent): string => `care: ${c.care ? 'yes' : 'no'} · model use: ${c.model_improvement ? 'yes' : 'no'}`
 
 const LABELS: Record<string, string> = { sbp: 'Systolic BP', dbp: 'Diastolic BP', tc: 'Total cholesterol', hdl: 'HDL', ldl: 'LDL',
-  smoking: 'Smoking', waist: 'Waist', height: 'Height', arcus_senilis: 'Arcus senilis' }
+  smoking: 'Smoking', arcus_senilis: 'Arcus senilis' }
 
 export default function Patient({ id }: { id: string }): ReactNode {
   const { storeDown } = useSession()

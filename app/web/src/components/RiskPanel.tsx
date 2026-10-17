@@ -33,10 +33,10 @@ function MeasureRow({ name, m }: { name: string; m: Measure }): ReactNode {
   )
 }
 
-/** Screening result: Thai CV headline, PCE with caveat, bypass, enhancers, measurements, suggestion (design §3.11). */
+/** Screening result: PCE with caveat, bypass, enhancers, measurements, suggestion (design §3.11). */
 export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
   const risk = r.risk!
-  const { pce, thai_cv: thai } = risk
+  const { pce } = risk
   return (
     <section aria-labelledby="risk-h" className="flex flex-col gap-6">
       <h2 id="risk-h" className="sr-only">10-year cardiovascular risk</h2>
@@ -44,12 +44,6 @@ export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
         <p className="rounded-lg border-2 border-ink p-4 text-lg font-medium">{risk.bypass}</p>
       ) : (
         <>
-          <div>
-            <h3 className="font-semibold">{thai.label ?? 'Thai CV Risk'}</h3>
-            {thai.available && thai.risk !== null
-              ? <p><span className="font-mono text-3xl">{thai.risk.toFixed(1)} %</span>{' '}10-year</p>
-              : <p className="rounded-md bg-sunken p-3">{thai.note}</p>}
-          </div>
           <div className="flex flex-col gap-2">
             <h3 className="font-semibold">{pce.label}</h3>
             {pce.not_valid ? <p>{pce.not_valid}</p> : pce.risk !== null && (

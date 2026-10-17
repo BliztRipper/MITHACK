@@ -14,7 +14,7 @@ export interface PriorCase { report_id: string; date: string | null; mode: Mode;
 export interface PatientDetail {
   patient: PatientSummary
   consent: Consent
-  latest: Partial<Record<'sbp' | 'dbp' | 'tc' | 'hdl' | 'ldl' | 'smoking' | 'waist' | 'height' | 'arcus_senilis', Dated>>
+  latest: Partial<Record<'sbp' | 'dbp' | 'tc' | 'hdl' | 'ldl' | 'smoking' | 'arcus_senilis', Dated>>
   cases: PriorCase[]
 }
 
@@ -25,7 +25,6 @@ export interface Crao {
 export interface Triage { level: Level; actions: string[]; reasons: string[] }
 export interface Measure { value: number | null; flag: string | null; reference?: [number, number]; reference_status?: string; unit?: string; reason?: string; note?: string }
 export interface Risk {
-  thai_cv: { available: boolean; label: string | null; risk: number | null; note: string }
   pce: { label: string; risk: number | null; band: string | null; not_valid: string | null; notes: string[]; suggestion: string | null; suggestion_label: string }
   bypass: string | null
   htn_stage1: string | null

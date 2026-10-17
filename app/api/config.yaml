@@ -10,16 +10,12 @@ triage:            # single source: rules/triage.py reads these at call time
 risk:
   # Lower edges of bands 2..4, in percent (band 1 is below the first edge).
   pce_band_edges:  {value: [5.0, 7.5, 20.0],  status: published, source: "2018 AHA/ACC cholesterol guideline"}
-  thai_band_edges: {value: [10.0, 20.0, 30.0], status: published, source: "Thai CV Risk Score (Ramathibodi)"}
   # Inclusive valid input ranges; outside -> "not valid", never clamped.
   pce_ranges:
     age: {value: [40, 79],   status: published, source: "Goff 2013"}
     tc:  {value: [130, 320], status: published, source: "Goff 2013"}
     hdl: {value: [20, 100],  status: published, source: "Goff 2013"}
     sbp: {value: [90, 200],  status: published, source: "Goff 2013"}
-  thai_ranges:
-    age: {value: [30, 70],   status: published, source: "Thai CV Risk Score"}
-    sbp: {value: [70, 220],  status: published, source: "design.md D7"}
   ldl_statin_benefit: {value: 190, status: published, source: "2018 AHA/ACC"}   # mg/dL
   arcus_prompt_age:   {value: 45,  status: published, source: "spec: arcus senilis prompt"}
   # Literature placeholder (normal A:V ratio about 2:3 or wider); unverified for Thai adults and for

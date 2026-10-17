@@ -128,7 +128,7 @@ def screening(img: dict, i) -> dict:
     """i: routes.cases.ScreeningInputs. Statin-benefit groups get no primary-prevention suggestion."""
     ri = risk.Inputs(age=i.age, sex=i.sex, sbp=i.sbp, tc=i.tc, hdl=i.hdl, dbp=i.dbp, ldl=i.ldl,
                      smoker=i.smoking == "current", diabetes=i.diabetes, treated_htn=i.treated_htn,
-                     african_american=i.african_american, waist=i.waist, height=i.height, ascvd=i.ascvd,
+                     african_american=i.african_american, ascvd=i.ascvd,
                      arcus_senilis=i.arcus_senilis)
     p, by = risk.pce(ri), risk.bypass(ri)
     band = risk.pce_band(p.risk) if p.risk is not None else None
@@ -138,7 +138,6 @@ def screening(img: dict, i) -> dict:
     ph = ".placeholder" if CONFIG["risk"]["avr_reference"]["status"] == "placeholder" else ""
     htn, arcus = risk.htn_stage1(i.sbp, i.dbp, p.risk), risk.arcus_prompt(i.age, i.arcus_senilis)
     r = {
-        "thai_cv": {"available": False, "label": None, "risk": None, "note": T["risk.thai_unavailable"]},
         "pce": {"label": p.variant, "risk": p.risk, "band": band, "not_valid": T[p.reason] if p.reason else None,
                 "notes": [T[k] for k in p.notes],
                 "suggestion": None if by or band is None else T[risk.suggestion("pce", band)],

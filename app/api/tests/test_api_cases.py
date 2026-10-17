@@ -215,7 +215,7 @@ def test_screening_end_to_end_with_retinal_enhancer(live, fhir, patient, monkeyp
     pce = r["risk"]["pce"]
     assert pce["label"] == "PCE (white)" and pce["risk"] > 0 and pce["band"] and pce["suggestion"]
     assert pce["notes"] == [EN["risk.caveat.pce_not_asian"]]
-    assert r["risk"]["thai_cv"] == {"available": False, "label": None, "risk": None, "note": EN["risk.thai_unavailable"]}
+    assert set(r["risk"]) == {"pce", "bypass", "htn_stage1", "enhancers", "arcus"}
     avr = r["measurements"]["avr"]
     assert avr["value"] == 0.61 and avr["flag"] == "outside reference"
     assert r["risk"]["enhancers"]["retinal"] == [EN["risk.enhancer.retinal_arteriolar_narrowing.placeholder"]]

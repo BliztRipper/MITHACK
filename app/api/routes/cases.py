@@ -56,8 +56,6 @@ class ScreeningInputs(BaseModel):
     hdl: float | None = Field(None, ge=10, le=200)
     ldl: float | None = Field(None, ge=10, le=400)
     african_american: bool = False
-    waist: float | None = Field(None, ge=40, le=200)
-    height: float | None = Field(None, ge=100, le=230)
     ascvd: bool = False
     arcus_senilis: bool = False
     clinical_enhancers: list[str] = Field(default_factory=list, max_length=10)
@@ -75,7 +73,7 @@ def _observations(mode, inputs, img, out) -> dict:
         if img["p"] is not None:
             o["crao_probability"] = round(img["p"], 4)
         return o
-    o = {k: getattr(inputs, k) for k in ("sbp", "dbp", "tc", "hdl", "ldl", "waist", "height") if getattr(inputs, k) is not None}
+    o = {k: getattr(inputs, k) for k in ("sbp", "dbp", "tc", "hdl", "ldl") if getattr(inputs, k) is not None}
     o.update(smoking=inputs.smoking, arcus_senilis=inputs.arcus_senilis, **q)
     if out["measurements"] and out["measurements"]["avr"]["value"] is not None:
         o["vessel_avr"] = round(out["measurements"]["avr"]["value"], 3)

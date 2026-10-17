@@ -11,8 +11,6 @@ const NUMBERS: NumField[] = [
   { key: 'tc', label: 'Total cholesterol', unit: 'mg/dL', min: 50, max: 500 },
   { key: 'hdl', label: 'HDL cholesterol', unit: 'mg/dL', min: 10, max: 200 },
   { key: 'ldl', label: 'LDL cholesterol (optional)', unit: 'mg/dL', min: 10, max: 400 },
-  { key: 'waist', label: 'Waist circumference', unit: 'cm', min: 40, max: 200 },
-  { key: 'height', label: 'Height', unit: 'cm', min: 100, max: 230 },
 ]
 // Equation inputs: explicit yes/no, never defaulted, so a forgotten answer cannot silently lower the risk.
 const ANSWERS: [string, string][] = [

@@ -13,7 +13,7 @@ router = APIRouter(tags=["patients"])
 CLINICIANS = deps.role("gp", "reviewer")
 PURPOSES = {"care": "care", "model-improvement": "model_improvement"}
 OBS_KEYS = {code: k for k, (_, code, _) in m.OBS_CODES.items()}
-INPUT_KEYS = ("sbp", "dbp", "tc", "hdl", "ldl", "smoking", "waist", "height", "arcus_senilis")
+INPUT_KEYS = ("sbp", "dbp", "tc", "hdl", "ldl", "smoking", "arcus_senilis")
 
 
 def summary(p: dict) -> dict:

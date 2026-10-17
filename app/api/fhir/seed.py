@@ -30,8 +30,7 @@ def _profile(i, rnd):
     return age, dict(
         sbp=[118, 136, 158][tier] + rnd.randint(-4, 4), dbp=[76, 86, 98][tier] + rnd.randint(-3, 3),
         tc=[170, 210, 260][tier] + rnd.randint(-8, 8), hdl=[60, 48, 36][tier] + rnd.randint(-3, 3),
-        ldl=[100, 135, 175][tier] + rnd.randint(-8, 8), smoking=["never", "former", "current"][tier],
-        waist=[78, 90, 104][tier] + rnd.randint(-3, 3), height=158 + rnd.randint(0, 20))
+        ldl=[100, 135, 175][tier] + rnd.randint(-8, 8), smoking=["never", "former", "current"][tier])
 
 
 def _cond(entries, key, resource, fullurl=None):

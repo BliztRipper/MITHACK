@@ -25,8 +25,6 @@ OBS_CODES = {
     "arcus_senilis": (LOCAL, "arcus-senilis", "Arcus senilis"),
     "crao_probability": (LOCAL, "crao-probability", "CRAO probability (AI)"),
     "quality_score": (LOCAL, "image-quality-score", "Image quality score"),
-    "waist": (LOINC, "8280-0", "Waist circumference"),
-    "height": (LOINC, "8302-2", "Body height"),
     "vessel_avr": (LOCAL, "vessel-avr", "Arteriole-venule ratio"),
     "vessel_tortuosity": (LOCAL, "vessel-tortuosity", "Vessel tortuosity"),
     # Emergency-mode intake answers (shown to the reviewer with the image)
@@ -34,7 +32,7 @@ OBS_CODES = {
     "sudden_painless_monocular": (LOCAL, "sudden-painless-monocular-loss", "Sudden painless one-eye vision loss"),
     "gca_symptoms": (LOCAL, "gca-symptoms", "Giant cell arteritis symptoms"),
 }
-UNITS = {"onset_hours": "h", "sbp": "mm[Hg]", "dbp": "mm[Hg]", "tc": "mg/dL", "hdl": "mg/dL", "ldl": "mg/dL", "waist": "cm", "height": "cm"}
+UNITS = {"onset_hours": "h", "sbp": "mm[Hg]", "dbp": "mm[Hg]", "tc": "mg/dL", "hdl": "mg/dL", "ldl": "mg/dL"}
 
 
 def urn():
@@ -120,7 +118,7 @@ def condition(patient_ref, text, code):
 
 
 def risk_assessment(patient_ref, encounter_ref, method, risk_pct, device_ref):
-    """method names the equation, e.g. 'Thai CV Risk (lab)' or 'PCE (white)'."""
+    """method names the equation, e.g. 'PCE (white)'."""
     return {"resourceType": "RiskAssessment", "status": "final", "method": {"text": method},
             "subject": ref(patient_ref), "encounter": ref(encounter_ref), "performer": ref(device_ref),
             "prediction": [{"outcome": {"text": "10-year CVD risk"}, "probabilityDecimal": risk_pct, "whenRange": {"high": {"value": 10, "unit": "years"}}}]}

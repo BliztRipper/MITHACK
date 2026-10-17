@@ -37,8 +37,6 @@ def test_patient_summaries_exist_for_every_triage_level_and_pce_band():
         assert f"summary.emergency.{lvl}" in en
     for b in risk.PCE_BANDS:
         assert f"summary.screening.pce.{b}" in en
-    for b in risk.THAI_BANDS:
-        assert f"summary.screening.thai.{b}" in en
 
 
 def test_every_threshold_has_a_status_and_triage_ones_are_placeholders():

@@ -3,7 +3,7 @@ import { api } from '../api'
 import { ErrorText, PageTitle, useLoad } from '../components/ui'
 import modelCard from '../../../../docs/model-card.md?raw'
 
-const UNITS: Record<string, string> = { hyperacute_h: 'h', acute_h: 'h', pce_band_edges: '%', thai_band_edges: '%', ldl_statin_benefit: 'mg/dL',
+const UNITS: Record<string, string> = { hyperacute_h: 'h', acute_h: 'h', pce_band_edges: '%', ldl_statin_benefit: 'mg/dL',
   arcus_prompt_age: 'years', window: 'cases', calibration_min: 'cases', p_high: 'probability', p_low: 'probability', quality_min: 'score' }
 
 const fmt = (v: unknown): string =>
@@ -60,7 +60,7 @@ export default function About(): ReactNode {
         <ul className="list-disc pl-6">
           <li>The CRAO model was trained on established (not hyperacute) artery occlusions. An early CRAO can look normal on a fundus photo, so a normal-looking photo with a fitting story is escalated.</li>
           <li>The heatmap shows model attention, not lesions.</li>
-          <li>PCE was not derived in Asian populations and may overestimate risk. Thai CV Risk is the intended headline.</li>
+          <li>PCE was not derived in Asian populations and may overestimate risk.</li>
           <li>Thresholds marked placeholder are not clinically validated; the artery-to-vein reference interval is a literature placeholder.</li>
           <li>Every result is preliminary until a clinician signs it. The tool does not diagnose.</li>
         </ul>

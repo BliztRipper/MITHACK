@@ -24,8 +24,6 @@ class Inputs:
     diabetes: bool = False
     treated_htn: bool = False
     african_american: bool = False
-    waist: float | None = None    # cm
-    height: float | None = None   # cm
     ascvd: bool = False
     arcus_senilis: bool = False
 
@@ -77,15 +75,10 @@ def _band(x: float, edges: list[float], names: tuple[str, ...]) -> str:
 
 
 PCE_BANDS = ("low", "borderline", "intermediate", "high")
-THAI_BANDS = ("low", "moderate", "high", "very_high")
 
 
 def pce_band(r: float) -> str:
     return _band(r, R["pce_band_edges"]["value"], PCE_BANDS)
-
-
-def thai_band(r: float) -> str:
-    return _band(r, R["thai_band_edges"]["value"], THAI_BANDS)
 
 
 def suggestion(scale: str, band: str) -> str:
