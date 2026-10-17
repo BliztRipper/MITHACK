@@ -48,7 +48,7 @@
 
 ## 6. Web app
 
-- [ ] 6.1 Scaffold `app/web` (React + Vite + TS + Tailwind) with an API client, login page and role-aware navigation; verify login as each demo user shows the right menu
+- [x] 6.1 Scaffold `app/web` (React + Vite + TS + Tailwind) with an API client, login page and role-aware navigation; verify login as each demo user shows the right menu
 - [ ] 6.2 Build Patients search and Patient detail (prior cases, consent status, withdraw consent); verify a seeded patient with prior screening shows the prior case
 - [ ] 6.3 Build the New case wizard: mode → consent gate/form → mode-specific inputs (pre-filled with dates, range validation) → upload with quality result and retake reason; verify by manual run that a poor image shows the retake reason and that blocked consent shows the form
 - [ ] 6.4 Build the Result view: stacked layers (vessels, A/V, disc, heatmap) with toggles, opacity slider and side-by-side compare, band gauge with model version, explanation, "model attention, not lesions" label, and the triage card or risk panel (Thai CV + PCE, caveat, enhancers, suggestions); verify against a cached RAO image and a cached screening image

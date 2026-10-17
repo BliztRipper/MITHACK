@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* Tokens: docs/design-direction.md §2 (verbatim) */
+@theme {
+  --color-paper: #f6f9fb;
+  --color-surface: #fcfdfe;
+  --color-sunken: #edf0f4;
+  --color-rule: #d4d8dd;
+  --color-rule-strong: #6e757d;
+  --color-muted: #515961;
+  --color-ink: #141b24;
+
+  --color-stage: #0e1216;
+  --color-stage-ink: #e5e8ec;
+  --color-stage-muted: #a6abb1;
+
+  --color-accent: #155aa7;
+  --color-accent-tint: #e2eefe;
+  --color-focus: #005ccc;
+  --color-focus-dark: #67d2ff;
+
+  --color-triage-stroke: #a00f15;
+  --color-triage-stroke-fg: #941617;
+  --color-triage-stroke-tint: #ffeae7;
+  --color-triage-urgent: #8f4700;
+  --color-triage-urgent-fg: #773a00;
+  --color-triage-urgent-tint: #ffecd4;
+  --color-triage-escalate: #5d4099;
+  --color-triage-escalate-fg: #573d8e;
+  --color-triage-escalate-tint: #f1edff;
+  --color-triage-retake: #414f5d;
+  --color-triage-retake-tint: #ebeff4;
+  --color-triage-routine: #185d49;
+  --color-triage-routine-tint: #e3f5ee;
+
+  --color-band-unlikely: #414f5d;
+  --color-band-uncertain: #7b5100;
+  --color-band-likely: #a00f15;
+
+  --color-risk-1: #eedacb;
+  --color-risk-2: #e0b491;
+  --color-risk-3: #c16d45;
+  --color-risk-4: #97271b;
+
+  --color-status-preliminary: #704500;
+  --color-status-preliminary-tint: #fdf1d0;
+  --color-status-preliminary-border: #9a6a17;
+  --color-status-final: #141b24;
+
+  --color-system-warn-tint: #fbe9c6;
+  --color-system-ok: #185d49;
+
+  --color-overlay-vessel: #eef3f8;
+  --color-overlay-artery: #ffd23f;
+  --color-overlay-vein: #5aa0ff;
+  --color-overlay-disc: #ffffff;
+  --color-overlay-heatmap: #22d3ee;
+
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Thai", system-ui, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-thai: "IBM Plex Sans Thai Looped", "IBM Plex Sans Thai", "Leelawadee UI", Thonburi, "Noto Sans Thai", sans-serif;
+
+  --text-xs: 0.75rem;   --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;    --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.375rem;  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.75rem;  --text-2xl--line-height: 2.125rem;
+  --text-3xl: 2.25rem;  --text-3xl--line-height: 2.5rem;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+
+  --shadow-pop: 0 1px 2px rgb(14 18 22 / 0.08), 0 8px 24px rgb(14 18 22 / 0.14);
+  --shadow-halo: drop-shadow(0 0 0.75px rgb(0 0 0 / 0.9)) drop-shadow(0 0 0.75px rgb(0 0 0 / 0.9));
+}
+
+body { @apply bg-paper text-ink font-sans; }
+*:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.stage *:focus-visible { outline-color: var(--color-focus-dark); }
+.font-thai { line-height: 1.7; }
+dialog::backdrop { background: rgb(14 18 22 / 0.45); }
+
+/* Uncertain band: a hatch pattern carries meaning in greyscale and print (§3.9). */
+.hatch {
+  background: repeating-linear-gradient(45deg, var(--color-band-uncertain) 0 2px, #f3e3c4 2px 6px);
+}
+/* Overlay recolouring without canvas (§3.8): PNG alpha = shape, token = colour. */
+.mask { -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center; filter: var(--shadow-halo); }
+
+@utility btn { @apply inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 font-medium whitespace-nowrap;
+  &:disabled { @apply cursor-not-allowed border border-rule bg-sunken text-muted; } }
+@utility btn-primary { @apply btn bg-accent text-paper hover:bg-[#114b8c] active:bg-[#0e3f76]; }
+@utility btn-secondary { @apply btn border border-rule-strong bg-surface text-ink hover:bg-sunken; }
+@utility input { @apply h-10 w-full rounded-md border border-rule-strong bg-surface px-3 text-base text-ink disabled:bg-sunken disabled:text-muted; }
+@utility card { @apply rounded-lg border border-rule bg-surface p-4; }
+@utility chip { @apply inline-flex items-center gap-1 rounded-sm px-1.5 text-xs; }
+@utility chip-placeholder { @apply chip border border-dashed border-rule-strong text-muted; }
+@utility check { @apply size-5 shrink-0 accent-accent; }
+
+/* Print report (§3.17): A4, black-and-white safe, every section shown. */
+@page { size: A4; margin: 14mm 14mm 16mm; }
+@media print {
+  body { background: #fff; color: #000; font-size: 10.5pt; line-height: 1.4; }
+  .print-plain, .print-plain * { background: transparent !important; color: #000 !important; box-shadow: none !important; }
+  section, .card { break-inside: avoid; }
+  .stage { print-color-adjust: exact; -webkit-print-color-adjust: exact; width: 90mm; padding: 0; }
+  .lvl-STROKE_PATHWAY { border: 3pt solid #000 !important; }
+  .lvl-URGENT { border: 2pt solid #000 !important; }
+  .lvl-ESCALATE { border: 1.5pt solid #000 !important; }
+  .lvl-RETAKE { border: 1pt dashed #000 !important; }
+  .lvl-ROUTINE { border: 1pt solid #000 !important; }
+  .gauge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
