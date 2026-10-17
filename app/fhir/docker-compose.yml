@@ -1,0 +1,7 @@
+# Adapted from intersystems-community/FHIR-AI-Hackathon-Kit (MIT), see README.md.
+services:
+  iris:
+    container_name: iris-fhir
+    image: intersystems/irishealth-community:latest-cd
+    ports:
+      - "127.0.0.1:32783:52773"  # web gateway; FHIR only on localhost (D10)

@@ -5,7 +5,7 @@
 - [ ] 1.1 Request Hugging Face access to `YukunZhou/RETFound_mae_natureCFP` and record the request date in `docs/model-card.md`; verify the request shows as pending or granted on the model page
 - [x] 1.2 Create the `app/{api,ml,web,fhir}` and `docs/` layout from design D1, with a Python 3.11 venv and `app/api/requirements.txt` (fastapi, uvicorn, torch 2.3.1, torchvision, timm, opencv-python-headless, numpy, httpx, cryptography, bcrypt, itsdangerous, pyyaml, pytorch-grad-cam, pytest); verify `python -c "import torch; print(torch.backends.mps.is_available())"` prints True
 - [ ] 1.3 Add AutoMorph as a git submodule under `app/api/vision/automorph/`, download its weights, and run it on 3 sample fundus images on MPS; verify masks and the features CSV are produced and record per-image latency in `docs/model-card.md` (decides full pipeline vs M2-only per design D5)
-- [ ] 1.4 Adapt the InterSystems kit's IRIS for Health Docker setup into `app/fhir/docker-compose.yml` (bound to 127.0.0.1, MIT attribution in `app/fhir/README.md`); verify `curl http://localhost:32783/csp/healthshare/demo/fhir/r4/metadata` returns a CapabilityStatement
+- [x] 1.4 Adapt the InterSystems kit's IRIS for Health Docker setup into `app/fhir/docker-compose.yml` (bound to 127.0.0.1, MIT attribution in `app/fhir/README.md`); verify `curl http://localhost:32783/csp/healthshare/demo/fhir/r4/metadata` returns a CapabilityStatement
 - [ ] 1.5 Download Mendeley RAO v2 and RFMiD 1.0 into `data/` (gitignored) and arrange `data/{train,val}/{crao,other}` per the prototype README's leakage rules (RFMiD RAO dropped from "other", web-crawled images in a separate split); verify the class counts printed by a short count script match the README
 
 ## 2. Clinical rules (pure Python, no I/O)

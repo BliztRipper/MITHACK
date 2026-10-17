@@ -1,0 +1,9 @@
+; Adapted from FHIR-AI-Hackathon-Kit/docker-iris-fhir/fhir_server_setup.py (MIT).
+; Run: docker exec -i iris-fhir iris session IRIS -U %SYS < setup.script
+set ns="DEMO",ep="/csp/healthshare/demo/fhir/r4"
+do ##class(Security.Users).UnExpireUserPasswords("*")
+zn "HSLIB"
+if '##class(%SYS.Namespace).Exists(ns) do ##class(HS.Util.Installer.Foundation).Install(ns)
+zn ns
+if ##class(HS.FHIRServer.ServiceInstance).ExistsByUrl(ep) { write "FHIR server already exists",! } else { do ##class(HS.FHIRServer.Installer).InstallNamespace() do ##class(HS.FHIRServer.Installer).InstallInstance(ep,"HS.FHIRServer.Storage.Json.InteractionsStrategy","hl7.fhir.r4.core@4.0.1") write "FHIR server installed",! }
+halt
