@@ -19,3 +19,7 @@ Changes: stock image instead of a Dockerfile, port 32783 on 127.0.0.1, namespace
 `/csp/healthshare/demo/fhir/r4`, setup as an ObjectScript script run via `iris session`.
 
 MIT License text: https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit/blob/main/LICENSE
+
+## API client login
+The API client (`app/api/fhir/client.py`) reads the IRIS login from env `FHIR_USER` / `FHIR_PASS` and fails if unset
+(the stock container's default login is in the Hackathon Kit linked above). Optional: `FHIR_BASE`.
