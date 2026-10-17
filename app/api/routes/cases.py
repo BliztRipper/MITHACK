@@ -1,5 +1,6 @@
 """Cases: create (analysis + preliminary save) and encrypted image access."""
 import base64
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
@@ -9,6 +10,14 @@ from fhir.crypto import KeyDestroyed
 
 router = APIRouter(tags=["cases"])
 CLINICIANS = deps.role("gp", "reviewer")  # admins never open images (spec: admin cannot view images)
+log = logging.getLogger("api")
+
+
+def analysis_error(case_id: str, e: Exception) -> HTTPException:
+    """Log case id and error only (no image bytes, no names); the client gets a generic 5xx, never str(e),
+    which can hold server paths, and never "retake": this is our failure, not the photo's."""
+    log.error("analysis failed case=%s error=%s: %s", case_id, type(e).__name__, e)
+    return HTTPException(500, "analysis service error")
 
 
 @router.get("/media/{mid}")

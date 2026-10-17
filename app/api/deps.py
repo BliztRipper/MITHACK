@@ -12,6 +12,7 @@ import yaml
 from fastapi import Depends, HTTPException, Request
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
+from fhir import mapping as m
 from fhir.client import FhirClient
 from fhir.crypto import KeyStore, master_key_from_env
 from vision import crao_model
@@ -73,6 +74,13 @@ def role(*allowed: str):
 @functools.cache
 def fhir() -> FhirClient:
     return FhirClient()
+
+
+def practitioner(u: dict) -> str:
+    """The signed-in user's Practitioner reference (conditional create: one per username)."""
+    ident = f"{m.LOCAL}/user|{u['username']}"
+    r = fhir().create(m.practitioner(u["username"], u["name"], u["username"]), if_none_exist=f"identifier={ident}")
+    return f"Practitioner/{r['id']}"
 
 
 @functools.cache

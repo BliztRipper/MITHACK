@@ -35,9 +35,22 @@ def fhir():
     return c
 
 
+class Recorder:
+    """Stand-in record store: keeps created resources (audit events), refuses anything else."""
+    def __init__(self):
+        self.created = []
+
+    def create(self, r, if_none_exist=None):
+        self.created.append(r)
+        return {**r, "id": str(len(self.created))}
+
+    def __getattr__(self, name):
+        raise AssertionError(f"unexpected record-store call: {name}")
+
+
 @pytest.fixture
 def api(monkeypatch, tmp_path):
-    """TestClient with a throwaway key file. login(client, user) signs in."""
+    """TestClient with a throwaway key file and a Recorder store (api.store). login(client, user) signs in."""
     from fastapi.testclient import TestClient
 
     import deps
@@ -45,10 +58,52 @@ def api(monkeypatch, tmp_path):
     import main
     ks = KeyStore(os.urandom(32), tmp_path / "keys.json")
     monkeypatch.setattr(deps, "keys", lambda: ks)
-    return TestClient(main.app)
+    c = TestClient(main.app)
+    c.store = Recorder()
+    monkeypatch.setattr(deps, "fhir", lambda: c.store)
+    return c
+
+
+@pytest.fixture
+def live(api, fhir, monkeypatch):
+    """The api client wired to the real IRIS store."""
+    import deps
+    monkeypatch.setattr(deps, "fhir", lambda: fhir)
+    api.store = fhir
+    return api
 
 
 def login(client, user):
     r = client.post("/auth/login", json={"username": user, "password": TEST_PASSWORD})
     assert r.status_code == 200, r.text
     return r
+
+
+SUBJECT_TYPES = ("DiagnosticReport", "RiskAssessment", "Observation", "Condition", "Media", "Encounter")
+
+
+def purge(fhir, pid):
+    """Delete a test patient and everything that points at it (tests only: the API never deletes audit)."""
+    pref = f"Patient/{pid}"
+    for rep in fhir.search("DiagnosticReport", subject=pref):
+        for p in fhir.search("Provenance", target=f"DiagnosticReport/{rep['id']}"):
+            fhir.delete("Provenance", p["id"])
+    for t in SUBJECT_TYPES:
+        for r in fhir.search(t, subject=pref):
+            fhir.delete(t, r["id"])
+    for c in fhir.search("Consent", patient=pref):
+        fhir.delete("Consent", c["id"])
+    fhir.delete("Patient", pid)
+
+
+@pytest.fixture
+def patient(fhir, request):
+    """A throwaway patient (no consent) and cleanup of it plus the AuditEvents the test wrote."""
+    from fhir import mapping as m
+    start = m.now()
+    pid = fhir.create(m.patient(f"TEST-API-{request.node.name[:20]}", "Testapi", "Somsri", "female", "1960-01-01"))["id"]
+    yield pid
+    purge(fhir, pid)
+    for a in fhir.search("AuditEvent", date=f"ge{start}"):
+        if a["agent"][0]["who"].get("display") in ("gp1", "gp2", "oph1", "admin1", "anonymous"):
+            fhir.delete("AuditEvent", a["id"])

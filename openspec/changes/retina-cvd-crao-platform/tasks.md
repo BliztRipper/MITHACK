@@ -39,7 +39,7 @@
 ## 5. API
 
 - [x] 5.1 Implement login/logout with `users.yaml` (bcrypt), signed HTTP-only session cookie with 30-minute sliding expiry, and role dependencies (gp, reviewer, admin); verify tests for 401 without session, expiry after idle, and 403 for admin image access
-- [ ] 5.2 Implement the audit middleware writing one AuditEvent per patient-data request with no image bytes or names in logs; verify a test that opening an image creates a read AuditEvent and that an analysis exception log line contains only case id and error
+- [x] 5.2 Implement the audit middleware writing one AuditEvent per patient-data request with no image bytes or names in logs; verify a test that opening an image creates a read AuditEvent and that an analysis exception log line contains only case id and error
 - [ ] 5.3 Implement patient search/detail and consent endpoints (record, check, withdraw); verify tests that upload is refused without consent and allowed after consent
 - [ ] 5.4 Implement `POST /cases` (mode + inputs + image → quality gate → segmentation → Screening: measurements + risk, or Emergency: probability + heatmap + triage → explanation) saving a preliminary case as one transaction, with demo-cache lookup by SHA-256 (design D11); verify an end-to-end API test for each mode and for a RETAKE image returns the spec'd fields
 - [ ] 5.5 Implement review endpoints: queue (Emergency first, ESCALATE visible to reviewers), confirm, override with required reason, amend (status amended, history kept), Provenance on sign; verify tests for each clinician-review and report-status scenario

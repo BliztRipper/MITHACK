@@ -56,10 +56,9 @@ def test_logout_clears_cookie(api):
     assert api.get("/auth/me").status_code == 401
 
 
-def test_admin_cannot_open_an_image(api, monkeypatch):
-    monkeypatch.setattr(deps, "fhir", lambda: pytest.fail("admin must be refused before any record access"))
+def test_admin_cannot_open_an_image(api):
     login(api, "admin1")
-    assert api.get("/media/1").status_code == 403
+    assert api.get("/media/1").status_code == 403  # the Recorder store fails on any read: refused before access
 
 
 def test_missing_session_secret_refuses_to_start(monkeypatch):
