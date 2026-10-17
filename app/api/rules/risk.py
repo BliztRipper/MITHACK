@@ -68,3 +68,61 @@ def pce(i: Inputs) -> Result:
          float(i.smoker), la * i.smoker, float(i.diabetes)]
     risk = 100 * (1 - s0 ** math.exp(sum(a * b for a, b in zip(c, x)) - mean))
     return Result(label, risk, notes=["risk.caveat.pce_not_asian"])
+
+
+def _band(x: float, edges: list[float], names: tuple[str, ...]) -> str:
+    return names[sum(x >= e for e in edges)]
+
+
+def pce_band(r: float) -> str:
+    return _band(r, R["pce_band_edges"]["value"], ("low", "borderline", "intermediate", "high"))
+
+
+def thai_band(r: float) -> str:
+    return _band(r, R["thai_band_edges"]["value"], ("low", "moderate", "high", "very_high"))
+
+
+def suggestion(scale: str, band: str) -> str:
+    """Template key of the suggestion text; show it with "risk.discussion_label"."""
+    return f"risk.suggestion.{scale}.{band}"
+
+
+def bypass(i: Inputs) -> str | None:
+    """Statin-benefit groups: no primary-prevention number may be shown as the basis for treatment."""
+    if i.ascvd:
+        return "risk.bypass.ascvd"
+    if i.ldl is not None and i.ldl >= R["ldl_statin_benefit"]["value"]:
+        return "risk.bypass.ldl190"
+    return None
+
+
+def htn_stage1(sbp: float, dbp: float | None, risk_pct: float) -> str | None:
+    """ACC/AHA stage 1: SBP 130-139 or DBP 80-89, with neither in the stage 2 range."""
+    if sbp >= 140 or (dbp is not None and dbp >= 90):
+        return None
+    if 130 <= sbp or (dbp is not None and dbp >= 80):
+        return "risk.htn_stage1.ge10" if risk_pct >= 10 else "risk.htn_stage1.lt10"
+    return None
+
+
+@dataclass
+class Enhancers:
+    keys: list[str]               # retinal enhancers that apply (template keys)
+    clinical: list[str]           # clinician-entered, echoed as written
+    not_assessed: bool            # retinal measurement unavailable
+    note: str | None = None       # template key; enhancers never change the risk number
+
+
+def enhancers(pce_risk: float | None, avr_outside: bool | None, clinical: list[str] | tuple = ()) -> Enhancers:
+    keys = ["risk.enhancer.retinal_arteriolar_narrowing"] if avr_outside else []
+    e = Enhancers(keys, list(clinical), avr_outside is None)
+    borderline = pce_risk is not None and pce_band(pce_risk) == "borderline"
+    if borderline and (keys or e.clinical):
+        e.note = "risk.enhancer_note.borderline"
+    return e
+
+
+def arcus_prompt(age: float, recorded: bool) -> str | None:
+    if not recorded:
+        return None
+    return "risk.arcus.young" if age < R["arcus_prompt_age"]["value"] else "risk.arcus.observation"

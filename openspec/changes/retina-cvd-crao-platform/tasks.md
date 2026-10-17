@@ -15,8 +15,8 @@
 - [ ] 2.3 Generate `tests/fixtures/thai_cv_oracle.json` (20 input/expected rows) by running the Ramathibodi `formular.js` in Node, recording source URL and fetch date in the fixture; verify the file holds 20 rows covering all three variants
 - [ ] 2.4 Implement `rules/risk.py` `thai_cv()` (TC variant, else waist-to-height, age 30–70 validity) and verify every oracle row matches within 0.1 percentage point in `tests/test_risk.py`
 - [x] 2.5 Implement `pce()` with Goff 2013 coefficients, input ranges and the population caveat; verify the four published ACC/AHA worked examples match within 0.1 percentage point and out-of-range inputs return "not valid"
-- [ ] 2.6 Implement risk bands, management suggestion text, stage 1 hypertension labelling, statin-benefit-group bypass (known ASCVD, LDL ≥190), risk enhancers (AVR flag, unchanged risk number) and the arcus senilis prompt; verify one test per cvd-risk-assessment scenario passes
-- [ ] 2.7 Create `rules/templates/en.json` and `th.json` (explanation sentences keyed by mode/band/region, limitation sentences, patient summaries) and document all thresholds with "placeholder" status in `app/api/config.yaml`; verify a test loads both templates and finds every key used by the rules
+- [x] 2.6 Implement risk bands, management suggestion text, stage 1 hypertension labelling, statin-benefit-group bypass (known ASCVD, LDL ≥190), risk enhancers (AVR flag, unchanged risk number) and the arcus senilis prompt; verify one test per cvd-risk-assessment scenario passes
+- [x] 2.7 Create `rules/templates/en.json` and `th.json` (explanation sentences keyed by mode/band/region, limitation sentences, patient summaries) and document all thresholds with "placeholder" status in `app/api/config.yaml`; verify a test loads both templates and finds every key used by the rules
 
 ## 3. FHIR record store and data protection
 
