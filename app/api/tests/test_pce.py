@@ -1,7 +1,8 @@
 """PCE reference cases: Goff DC Jr et al., 2013 ACC/AHA Guideline on the Assessment of Cardiovascular
 Risk, Circulation 2014;129(suppl 2):S49-S73, online Supplement worked examples
 (age 55, TC 213, HDL 50, SBP 120 untreated, non-smoker, no diabetes).
-Published values: white woman 2.1%, African-American woman 3.0%, white man 5.3%, African-American man 6.1%.
+Published values (FROM MEMORY, UNVERIFIED against Goff 2013; the code matching them independently is corroboration only):
+white woman 2.1%, African-American woman 3.0%, white man 5.3%, African-American man 6.1%.
 """
 import pytest
 
