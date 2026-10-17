@@ -24,3 +24,4 @@ data/
 .keys/
 .harness-mem/
 .claude/memory/session-log.md
+.serena/
