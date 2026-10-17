@@ -12,3 +12,6 @@ itsdangerous
 pyyaml
 grad-cam  # module name: pytorch_grad_cam
 pytest
+-r vision/automorph/requirement.txt  # AutoMorph (D5)
+efficientnet_pytorch==0.7.1
+setuptools<81  # AutoMorph M2 disc/cup needs pkg_resources

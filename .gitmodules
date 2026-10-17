@@ -1,0 +1,3 @@
+[submodule "app/api/vision/automorph"]
+	path = app/api/vision/automorph
+	url = https://github.com/rmaphoh/AutoMorph
