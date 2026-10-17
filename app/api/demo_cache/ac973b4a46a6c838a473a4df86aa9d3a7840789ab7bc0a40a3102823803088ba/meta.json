@@ -1,0 +1,25 @@
+{
+ "model_version": null,
+ "segmentation": {
+  "disc_centre": [
+   1566.0708187134503,
+   689.0503801169591
+  ],
+  "disc_diameter": 209.0,
+  "crae": 118.55543220737894,
+  "crve": 215.40228513724705,
+  "avr": 0.55039078221403
+ },
+ "p": null,
+ "quality": {
+  "accept": true,
+  "score": 0.9953536987304688,
+  "reasons": [],
+  "parts": {
+   "fov": 0.9953536987304688,
+   "exposure": 0.9989330942785855,
+   "sharpness": 1.0,
+   "m1_gradable": true
+  }
+ }
+}

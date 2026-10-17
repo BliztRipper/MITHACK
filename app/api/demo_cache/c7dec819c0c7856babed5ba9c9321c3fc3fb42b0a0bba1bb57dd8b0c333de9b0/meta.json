@@ -1,0 +1,18 @@
+{
+ "model_version": null,
+ "segmentation": null,
+ "p": null,
+ "quality": {
+  "accept": false,
+  "score": 0.030301663641387422,
+  "reasons": [
+   "underexposed: dilate pupil and increase flash",
+   "blurred: refocus and hold the camera steady"
+  ],
+  "parts": {
+   "fov": 0.988128662109375,
+   "exposure": 0.30527499029233074,
+   "sharpness": 0.030301663641387422
+  }
+ }
+}
