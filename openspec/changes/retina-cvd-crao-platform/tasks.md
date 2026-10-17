@@ -52,7 +52,7 @@
 - [x] 6.2 Build Patients search and Patient detail (prior cases, consent status, withdraw consent); verify a seeded patient with prior screening shows the prior case
 - [x] 6.3 Build the New case wizard: mode → consent gate/form → mode-specific inputs (pre-filled with dates, range validation) → upload with quality result and retake reason; verify by manual run that a poor image shows the retake reason and that blocked consent shows the form
 - [x] 6.4 Build the Result view: stacked layers (vessels, A/V, disc, heatmap) with toggles, opacity slider and side-by-side compare, band gauge with model version, explanation, "model attention, not lesions" label, and the triage card or risk panel (Thai CV + PCE, caveat, enhancers, suggestions); verify against a cached RAO image and a cached screening image
-- [ ] 6.5 Build the Sign/Override dialog, print-stylesheet report (`window.print()`), and Thai/English patient summary; verify an override without a reason is blocked and the printed page shows every report section
+- [x] 6.5 Build the Sign/Override dialog, print-stylesheet report (`window.print()`), and Thai/English patient summary; verify an override without a reason is blocked and the printed page shows every report section
 - [ ] 6.6 Build the Review queue, Monitoring dashboard (metrics, calibration panel, alerts with acknowledge, incidents) and About panel (thresholds with placeholder status, model card link); verify the dashboard shows "insufficient data" with the seeded case count
 
 ## 7. Governance documents
