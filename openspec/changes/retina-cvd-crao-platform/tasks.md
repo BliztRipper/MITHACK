@@ -28,7 +28,7 @@
 
 ## 4. Vision pipeline and model
 
-- [ ] 4.1 Split `vision.py` into `vision/quality.py` and `vision/preprocess.py`, add EXIF/GPS stripping, file type and 20 MB checks, a non-fundus check (field-of-view circle) and named retake reasons; combine with AutoMorph M1 grade (both must pass); verify tests with a dark, a blurred, a face and a good image give the expected accept/reason
+- [x] 4.1 Split `vision.py` into `vision/quality.py` and `vision/preprocess.py`, add EXIF/GPS stripping, file type and 20 MB checks, a non-fundus check (field-of-view circle) and named retake reasons; combine with AutoMorph M1 grade (both must pass); verify tests with a dark, a blurred, a face and a good image give the expected accept/reason
 - [ ] 4.2 Implement `vision/segment.py` wrapping AutoMorph (per-request temp dir) to return vessel, A/V and disc RGBA overlays, disc centre/diameter, CRAE, CRVE and AVR; verify on a sample image that overlays align with the image size and AVR is a number in (0.3, 1.5)
 - [ ] 4.3 Move `train.py` to `app/ml/`, add the RETFound ViT-L path (last-block fine-tune, layer-wise LR decay) beside the EfficientNet-B0 path, and 5-fold CV reporting with 95% CIs; verify a run produces `model.pt` and a metrics JSON (use EfficientNet-B0 if RETFound access is still pending)
 - [ ] 4.4 Implement `ml/calibrate.py` (temperature scaling on the validation fold; P_LOW for sensitivity ≥0.95, P_HIGH for specificity ≥0.90) writing temperature, thresholds and calibration date into the checkpoint; verify validation-set ECE before/after is printed and the checkpoint holds the fields
