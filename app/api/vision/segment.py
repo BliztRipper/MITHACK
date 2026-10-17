@@ -19,7 +19,7 @@ import numpy as np
 
 AUTOMORPH = Path(__file__).resolve().parent / "automorph"
 NAME = "img.png"
-COLOURS = {"vessel": (255, 220, 0), "artery": (230, 40, 40), "vein": (40, 90, 230), "disc": (0, 230, 120)}
+COLOURS = {"vessel": (255, 220, 0), "artery": (255, 210, 63), "vein": (90, 160, 255), "disc": (0, 230, 120)}
 
 
 @dataclass
