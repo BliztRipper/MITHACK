@@ -30,7 +30,7 @@ const ROUTES: Route[] = [
 
 function Banner(): ReactNode {
   return (
-    <div role="status" aria-live="polite" className="flex items-center gap-2 border-b-2 border-triage-urgent bg-system-warn-tint px-4 py-2 font-medium text-ink print:hidden">
+    <div role="status" aria-live="polite" className="iris-in flex items-center gap-2 border-b-2 border-triage-urgent bg-system-warn-tint px-4 py-2 font-medium text-ink print:hidden">
       <DatabaseZap size={20} aria-hidden />
       Record store unavailable. Results still display, but nothing can be saved or signed until it is back.
     </div>

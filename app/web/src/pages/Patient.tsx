@@ -66,7 +66,7 @@ export default function Patient({ id }: { id: string }): ReactNode {
               <th className="py-2 pr-4 font-medium">Date</th><th className="pr-4 font-medium">Mode</th><th className="pr-4 font-medium">Result</th><th className="font-medium">Status</th></tr></thead>
             <tbody>
               {cases.map((c) => (
-                <tr key={c.report_id} className="h-12 border-b border-rule hover:bg-sunken">
+                <tr key={c.report_id} className="h-12 border-b border-rule hover:bg-sunken row-hover">
                   <td className="pr-4 tabular-nums"><Link href={`/cases/${c.report_id}`} className="text-accent hover:underline">{fmtDate(c.date)}</Link></td>
                   <td className="pr-4 capitalize">{c.mode}</td>
                   <td className="pr-4">{c.result ?? '—'}</td>

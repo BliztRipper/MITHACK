@@ -23,7 +23,7 @@ export default function Queue(): ReactNode {
                 const em = c.mode === 'emergency'
                 const late = em && (c.waiting_minutes ?? 0) > 30
                 return (
-                  <tr key={c.report_id} className="h-12 border-b border-rule hover:bg-sunken">
+                  <tr key={c.report_id} className="h-12 border-b border-rule hover:bg-sunken row-hover">
                     <td className="pr-4"><LevelBadge level={c.level} />
                       {user.role === 'reviewer' && c.level === 'ESCALATE' && <span className="ml-2 text-sm text-triage-escalate-fg">escalated to you</span>}</td>
                     <td className={`pr-4 ${em ? 'font-semibold' : ''}`}>{em ? 'EMERGENCY' : 'Screening'}</td>

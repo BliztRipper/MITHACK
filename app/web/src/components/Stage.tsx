@@ -44,13 +44,13 @@ function Picture({ fundus, overlays, seg, layers, bare, label }: Omit<Props, 'se
         <img src={fundus} alt={label} className="absolute inset-0 h-full w-full object-contain"
           onLoad={(e) => setSize([e.currentTarget.naturalWidth, e.currentTarget.naturalHeight])} />
         {!bare && layers.vessels === 'all' && overlays.vessel &&
-          <div className="mask absolute inset-0" style={mask(overlays.vessel, 'var(--color-overlay-vessel)', o)} aria-hidden />}
+          <div className="mask layer-in absolute inset-0" style={mask(overlays.vessel, 'var(--color-overlay-vessel)', o)} aria-hidden />}
         {!bare && layers.vessels === 'av' && overlays.artery_vein &&
-          <img src={overlays.artery_vein} alt="" className="absolute inset-0 h-full w-full object-contain" style={{ opacity: o / 100, filter: 'var(--shadow-halo)' }} />}
+          <img src={overlays.artery_vein} alt="" className="layer-in absolute inset-0 h-full w-full object-contain" style={{ opacity: o / 100, filter: 'var(--shadow-halo)' }} />}
         {!bare && layers.heatmap && overlays.heatmap &&
-          <div className="mask absolute inset-0" style={mask(overlays.heatmap, 'var(--color-overlay-heatmap)', o)} aria-hidden />}
+          <div className="mask layer-in absolute inset-0" style={mask(overlays.heatmap, 'var(--color-overlay-heatmap)', o)} aria-hidden />}
         {!bare && layers.disc && seg?.disc_centre && seg.disc_diameter && size && (
-          <svg viewBox={`0 0 ${size[0]} ${size[1]}`} className="absolute inset-0 h-full w-full" style={{ opacity: o / 100, filter: 'var(--shadow-halo)' }} aria-hidden>
+          <svg viewBox={`0 0 ${size[0]} ${size[1]}`} className="layer-in absolute inset-0 h-full w-full" style={{ opacity: o / 100, filter: 'var(--shadow-halo)' }} aria-hidden>
             <circle cx={seg.disc_centre[0]} cy={seg.disc_centre[1]} r={seg.disc_diameter / 2} fill="none" stroke="var(--color-overlay-disc)"
               strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
             <text x={seg.disc_centre[0]} y={seg.disc_centre[1] - seg.disc_diameter / 2 - 8} textAnchor="middle" fill="var(--color-overlay-disc)"
@@ -94,7 +94,7 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
   return (
     <div className="stage bg-stage p-4 text-stage-ink">
       <div className={compare ? 'grid grid-cols-2 gap-4 print:block' : ''}>
-        {compare && <div className="print:hidden"><Picture fundus={fundus} overlays={overlays} seg={seg} layers={layers} bare label="Original (unaltered)" /></div>}
+        {compare && <div className="layer-in print:hidden"><Picture fundus={fundus} overlays={overlays} seg={seg} layers={layers} bare label="Original (unaltered)" /></div>}
         <Picture fundus={fundus} overlays={overlays} seg={seg} layers={layers} label={compare ? 'With layers' : 'Fundus photo with selected layers'} />
       </div>
       {layers.heatmap && overlays.heatmap && (

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Info, Pill } from 'lucide-react'
 import type { Crao, Triage } from '../api'
 import { LEVELS, Placeholder } from './ui'
@@ -27,8 +27,10 @@ export function Gauge({ crao }: { crao: Crao }): ReactNode {
       </div>
       {crao.band === 'uncertain' && <p>Not a positive or negative finding. Specialist review recommended.</p>}
       <div className="relative mt-4" role="img" aria-label={`Probability ${p.toFixed(2)} in the ${crao.band} band; thresholds ${crao.p_low} and ${crao.p_high}`}>
-        <div className="absolute -top-3 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-ink" style={{ left: `${p * 100}%` }} />
-        <div className="absolute -top-1 z-10 h-6 w-0.5 -translate-x-1/2 bg-ink" style={{ left: `${p * 100}%` }} />
+        <div className="marker-in absolute inset-x-0 top-0 h-0" style={{ '--p': p } as CSSProperties}>
+          <div className="absolute -top-3 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-ink" style={{ left: `${p * 100}%` }} />
+          <div className="absolute -top-1 z-10 h-6 w-0.5 -translate-x-1/2 bg-ink" style={{ left: `${p * 100}%` }} />
+        </div>
         <div className="flex h-4 w-full overflow-hidden border border-rule-strong">
           <div className="bg-sunken" style={{ width: `${lo}%` }} />
           <div className="hatch" style={{ width: `${hi - lo}%` }} />

@@ -43,7 +43,7 @@ export function PatientSearch({ hrefFor }: { hrefFor: (id: string) => string }):
           </thead>
           <tbody>
             {rows.map((p) => (
-              <tr key={p.id} className="h-12 cursor-pointer border-b border-rule hover:bg-sunken" onClick={(e) => { if (!(e.target as Element).closest('a')) navigate(hrefFor(p.id)) }}>
+              <tr key={p.id} className="h-12 cursor-pointer border-b border-rule hover:bg-sunken row-hover" onClick={(e) => { if (!(e.target as Element).closest('a')) navigate(hrefFor(p.id)) }}>
                 <td className="pr-4 font-mono">{p.hn ?? '—'}</td>
                 <td className="pr-4"><Link href={hrefFor(p.id)} className="text-accent underline-offset-2 hover:underline">{p.name || '(no name)'}</Link></td>
                 <td className="pr-4">{p.gender ?? '—'}</td>
