@@ -23,7 +23,7 @@
 - [x] 3.1 Implement `fhir/client.py` (httpx: read, search, transaction Bundle, history, delete) with a start-up health check; verify a test against the running IRIS round-trips a Patient and that a failed transaction leaves no resources behind
 - [x] 3.2 Implement `fhir/mapping.py` for Patient, Practitioner, Consent (care + model-improvement purposes), Encounter, Media, Observation (LOINC codes from the fhir-clinical-records spec), Condition, RiskAssessment, DiagnosticReport, Device, Provenance, AuditEvent and Flag; verify a test builds a full Screening and an Emergency case Bundle and IRIS accepts both
 - [x] 3.3 Implement `fhir/seed.py` loading 20 synthetic Thai patients (Thai names, ages 30–79, mixed risk, recent vitals/labs, 3 with prior signed screenings) using conditional create so it is idempotent; verify running it twice leaves exactly 20 patients
-- [ ] 3.4 Implement per-patient AES-256-GCM image encryption with master-key-wrapped data keys in `.keys/keys.json` (design D9); verify a test shows the stored Media payload is not a decodable image and decrypts correctly with the key
+- [x] 3.4 Implement per-patient AES-256-GCM image encryption with master-key-wrapped data keys in `.keys/keys.json` (design D9); verify a test shows the stored Media payload is not a decodable image and decrypts correctly with the key
 - [ ] 3.5 Implement consent withdrawal: delete Media, destroy the patient data key, strip image references from signed reports, set Consent inactive; verify a test shows images (including FHIR history versions) can no longer be decrypted while report text remains
 
 ## 4. Vision pipeline and model
