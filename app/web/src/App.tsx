@@ -3,6 +3,7 @@ import { DatabaseZap, LogOut, Menu } from 'lucide-react'
 import { api, events, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
 import Login from './pages/Login'
+import NewCase from './pages/NewCase'
 import Patient from './pages/Patient'
 import Patients from './pages/Patients'
 
@@ -14,7 +15,8 @@ const soon = (): ReactNode => <p>Coming in the next commit.</p>
 const ROUTES: Route[] = [
   { path: /^\/patients$/, roles: CLIN, nav: 'Patients', href: '/patients', page: () => <Patients /> },
   { path: /^\/patients\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Patient key={id} id={id} /> },
-  { path: /^\/new$/, roles: CLIN, nav: 'New case', href: '/new', page: soon },
+  { path: /^\/new$/, roles: CLIN, nav: 'New case', href: '/new', page: () => <NewCase /> },
+  { path: /^\/new\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <NewCase key={id} patientId={id} /> },
   { path: /^\/queue$/, roles: CLIN, nav: 'Review queue', href: '/queue', page: soon },
   { path: /^\/monitoring$/, roles: ['reviewer', 'admin'], nav: 'Monitoring', href: '/monitoring', page: soon },
   { path: /^\/audit$/, roles: ['admin'], nav: 'Audit', href: '/audit', page: soon },
