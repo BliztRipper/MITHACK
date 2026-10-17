@@ -193,7 +193,7 @@ def _close(fid: str, category: str, note: str, u: dict):
 
 
 @router.post("/monitoring/alerts/{fid}/acknowledge")
-def acknowledge(fid: str, body: Note, u: dict = Depends(ADMIN)):
+def acknowledge(fid: deps.FhirId, body: Note, u: dict = Depends(ADMIN)):
     return _close(fid, "drift", body.note, u)
 
 
@@ -214,7 +214,7 @@ def flag_incident(rid: deps.FhirId, body: Incident, request: Request, u: dict = 
 
 
 @router.post("/monitoring/incidents/{fid}/close")
-def close_incident(fid: str, body: Note, u: dict = Depends(ADMIN)):
+def close_incident(fid: deps.FhirId, body: Note, u: dict = Depends(ADMIN)):
     return _close(fid, "ai-incident", body.note, u)
 
 

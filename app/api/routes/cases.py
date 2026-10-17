@@ -184,8 +184,12 @@ def media(mid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
         med = deps.fhir().read("Media", mid)
     except FhirError as e:
         raise HTTPException(404 if e.status in (404, 410) else 502, "image not found") from None
-    reps = deps.fhir().search("DiagnosticReport", media=f"Media/{mid}")
-    if not any(deps.may_read(u, r) for r in reps):  # an image is readable only through a case you may read
+    # Fail closed: find the case through the Media's own encounter link, then keep only reports that really
+    # list this Media. An image is readable only through a case you may read.
+    enc = med.get("encounter", {}).get("reference")
+    reps = [r for r in (deps.fhir().search("DiagnosticReport", encounter=enc) if enc else [])
+            if f"Media/{mid}" in [x["link"]["reference"] for x in r.get("media", [])]]
+    if not any(deps.may_read(u, r) for r in reps):
         raise HTTPException(403, "not one of your cases or an escalated case")
     kid = next((e["valueString"] for x in med.get("extension", []) for e in x.get("extension", [])
                 if e["url"] == "keyId"), None)

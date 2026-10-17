@@ -183,3 +183,10 @@ def test_drift_dedupe_matches_the_exact_model_version(monkeypatch):
     s.flags, s.created = [flag], []
     mon.check_drift(rs)
     assert [r for r in s.created if r["resourceType"] == "Flag"] == []  # same version already open
+
+
+def test_flag_ids_are_validated(api):
+    login(api, "admin1")
+    for path in ("/monitoring/alerts/1,2/acknowledge", "/monitoring/incidents/1,2/close"):
+        assert api.post(path, json={"note": "x"}).status_code == 422
+    assert api.post("/monitoring/alerts/1%2F2/acknowledge", json={"note": "x"}).status_code in (404, 422)

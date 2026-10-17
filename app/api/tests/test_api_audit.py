@@ -74,7 +74,8 @@ class Store:
         return self.media
 
     def search(self, rtype, **kw):
-        return [{"performer": [{"reference": "Practitioner/7"}]}]
+        assert rtype == "DiagnosticReport" and kw == {"encounter": "Encounter/3"}
+        return [{"performer": [{"reference": "Practitioner/7"}], "media": [{"link": {"reference": "Media/5"}}]}]
 
     def create(self, r, if_none_exist=None):
         self.created.append(r)
@@ -83,7 +84,8 @@ class Store:
 
 def test_media_without_key_id_is_a_clean_audited_500(api, monkeypatch):
     import deps
-    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "content": {"data": ""}})
+    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "encounter": {"reference": "Encounter/3"},
+               "content": {"data": ""}})
     monkeypatch.setattr(deps, "fhir", lambda: s)
     login(api, "gp1")
     r = api.get("/media/5")
@@ -95,8 +97,8 @@ def test_unhandled_exception_is_still_audited(api, monkeypatch):
     import deps
     from fastapi.testclient import TestClient
     import main
-    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "content": {"data": ""},
-               "extension": [{"url": m.ENC_EXT, "extension": [{"url": "keyId", "valueString": "k"}]}]})
+    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "encounter": {"reference": "Encounter/3"},
+               "content": {"data": ""}, "extension": [{"url": m.ENC_EXT, "extension": [{"url": "keyId", "valueString": "k"}]}]})
     monkeypatch.setattr(deps, "fhir", lambda: s)
 
     class Boom:
@@ -108,3 +110,47 @@ def test_unhandled_exception_is_still_audited(api, monkeypatch):
     assert c.get("/media/5").status_code == 500
     [ev] = [e for e in s.created if e["resourceType"] == "AuditEvent"]
     assert ev["outcome"] == "8" and ev["entity"][0]["what"]["reference"] == "Media/5"
+
+
+def test_media_access_fails_closed_when_the_search_returns_an_unrelated_case(api, monkeypatch):
+    """Even if the store returned a readable case that does not list this image, the image is refused."""
+    import deps
+
+    class Loose(Store):
+        def search(self, rtype, **kw):  # gp1's own case, but it links a different Media
+            return [{"performer": [{"reference": "Practitioner/7"}], "media": [{"link": {"reference": "Media/6"}}]}]
+    s = Loose({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "encounter": {"reference": "Encounter/3"},
+               "content": {"data": ""}, "extension": [{"url": m.ENC_EXT, "extension": [{"url": "keyId", "valueString": "k"}]}]})
+    monkeypatch.setattr(deps, "fhir", lambda: s)
+    login(api, "gp1")
+    assert api.get("/media/5").status_code == 403
+    s.media = {k: v for k, v in s.media.items() if k != "encounter"}  # no encounter link: nothing to check against
+    assert api.get("/media/5").status_code == 403
+
+
+def test_bare_uvicorn_access_log_has_no_query_string(tmp_path):
+    """`uvicorn main:app` (CLI defaults, access log on) must not print query strings."""
+    import os
+    import socket
+    import subprocess
+    import sys
+    import time
+    import httpx
+    with socket.socket() as so:
+        so.bind(("127.0.0.1", 0))
+        port = so.getsockname()[1]
+    env = {**os.environ, "SESSION_SECRET": "x", "PYTHONPATH": "."}
+    p = subprocess.Popen([sys.executable, "-m", "uvicorn", "main:app", "--port", str(port)], env=env,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    try:
+        for _ in range(100):
+            try:
+                httpx.get(f"http://127.0.0.1:{port}/auth/me?q=Somsri-HN-0001")
+                break
+            except httpx.TransportError:
+                time.sleep(0.1)
+    finally:
+        p.terminate()
+        out = p.communicate(timeout=10)[0]
+    assert '"GET /auth/me HTTP/1.1" 401' in out  # the access line is there ...
+    assert "Somsri" not in out and "?q=" not in out  # ... without its query string

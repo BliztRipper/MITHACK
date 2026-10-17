@@ -25,6 +25,16 @@ for r in (auth, patients, cases, review, monitoring):
 
 
 log = logging.getLogger("api")
+
+
+def _no_query(record: logging.LogRecord) -> bool:
+    """uvicorn access lines carry the full path; drop the query string (it could hold patient data)."""
+    if isinstance(record.args, tuple) and len(record.args) >= 3 and isinstance(record.args[2], str):
+        record.args = (*record.args[:2], record.args[2].split("?", 1)[0], *record.args[3:])
+    return True
+
+
+logging.getLogger("uvicorn.access").addFilter(_no_query)  # holds for `uvicorn main:app` and `python main.py`
 PATIENT_DATA = ("/patients", "/cases", "/media", "/review", "/monitoring/export", "/monitoring/incidents")
 ACTIONS = {"GET": "R", "POST": "C", "PUT": "U", "PATCH": "U", "DELETE": "D"}
 
