@@ -92,8 +92,21 @@ def test_queue_lists_emergency_first(world, fhir):
     rep["issued"] = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat(timespec="seconds")
     fhir.update(rep)
     new = world.case("emergency")
-    ids = [i["report_id"] for i in world.get("/review/queue").json()]
+    q = world.get("/review/queue").json()
+    ids = [i["report_id"] for i in q]
     assert ids.index(new) < ids.index(old)
+    assert q[ids.index(new)]["patient"] == {"name": "Somsri Testapi", "hn": f"TEST-API-{'test_queue_lists_emergency_first'[:20]}"}
+
+
+def test_layers_shown_at_signing_are_stored_and_returned(world):
+    rid = world.case()
+    bad = {"decision": "confirm", "crao": False, "layers": {"visible": ["vessel", "x-ray"], "opacity": 70}}
+    assert world.post(f"/cases/{rid}/sign", json=bad).status_code == 422
+    assert world.post(f"/cases/{rid}/sign", json={**bad, "layers": {"visible": ["disc"], "opacity": 101}}).status_code == 422
+    layers = {"visible": ["artery_vein", "disc"], "opacity": 55}
+    assert world.post(f"/cases/{rid}/sign", json={**bad, "layers": layers}).status_code == 200
+    [rv] = world.get(f"/cases/{rid}").json()["reviews"]
+    assert rv["layers"] == layers
 
 
 def test_escalated_case_reaches_reviewer_with_image_overlays_and_answers(world):

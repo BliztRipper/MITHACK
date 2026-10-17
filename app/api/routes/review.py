@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import deps
 from fhir import mapping as m
@@ -76,7 +76,10 @@ def queue(request: Request, u: dict = Depends(CLINICIANS)):
     reps = deps.fhir().search("DiagnosticReport", code=f"{m.LOCAL}|retinal-ai-report", status="preliminary")
     me = deps.practitioner(u)
     mine = [r for r in reps if r["performer"][0]["reference"] == me or (u["role"] == "reviewer" and code(r) == "ESCALATE")]
-    items = [item(r) for r in mine]
+    pid = lambda r: r["subject"]["reference"].split("/")[1]  # noqa: E731
+    pats = {p: patient_summary(deps.fhir().read("Patient", p)) for p in {pid(r) for r in mine}}
+    # name and HN let the reviewer identify who is waiting; response body only, never in a URL or log
+    items = [{**item(r), "patient": {k: pats[pid(r)][k] for k in ("name", "hn")}} for r in mine]
     return sorted(items, key=lambda i: (i["mode"] != "emergency", i["issued"] or ""))
 
 
@@ -90,12 +93,22 @@ def case(rid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
             "reviews": reviews(rep), "can_sign": rep["status"] == "preliminary" and deps.may_read(u, rep)}
 
 
+LAYERS = ("vessel", "artery_vein", "disc", "heatmap")
+
+
+class Layers(BaseModel):
+    """Overlays visible when the clinician signed (spec: report shows the image "with the overlays shown at signing")."""
+    visible: list[Literal[LAYERS]] = Field(max_length=len(LAYERS))
+    opacity: int = Field(ge=0, le=100)
+
+
 class Sign(BaseModel):
     decision: Literal["confirm", "override"]
     finding: deps.Text | None = None      # the clinician's own finding (required for override)
     reason: Literal[REASONS] | None = None
     reason_text: deps.Text | None = None  # required when reason is "other"
     crao: bool | None = None          # Emergency: clinician-confirmed CRAO yes/no (calibration label)
+    layers: Layers | None = None      # stored with the review entry; None = not recorded (older clients)
 
 
 class Amend(BaseModel):

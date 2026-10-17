@@ -37,11 +37,12 @@ interface Props {
   issued?: string | null
   layers: Layers
   setLayers: (l: Layers) => void
+  caption?: string
   children?: ReactNode // clinician decision, disclosure, patient summary
 }
 
 /** The result screen (design §3.8). DOM order is the print order; CSS order gives the screen layout. */
-export default function ResultView({ r, fundus, overlays, patient, status, signer, issued, layers, setLayers, children }: Props): ReactNode {
+export default function ResultView({ r, fundus, overlays, patient, status, signer, issued, layers, setLayers, caption, children }: Props): ReactNode {
   const q = r.quality
   return (
     <div className="flex flex-col gap-6">
@@ -66,7 +67,7 @@ export default function ResultView({ r, fundus, overlays, patient, status, signe
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px] print:block">
         <div className="order-2 xl:order-1 print:mb-4">
-          <Stage fundus={fundus} overlays={overlays} seg={r.segmentation} layers={layers} setLayers={setLayers} />
+          <Stage fundus={fundus} overlays={overlays} seg={r.segmentation} layers={layers} setLayers={setLayers} caption={caption} />
         </div>
         <div className="order-1 flex flex-col gap-6 xl:order-2 print:gap-4">
           {r.mode === 'emergency' && r.crao && <div className="order-2 print:order-none"><Gauge crao={r.crao} /></div>}

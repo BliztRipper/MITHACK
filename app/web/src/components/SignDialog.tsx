@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { api, ApiError, type CaseRecord, type SignBody } from '../api'
+import { api, ApiError, type CaseRecord, type SignBody, type SignedLayers } from '../api'
 import { LevelBadge } from './ui'
 
 const REASONS = ['image misread', 'clinical findings disagree', 'poor image', 'other']
@@ -18,7 +18,7 @@ export function missingItems(f: { decision: string; finding: string; reason: str
 }
 
 /** Native modal <dialog>: focus is trapped by the browser and Esc cancels (design §3.13). */
-export default function SignDialog({ c, open, onClose, onSigned }: { c: CaseRecord; open: boolean; onClose: () => void; onSigned: () => void }): ReactNode {
+export default function SignDialog({ c, layers, open, onClose, onSigned }: { c: CaseRecord; layers: SignedLayers; open: boolean; onClose: () => void; onSigned: () => void }): ReactNode {
   const ref = useRef<HTMLDialogElement>(null)
   const [decision, setDecision] = useState('')
   const [finding, setFinding] = useState('')
@@ -42,7 +42,7 @@ export default function SignDialog({ c, open, onClose, onSigned }: { c: CaseReco
     if (missing.length) return
     setBusy(true)
     setServerError('')
-    const body: SignBody = { decision: decision as SignBody['decision'] }
+    const body: SignBody = { decision: decision as SignBody['decision'], layers } // the overlays on screen now become part of the record
     if (decision === 'override') Object.assign(body, { finding: finding.trim(), reason, ...(reason === 'other' ? { reason_text: reasonText.trim() } : {}) })
     if (emergency) body.crao = crao!
     try {

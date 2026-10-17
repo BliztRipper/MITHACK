@@ -49,16 +49,18 @@ export interface QueueItem {
   report_id: string; patient_id: string; mode: Mode; status: string; level: string | null; issued: string | null
   waiting_minutes: number | null; conclusion: string | null; inputs: Record<string, unknown> | null
   media: { id: string; kind: 'fundus' | OverlayKind }[]
+  patient?: { name: string; hn: string | null } // queue only
 }
+export interface SignedLayers { visible: OverlayKind[]; opacity: number }
 export interface Review {
   action: 'sign' | 'amend'; decision?: 'confirm' | 'override'; finding: string | null; reason?: string | null
-  reason_text: string | null; crao?: boolean | null; ai_conclusion?: string | null; by: string; user: string; at: string
+  reason_text: string | null; crao?: boolean | null; ai_conclusion?: string | null; layers?: SignedLayers | null; by: string; user: string; at: string
 }
 export interface CaseRecord extends QueueItem {
   label: string; patient: PatientSummary; analysis: CaseResult; reviews: Review[]; can_sign: boolean
 }
 export interface SignBody {
-  decision: 'confirm' | 'override'; finding?: string; reason?: string; reason_text?: string; crao?: boolean
+  decision: 'confirm' | 'override'; finding?: string; reason?: string; reason_text?: string; crao?: boolean; layers: SignedLayers
 }
 export interface Rate { value: number | null; n: number }
 export interface VersionMetrics {

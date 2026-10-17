@@ -1,16 +1,26 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Columns2, Info } from 'lucide-react'
-import type { CaseResult, OverlayKind } from '../api'
+import type { CaseResult, OverlayKind, SignedLayers } from '../api'
 
 export interface Layers { vessels: 'off' | 'all' | 'av'; disc: boolean; heatmap: boolean; opacity: number }
 export const defaultLayers = (mode: string): Layers =>
   mode === 'emergency' ? { vessels: 'off', disc: true, heatmap: true, opacity: 70 } : { vessels: 'av', disc: true, heatmap: false, opacity: 70 }
 
-/** Visible layer names, for the print caption. */
-export function visibleLayers(l: Layers, overlays: Partial<Record<OverlayKind, string>>, discFound: boolean): string[] {
-  return [l.vessels === 'all' && overlays.vessel && 'all vessels', l.vessels === 'av' && overlays.artery_vein && 'artery (yellow) / vein (blue)',
-    l.disc && discFound && 'optic disc ring', l.heatmap && overlays.heatmap && 'model attention heatmap'].filter((x): x is string => Boolean(x))
+const NAMES: Record<OverlayKind, string> = { vessel: 'all vessels', artery_vein: 'artery (yellow) / vein (blue)', disc: 'optic disc ring', heatmap: 'model attention heatmap' }
+
+/** The layers actually visible, as stored with a signature. */
+export function toSigned(l: Layers, overlays: Partial<Record<OverlayKind, string>>, discFound: boolean): SignedLayers {
+  const on: Record<OverlayKind, boolean> = { vessel: l.vessels === 'all', artery_vein: l.vessels === 'av', disc: l.disc && discFound, heatmap: l.heatmap }
+  return { visible: (Object.keys(on) as OverlayKind[]).filter((k) => on[k] && (k === 'disc' || Boolean(overlays[k]))), opacity: l.opacity }
 }
+
+export const fromSigned = (s: SignedLayers): Layers => ({
+  vessels: s.visible.includes('artery_vein') ? 'av' : s.visible.includes('vessel') ? 'all' : 'off',
+  disc: s.visible.includes('disc'), heatmap: s.visible.includes('heatmap'), opacity: s.opacity,
+})
+
+export const layerCaption = (prefix: string, s: SignedLayers): string =>
+  `${prefix}: ${s.visible.map((k) => NAMES[k]).join(', ') || 'none'}, opacity ${s.opacity} %.`
 
 const mask = (src: string, colour: string, opacity: number): CSSProperties =>
   ({ background: colour, maskImage: `url("${src}")`, WebkitMaskImage: `url("${src}")`, opacity: opacity / 100 })
@@ -21,6 +31,7 @@ interface Props {
   seg: CaseResult['segmentation']
   layers: Layers
   setLayers: (l: Layers) => void
+  caption?: string // print caption; defaults to the layers visible now
 }
 
 function Picture({ fundus, overlays, seg, layers, bare, label }: Omit<Props, 'setLayers'> & { bare?: boolean; label: string }): ReactNode {
@@ -62,7 +73,7 @@ function Switch({ label, swatch, pattern, on, disabled, onChange }: { label: str
   )
 }
 
-export default function Stage({ fundus, overlays, seg, layers, setLayers }: Props): ReactNode {
+export default function Stage({ fundus, overlays, seg, layers, setLayers, caption }: Props): ReactNode {
   const [compare, setCompare] = useState(false)
   useEffect(() => {
     if (!compare) return
@@ -117,7 +128,7 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers }: Prop
           <span className="font-mono text-sm tabular-nums">{layers.opacity} %</span>
         </label>
       </div>
-      <p className="hidden text-sm print:block">Layers shown: {visibleLayers(layers, overlays, discFound).join(', ') || 'none'}.</p>
+      <p className="hidden text-sm print:block">{caption ?? layerCaption('Layers shown', toSigned(layers, overlays, discFound))}</p>
     </div>
   )
 }
