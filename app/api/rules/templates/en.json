@@ -55,5 +55,7 @@
  "risk.thai_unavailable": "Thai CV Risk unavailable: the equation is not yet implemented in this build. PCE is shown instead, with its population caveat.",
  "summary.override": "Your doctor has reviewed your eye photo and will explain the result and the next step.",
  "summary.screening.bypass": "The usual risk score does not apply to you. Your doctor will discuss cholesterol-lowering treatment with you.",
- "summary.seek_care": "Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking."
+ "summary.seek_care": "Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking.",
+ "risk.enhancer.retinal_arteriolar_narrowing.placeholder": "Risk enhancer: retinal arteriolar narrowing (artery-to-vein ratio outside a placeholder reference interval, not clinically validated)",
+ "explain.screening.measurements.placeholder": "Artery-to-vein ratio {avr}: {flag} reference (placeholder interval, not clinically validated)."
 }

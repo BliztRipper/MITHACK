@@ -126,3 +126,39 @@ def test_amendment_sets_amended_and_keeps_history(world):
     h = world.get(f"/cases/{rid}/history").json()
     assert [v["status"] for v in sorted(h, key=lambda v: int(v["version"]))] == ["preliminary", "final", "amended"]
     assert world.get(f"/cases/{rid}/summary").json()["text"][0] == templates("en")["summary.override"]
+
+
+def test_gp_reads_only_own_cases_reviewer_only_escalated_admin_no_images(world):
+    esc, scr = world.case("emergency"), world.case("screening")
+    fundus = next(x["id"] for x in world.get(f"/cases/{esc}").json()["media"] if x["kind"] == "fundus")
+    scr_img = next(x["id"] for x in world.get(f"/cases/{scr}").json()["media"] if x["kind"] == "fundus")
+    login(world, "gp2")  # another GP: nothing of gp1's
+    for path in (f"/cases/{esc}", f"/cases/{esc}/history", f"/media/{fundus}"):
+        assert world.get(path).status_code == 403, path
+    assert world.post(f"/cases/{esc}/incident", json={"description": "x"}).status_code == 403
+    login(world, "oph1")  # reviewer: escalated yes, other cases no
+    assert world.get(f"/cases/{esc}").status_code == 200 and world.get(f"/media/{fundus}").status_code == 200
+    assert world.get(f"/cases/{scr}").status_code == 403 and world.get(f"/media/{scr_img}").status_code == 403
+    login(world, "admin1")
+    assert world.get(f"/media/{fundus}").status_code == 403 and world.get(f"/cases/{esc}").status_code == 403
+
+
+def test_blank_texts_are_refused(world):
+    rid = world.case()
+    r = world.post(f"/cases/{rid}/sign", json={"decision": "override", "finding": "not CRAO", "reason": "other",
+                                                "reason_text": "   ", "crao": False})
+    assert r.status_code == 422
+    world.post(f"/cases/{rid}/sign", json={"decision": "confirm", "crao": False})
+    for body in ({"finding": "", "reason_text": "x"}, {"finding": "x", "reason_text": "  "}):
+        assert world.post(f"/cases/{rid}/amend", json=body).status_code == 422
+
+
+def test_seeded_report_without_ai_code_gets_the_clinician_led_summary(fhir, monkeypatch):
+    """HN-0001's seeded prior screening has no conclusionCode (it used to raise AttributeError -> 500)."""
+    from fhir import mapping as m
+    from routes.review import summary_key
+    [p] = fhir.search("Patient", identifier=f"{m.MRN}|HN-0001")
+    [rep] = fhir.search("DiagnosticReport", subject=f"Patient/{p['id']}")
+    assert "conclusionCode" not in rep
+    monkeypatch.setattr(deps, "fhir", lambda: fhir)  # mode_of reads the seeded Encounter
+    assert summary_key(rep) == "summary.override"

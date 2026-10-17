@@ -14,15 +14,18 @@ def test_patient_record_needs_a_session(live, patient):
 
 def test_search_by_name_and_hospital_number(live, patient):
     login(live, "gp1")
-    by_name = live.get("/patients", params={"q": "Testapi"}).json()
+    r = live.post("/patients/search", json={"q": "Testapi"})
+    assert "Testapi" not in str(r.request.url)  # names travel in the body, never the URL (access logs)
+    by_name = r.json()
     assert patient in [p["id"] for p in by_name]
     hn = next(p["hn"] for p in by_name if p["id"] == patient)
-    assert [p["id"] for p in live.get("/patients", params={"q": hn}).json()] == [patient]
+    assert [p["id"] for p in live.post("/patients/search", json={"q": hn}).json()] == [patient]
+    assert live.post("/patients/search", json={"q": "  "}).status_code == 422
 
 
 def test_admin_cannot_search_patients(live):
     login(live, "admin1")
-    assert live.get("/patients", params={"q": "x"}).status_code == 403
+    assert live.post("/patients/search", json={"q": "x"}).status_code == 403
 
 
 def test_seeded_patient_shows_prior_signed_screening_and_dated_vitals(live, fhir):
@@ -50,3 +53,11 @@ def test_consent_record_check_and_withdraw(live, fhir, patient):
     assert live.post(f"/patients/{patient}/withdraw").json() == {"care": False, "model_improvement": False}
     assert {x["status"] for x in fhir.search("Consent", patient=f"Patient/{patient}")} == {"inactive"}
     assert len(fhir.search("AuditEvent", entity=f"Patient/{patient}", action="D")) == 1  # one event for the withdrawal
+
+
+def test_no_route_takes_identifiers_in_the_query_string_and_access_log_is_off():
+    import main
+    query = {p["name"] for ops in main.app.openapi()["paths"].values() for op in ops.values()
+             for p in op.get("parameters", []) if p["in"] == "query"}
+    assert query <= {"days", "lang"}  # nothing that can hold a name, HN or date of birth
+    assert main.RUN["access_log"] is False

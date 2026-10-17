@@ -6,10 +6,12 @@ tests can swap them with monkeypatch.
 import functools
 import os
 import pathlib
+from typing import Annotated
 
 import bcrypt
 import yaml
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Path, Request
+from pydantic import StringConstraints
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from fhir import mapping as m
@@ -20,6 +22,9 @@ from vision import crao_model
 API = pathlib.Path(__file__).resolve().parent
 COOKIE, IDLE = "session", 30 * 60  # 30-minute sliding expiry (spec: idle session expires)
 ROLES = ("gp", "reviewer", "admin")
+ID_PATTERN = r"^[A-Za-z0-9\-.]{1,64}$"  # FHIR logical id; blocks "a,Patient/b" OR-injection into searches
+FhirId = Annotated[str, Path(pattern=ID_PATTERN)]
+Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
 
 
 def _secret():
@@ -81,6 +86,17 @@ def practitioner(u: dict) -> str:
     ident = f"{m.LOCAL}/user|{u['username']}"
     r = fhir().create(m.practitioner(u["username"], u["name"], u["username"]), if_none_exist=f"identifier={ident}")
     return f"Practitioner/{r['id']}"
+
+
+def may_read(u: dict, rep: dict) -> bool:
+    """Spec "Role-based permissions": a GP reads (and signs) the cases they created; a reviewer reads their own
+    cases and ESCALATE cases from anyone; admins never read cases (role checks keep them out first)."""
+    if u["role"] not in ("gp", "reviewer"):
+        return False
+    if rep["performer"][0]["reference"] == practitioner(u):
+        return True
+    escalated = any(c["coding"][0]["code"] == "ESCALATE" for c in rep.get("conclusionCode", []))
+    return u["role"] == "reviewer" and escalated
 
 
 @functools.cache

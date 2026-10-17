@@ -15,7 +15,7 @@ import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
 from fhir.crypto import ConsentWithdrawn, KeyDestroyed
-from routes.patients import consent
+from routes.patients import consent, read_patient
 from vision import quality
 
 router = APIRouter(tags=["cases"])
@@ -119,7 +119,7 @@ def save(pid, u, model, fundus, pngs, mode, obs, risks, conditions, conclusion, 
 
 
 @router.post("/cases")
-def create_case(request: Request, patient_id: str = Form(), mode: Literal["screening", "emergency"] = Form(),
+def create_case(request: Request, patient_id: str = Form(pattern=deps.ID_PATTERN), mode: Literal["screening", "emergency"] = Form(),
                 inputs: str = Form("{}"), image: UploadFile = File(), u: dict = Depends(CLINICIANS)):
     """mode + inputs (JSON) + image -> quality gate -> segmentation -> Screening risk or Emergency triage ->
     explanation, saved as a preliminary case. If the record store is down the analysis is still returned."""
@@ -130,6 +130,7 @@ def create_case(request: Request, patient_id: str = Form(), mode: Literal["scree
     except ValidationError as e:
         raise RequestValidationError(e.errors(include_url=False, include_context=False)) from None
     try:  # fail closed: no verified consent, no image processing (PDPA s.26)
+        read_patient(patient_id)  # 404 for an unknown patient
         if not consent(patient_id)["care"]:
             raise HTTPException(403, CONSENT_REQUIRED)
     except FhirUnavailable:
@@ -177,13 +178,20 @@ def create_case(request: Request, patient_id: str = Form(), mode: Literal["scree
 
 
 @router.get("/media/{mid}")
-def media(mid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def media(mid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("R", f"Media/{mid}")
     try:
         med = deps.fhir().read("Media", mid)
     except FhirError as e:
         raise HTTPException(404 if e.status in (404, 410) else 502, "image not found") from None
-    kid = next(e["valueString"] for x in med.get("extension", []) for e in x["extension"] if e["url"] == "keyId")
+    reps = deps.fhir().search("DiagnosticReport", media=f"Media/{mid}")
+    if not any(deps.may_read(u, r) for r in reps):  # an image is readable only through a case you may read
+        raise HTTPException(403, "not one of your cases or an escalated case")
+    kid = next((e["valueString"] for x in med.get("extension", []) for e in x.get("extension", [])
+                if e["url"] == "keyId"), None)
+    if kid is None:  # never serve or guess at an image stored without its encryption metadata
+        log.error("media without keyId media=%s", mid)
+        raise HTTPException(500, "image record is malformed")
     try:
         png = deps.keys().decrypt(med["subject"]["reference"], base64.b64decode(med["content"]["data"]), kid)
     except KeyDestroyed:

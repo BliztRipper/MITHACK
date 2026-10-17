@@ -119,7 +119,7 @@ def _measurements(s: dict | None) -> tuple[dict | None, bool | None]:
     avr = s["avr"]
     outside = None if avr is None else not lo <= avr <= hi
     flag = None if avr is None else "outside reference" if outside else "within reference"
-    px = {"unit": "px", "flag": None, "note": "no reference: pixel size depends on the camera (display only)"}
+    px = {"unit": "px", "flag": "not_assessed", "reason": "camera-dependent pixel scale"}  # design D5
     return {"avr": {"value": avr, "flag": flag, "reference": [lo, hi], "reference_status": "placeholder, not clinically validated"},
             "crae": {"value": s["crae"], **px}, "crve": {"value": s["crve"], **px}}, outside
 
@@ -134,6 +134,8 @@ def screening(img: dict, i) -> dict:
     band = risk.pce_band(p.risk) if p.risk is not None else None
     meas, outside = _measurements(img["segmentation"]) if img["quality"]["accept"] else (None, None)
     enh = risk.enhancers(p.risk, outside, i.clinical_enhancers)
+    # the AVR interval is a placeholder: every sentence built on it says so (keys with ".placeholder")
+    ph = ".placeholder" if CONFIG["risk"]["avr_reference"]["status"] == "placeholder" else ""
     htn, arcus = risk.htn_stage1(i.sbp, i.dbp, p.risk), risk.arcus_prompt(i.age, i.arcus_senilis)
     r = {
         "thai_cv": {"available": False, "label": None, "risk": None, "note": T["risk.thai_unavailable"]},
@@ -143,14 +145,14 @@ def screening(img: dict, i) -> dict:
                 "suggestion_label": T["risk.discussion_label"]},
         "bypass": T[by] if by else None,
         "htn_stage1": T[htn] if htn else None,
-        "enhancers": {"retinal": [T[k] for k in enh.keys], "clinical": enh.clinical,
+        "enhancers": {"retinal": [T[k + ph] for k in enh.keys], "clinical": enh.clinical,
                       "not_assessed": T["risk.retinal_not_assessed"] if enh.not_assessed else None,
                       "note": T[enh.note] if enh.note and not by else None},
         "arcus": T[arcus] if arcus else None,
     }
     sentences = [T["limit.screening.not_diagnostic"]]
     if meas and meas["avr"]["value"] is not None:
-        sentences.insert(0, T["explain.screening.measurements"].format(
+        sentences.insert(0, T["explain.screening.measurements" + ph].format(
             avr=f"{meas['avr']['value']:.2f}", flag="outside" if outside else "within"))
     conclusion = r["bypass"] or r["pce"]["not_valid"] or f"{p.variant} 10-year risk {p.risk:.1f}% ({band})"
     return {"measurements": meas, "risk": r, "explanation": {"region": None, "sentences": sentences},

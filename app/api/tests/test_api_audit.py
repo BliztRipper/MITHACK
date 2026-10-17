@@ -21,6 +21,8 @@ def test_opening_an_image_writes_one_read_audit_event(live, fhir, patient, caplo
     pref = f"Patient/{patient}"
     enc = fhir.create(m.encounter(pref, "screening", deps.practitioner({"username": "gp1", "name": "Test gp"})))["id"]
     mid = fhir.create(m.media(pref, f"Encounter/{enc}", blob, kid))["id"]
+    prac = deps.practitioner({"username": "gp1", "name": "Test gp"})
+    fhir.create(m.diagnostic_report(pref, f"Encounter/{enc}", "preliminary", "x", [], [f"Media/{mid}"], prac))
     login(live, "gp1")
     with caplog.at_level(logging.DEBUG):
         r = live.get(f"/media/{mid}")
@@ -62,3 +64,47 @@ def test_analysis_exception_log_line_has_only_case_id_and_error(caplog):
     [rec] = caplog.records
     assert rec.getMessage() == "analysis failed case=case-123 error=SegmentationError: AutoMorph run.sh exited 1"
     assert exc.status_code == 500 and exc.detail == "analysis service error"
+
+
+class Store:
+    def __init__(self, media):
+        self.media, self.created = media, []
+
+    def read(self, rtype, rid):
+        return self.media
+
+    def search(self, rtype, **kw):
+        return [{"performer": [{"reference": "Practitioner/7"}]}]
+
+    def create(self, r, if_none_exist=None):
+        self.created.append(r)
+        return {**r, "id": "7"}  # the gp1 Practitioner is "7", so the case is readable
+
+
+def test_media_without_key_id_is_a_clean_audited_500(api, monkeypatch):
+    import deps
+    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "content": {"data": ""}})
+    monkeypatch.setattr(deps, "fhir", lambda: s)
+    login(api, "gp1")
+    r = api.get("/media/5")
+    assert r.status_code == 500 and r.json() == {"detail": "image record is malformed"}
+    assert [e["outcome"] for e in s.created if e["resourceType"] == "AuditEvent"] == ["8"]
+
+
+def test_unhandled_exception_is_still_audited(api, monkeypatch):
+    import deps
+    from fastapi.testclient import TestClient
+    import main
+    s = Store({"resourceType": "Media", "subject": {"reference": "Patient/1"}, "content": {"data": ""},
+               "extension": [{"url": m.ENC_EXT, "extension": [{"url": "keyId", "valueString": "k"}]}]})
+    monkeypatch.setattr(deps, "fhir", lambda: s)
+
+    class Boom:
+        def decrypt(self, *a):
+            raise ValueError("unexpected")
+    monkeypatch.setattr(deps, "keys", lambda: Boom())
+    c = TestClient(main.app, raise_server_exceptions=False)
+    login(c, "gp1")
+    assert c.get("/media/5").status_code == 500
+    [ev] = [e for e in s.created if e["resourceType"] == "AuditEvent"]
+    assert ev["outcome"] == "8" and ev["entity"][0]["what"]["reference"] == "Media/5"

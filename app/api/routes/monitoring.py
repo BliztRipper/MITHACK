@@ -23,7 +23,8 @@ from fhir.crypto import KeyDestroyed
 from analysis import version
 from routes.cases import NO_MODEL, device
 from routes.patients import consent, mode_of
-from routes.review import code, load, record, reviews
+from routes.review import code, readable, record, reviews
+from vision import quality
 
 router = APIRouter(tags=["monitoring"])
 ADMIN, VIEWERS, CLINICIANS = deps.role("admin"), deps.role("admin", "reviewer"), deps.role("gp", "reviewer")
@@ -69,7 +70,8 @@ def metrics(rows: list[dict]) -> list[dict]:
 def calibration(rows: list[dict], version: str) -> dict:
     """Predicted band vs clinician-confirmed CRAO on signed Emergency cases; needs calibration_min cases."""
     need = _cfg()["calibration_min"]
-    rs = [r for r in rows if r["version"] == version and r["mode"] == "emergency" and r["signed"]]
+    # only cases that produced a band (no-model and quality-rejected cases have none)
+    rs = [r for r in rows if r["version"] == version and r["mode"] == "emergency" and r["signed"] and r["band"]]
     if len(rs) < need:
         return {"status": "insufficient data", "n": len(rs), "needed": need, "text": f"insufficient data ({len(rs)} of {need})"}
     bands = {}
@@ -120,8 +122,15 @@ def _flags(category: str, active: bool = False) -> list[dict]:
             and (f["status"] == "active" or not active)]
 
 
+VERSION_SYSTEM = f"{m.LOCAL}/model-version"
+
+
+def _coded(f, system):
+    return next((c["code"] for c in f["code"].get("coding", []) if c["system"] == system), None)
+
+
 def _metric(f):
-    return next((c["code"] for c in f["code"].get("coding", [])), None)
+    return _coded(f, m.LOCAL)
 
 
 def all_rows() -> list[dict]:
@@ -139,11 +148,11 @@ def check_drift(rows: list[dict] | None = None):
         return
     existing = _flags("drift")
     for a in alerts:
-        same = [f for f in existing if _metric(f) == a["metric"] and v in f["code"]["text"]]
+        same = [f for f in existing if _metric(f) == a["metric"] and _coded(f, VERSION_SYSTEM) == v]
         if any(f["status"] == "active" or f.get("period", {}).get("end", "") >= a["newest"] for f in same):
             continue
         f = m.flag(_site(), _device_ref(), "drift", f"[{v}] {a['message']}")
-        f["code"]["coding"] = [{"system": m.LOCAL, "code": a["metric"]}]
+        f["code"]["coding"] = [{"system": m.LOCAL, "code": a["metric"]}, {"system": VERSION_SYSTEM, "code": v}]
         f["period"] = {"start": m.now()}
         deps.fhir().create(f)
         log.warning("drift alert version=%s metric=%s value=%.3f limit=%.3f", v, a["metric"], a["value"], a["limit"])
@@ -169,13 +178,13 @@ def dashboard(days: int = 30, u: dict = Depends(VIEWERS)):
 
 
 class Note(BaseModel):
-    note: str
+    note: deps.Text
 
 
 def _close(fid: str, category: str, note: str, u: dict):
     f = deps.fhir().read("Flag", fid)
-    if f["category"][0]["coding"][0]["code"] != category or f["status"] != "active" or not note.strip():
-        raise HTTPException(409 if note.strip() else 422, "not an open flag of this kind, or no note given")
+    if f["category"][0]["coding"][0]["code"] != category or f["status"] != "active":
+        raise HTTPException(409, "not an open flag of this kind")
     f["status"] = "inactive"
     f.setdefault("period", {})["end"] = m.now()
     f.setdefault("extension", []).append({"url": f"{m.LOCAL}/closing-note", "valueString": f"{u['username']}: {note}"})
@@ -189,16 +198,15 @@ def acknowledge(fid: str, body: Note, u: dict = Depends(ADMIN)):
 
 
 class Incident(BaseModel):
-    description: str
+    description: deps.Text
 
 
 @router.post("/cases/{rid}/incident")
-def flag_incident(rid: str, body: Incident, request: Request, u: dict = Depends(CLINICIANS)):
-    """Any clinician can flag a suspected AI safety incident; it stays on the dashboard until an admin closes it."""
+def flag_incident(rid: deps.FhirId, body: Incident, request: Request, u: dict = Depends(CLINICIANS)):
+    """Any clinician can flag a suspected AI safety incident on a case they can read; it stays on the dashboard
+    until an admin closes it."""
     request.state.audit = ("C", f"DiagnosticReport/{rid}")
-    load(rid)
-    if not body.description.strip():
-        raise HTTPException(422, "describe the incident")
+    readable(rid, u)
     f = m.flag(_site(), _device_ref(), "ai-incident", body.description)
     f["period"] = {"start": m.now()}
     f["extension"].append({"url": f"{m.LOCAL}/case", "valueReference": m.ref(f"DiagnosticReport/{rid}")})
@@ -213,31 +221,36 @@ def close_incident(fid: str, body: Note, u: dict = Depends(ADMIN)):
 @router.get("/monitoring/export")
 def export(request: Request, u: dict = Depends(ADMIN)):
     """De-identified zip of signed cases with active model-improvement consent: images/ + labels.csv.
-    No names, hospital numbers or dates of birth; file names are random."""
-    request.state.audit = ("E", None)
-    f, ks, buf = deps.fhir(), deps.keys(), io.BytesIO()
+    Labels are structured (decision, clinician-confirmed CRAO, AI code), never free text; images are
+    re-encoded from pixels (no metadata); file names are random. The AuditEvent lists the exported cases."""
+    f, ks, buf, done = deps.fhir(), deps.keys(), io.BytesIO(), []
     lines = io.StringIO()
     w = csv.writer(lines)
-    w.writerow(["file", "label", "ai_output", "model_version", "mode"])
+    w.writerow(["file", "mode", "status", "decision", "crao_confirmed", "ai_code", "ai_probability", "model_version"])
     with zipfile.ZipFile(buf, "w") as z:
         for rep in f.search("DiagnosticReport", code=f"{m.LOCAL}|retinal-ai-report"):
             pid = rep["subject"]["reference"].split("/")[1]
-            if rep["status"] not in ("final", "amended") or not record(rep) or not consent(pid)["model_improvement"]:
+            rec = record(rep)
+            if rep["status"] not in ("final", "amended") or not rec or not consent(pid)["model_improvement"]:
                 continue
             fundus = next((x["link"]["reference"] for x in rep.get("media", []) if x.get("comment") == "fundus"), None)
             if not fundus:
                 continue
             med = f.read(*fundus.split("/"))
-            kid = next(e["valueString"] for x in med["extension"] for e in x["extension"] if e["url"] == "keyId")
+            kid = next((e["valueString"] for x in med.get("extension", []) for e in x.get("extension", [])
+                        if e["url"] == "keyId"), None)
             try:
-                png = ks.decrypt(pid, base64.b64decode(med["content"]["data"]), kid)
-            except KeyDestroyed:
-                continue
+                png = quality.intake(ks.decrypt(pid, base64.b64decode(med["content"]["data"]), kid))[1]
+            except (KeyDestroyed, quality.Rejected):
+                continue  # erased (withdrawn) or unreadable: never exported
             name = f"images/{uuid.uuid4().hex}.png"
             z.writestr(name, png)
-            rec = record(rep)
-            w.writerow([name, rep.get("conclusion"), rec.get("conclusion"), rec.get("model_version"), mode_of(rep)])
+            sign = next((r for r in reviews(rep) if r.get("action") == "sign"), {})
+            w.writerow([name, mode_of(rep), rep["status"], sign.get("decision"), sign.get("crao"), code(rep),
+                        (rec.get("crao") or {}).get("probability"), rec.get("model_version")])
+            done.append(f"DiagnosticReport/{rep['id']}")
         z.writestr("labels.csv", lines.getvalue())
+    request.state.audit = ("E", done)
     return Response(buf.getvalue(), media_type="application/zip",
                     headers={"Content-Disposition": 'attachment; filename="reviewed-cases.zip"'})
 

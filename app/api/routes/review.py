@@ -53,11 +53,12 @@ def load(rid: str) -> dict:
     return rep
 
 
-def may_sign(u: dict, rep: dict) -> bool:
-    """Frontline clinicians sign their own cases; ophthalmologist reviewers sign escalated cases."""
-    if u["role"] == "reviewer":
-        return code(rep) == "ESCALATE" or rep["performer"][0]["reference"] == deps.practitioner(u)
-    return rep["performer"][0]["reference"] == deps.practitioner(u)
+def readable(rid: str, u: dict) -> dict:
+    """The case, if this user may read it (deps.may_read); 403 otherwise."""
+    rep = load(rid)
+    if not deps.may_read(u, rep):
+        raise HTTPException(403, "not one of your cases or an escalated case")
+    return rep
 
 
 def item(rep: dict) -> dict:
@@ -80,26 +81,26 @@ def queue(request: Request, u: dict = Depends(CLINICIANS)):
 
 
 @router.get("/cases/{rid}")
-def case(rid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def case(rid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     """Everything the final report shows (spec: Final clinician report); images via GET /media/{id}."""
     request.state.audit = ("R", f"DiagnosticReport/{rid}")
-    rep = load(rid)
+    rep = readable(rid, u)
     pat = deps.fhir().read("Patient", rep["subject"]["reference"].split("/")[1])
     return {**item(rep), "label": AI_LABEL, "patient": patient_summary(pat), "analysis": record(rep),
-            "reviews": reviews(rep), "can_sign": rep["status"] == "preliminary" and may_sign(u, rep)}
+            "reviews": reviews(rep), "can_sign": rep["status"] == "preliminary" and deps.may_read(u, rep)}
 
 
 class Sign(BaseModel):
     decision: Literal["confirm", "override"]
-    finding: str | None = None        # the clinician's own finding (required for override)
+    finding: deps.Text | None = None      # the clinician's own finding (required for override)
     reason: Literal[REASONS] | None = None
-    reason_text: str | None = None    # required when reason is "other"
+    reason_text: deps.Text | None = None  # required when reason is "other"
     crao: bool | None = None          # Emergency: clinician-confirmed CRAO yes/no (calibration label)
 
 
 class Amend(BaseModel):
-    finding: str
-    reason_text: str
+    finding: deps.Text
+    reason_text: deps.Text
 
 
 def _write(rep: dict, u: dict, entry: dict):
@@ -115,13 +116,11 @@ def _write(rep: dict, u: dict, entry: dict):
 
 
 @router.post("/cases/{rid}/sign")
-def sign(rid: str, body: Sign, request: Request, u: dict = Depends(CLINICIANS)):
+def sign(rid: deps.FhirId, body: Sign, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("U", f"DiagnosticReport/{rid}")
-    rep = load(rid)
+    rep = readable(rid, u)  # who may read a case may sign it: own cases; reviewers also escalated ones
     if rep["status"] != "preliminary":
         raise HTTPException(409, "already signed: use amend")
-    if not may_sign(u, rep):
-        raise HTTPException(403, "you can sign your own cases; reviewers sign escalated cases")
     if body.decision == "override":
         if not body.reason:
             raise HTTPException(422, "choose an override reason")
@@ -142,40 +141,42 @@ def sign(rid: str, body: Sign, request: Request, u: dict = Depends(CLINICIANS)):
 
 
 @router.post("/cases/{rid}/amend")
-def amend(rid: str, body: Amend, request: Request, u: dict = Depends(CLINICIANS)):
+def amend(rid: deps.FhirId, body: Amend, request: Request, u: dict = Depends(CLINICIANS)):
     """After signing: status amended; FHIR history keeps the prior version."""
     request.state.audit = ("U", f"DiagnosticReport/{rid}")
-    rep = load(rid)
+    rep = readable(rid, u)
     if rep["status"] not in ("final", "amended"):
         raise HTTPException(409, "not signed yet: sign it instead")
-    if not may_sign(u, rep):
-        raise HTTPException(403, "you can amend your own cases; reviewers amend escalated cases")
     rep["status"], rep["conclusion"] = "amended", body.finding
     out = _write(rep, u, {"action": "amend", **body.model_dump()})
     return {**item(out), "reviews": reviews(out)}
 
 
 @router.get("/cases/{rid}/history")
-def history(rid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def history(rid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("R", f"DiagnosticReport/{rid}")
-    load(rid)
+    readable(rid, u)
     return [{"version": r["meta"]["versionId"], "status": r["status"], "conclusion": r.get("conclusion"),
              "updated": r["meta"].get("lastUpdated")} for r in deps.fhir().history("DiagnosticReport", rid)]
 
 
 @router.get("/cases/{rid}/summary")
-def patient_summary_text(rid: str, request: Request, lang: Literal["en", "th"] = "en", u: dict = Depends(CLINICIANS)):
+def patient_summary_text(rid: deps.FhirId, request: Request, lang: Literal["en", "th"] = "en", u: dict = Depends(CLINICIANS)):
     """Fixed-template patient summary of a signed result, with when to seek emergency care."""
     request.state.audit = ("R", f"DiagnosticReport/{rid}")
-    rep = load(rid)
+    rep = readable(rid, u)
     if rep["status"] == "preliminary":
         raise HTTPException(409, "the summary is available after signing")
-    t, c = templates(lang), code(rep)
-    overridden = any(r.get("decision") == "override" for r in reviews(rep)) or rep["status"] == "amended"
-    if overridden:
-        key = "summary.override"
-    elif mode_of(rep) == "emergency":
-        key = f"summary.emergency.{c}"
-    else:
-        key = "summary.screening.bypass" if c in ("bypass", "not-valid") else f"summary.screening.pce.{c.removeprefix('pce-')}"
-    return {"lang": lang, "text": [t[key], t["summary.seek_care"]]}
+    t = templates(lang)
+    return {"lang": lang, "text": [t[summary_key(rep)], t["summary.seek_care"]]}
+
+
+def summary_key(rep: dict) -> str:
+    """Template key for a signed report. Overridden, amended or legacy reports without an AI code (e.g. seeded
+    history) get the clinician-led sentence: the AI band is not the authoritative result there."""
+    c = code(rep)
+    if c is None or rep["status"] == "amended" or any(r.get("decision") == "override" for r in reviews(rep)):
+        return "summary.override"
+    if mode_of(rep) == "emergency":
+        return f"summary.emergency.{c}"
+    return "summary.screening.bypass" if c in ("bypass", "not-valid") else f"summary.screening.pce.{c.removeprefix('pce-')}"

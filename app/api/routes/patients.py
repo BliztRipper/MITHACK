@@ -49,16 +49,21 @@ def mode_of(rep: dict) -> str | None:
     return enc["type"][0]["coding"][0]["code"]
 
 
-@router.get("/patients")
-def search(request: Request, q: str, u: dict = Depends(CLINICIANS)):
+class Search(BaseModel):
+    q: deps.Text  # name or hospital number; in the body, never the URL (URLs reach access logs)
+
+
+@router.post("/patients/search")
+def search(body: Search, request: Request, u: dict = Depends(CLINICIANS)):
     """Find by name or hospital number."""
+    request.state.audit = ("R", None)
     f = deps.fhir()
-    found = {p["id"]: p for p in f.search("Patient", name=q) + f.search("Patient", identifier=f"{m.MRN}|{q}")}
+    found = {p["id"]: p for p in f.search("Patient", name=body.q) + f.search("Patient", identifier=f"{m.MRN}|{body.q}")}
     return [summary(p) for p in found.values()]
 
 
 @router.get("/patients/{pid}")
-def detail(pid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def detail(pid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("R", f"Patient/{pid}")
     p, f, pref = read_patient(pid), deps.fhir(), f"Patient/{pid}"
     since = (datetime.now(timezone.utc) - timedelta(days=365)).date().isoformat()
@@ -83,13 +88,13 @@ class ConsentIn(BaseModel):
 
 
 @router.get("/patients/{pid}/consent")
-def get_consent(pid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def get_consent(pid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("R", f"Patient/{pid}")
     return consent(pid)
 
 
 @router.post("/patients/{pid}/consent")
-def record_consent(pid: str, body: ConsentIn, request: Request, u: dict = Depends(CLINICIANS)):
+def record_consent(pid: deps.FhirId, body: ConsentIn, request: Request, u: dict = Depends(CLINICIANS)):
     """Explicit consent (PDPA s.26): purpose, retention period and right to withdraw, with time and recorder."""
     request.state.audit = ("C", f"Patient/{pid}")
     if not (body.care and body.right_to_withdraw_explained) or body.retention_years < 1:
@@ -108,7 +113,7 @@ def record_consent(pid: str, body: ConsentIn, request: Request, u: dict = Depend
 
 
 @router.post("/patients/{pid}/withdraw")
-def withdraw_consent(pid: str, request: Request, u: dict = Depends(CLINICIANS)):
+def withdraw_consent(pid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     """Erase images (crypto-shredding), keep signed report text, record the withdrawal."""
     read_patient(pid)
     request.state.audit = "written"  # withdraw() records its own "D" AuditEvent

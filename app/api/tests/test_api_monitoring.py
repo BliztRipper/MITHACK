@@ -35,6 +35,8 @@ def test_metrics_are_per_version_with_case_counts():
 
 def test_calibration_needs_30_signed_emergency_cases():
     assert mon.calibration(rows(12), "v1")["text"] == "insufficient data (12 of 30)"
+    # signed but band-less cases (no model loaded, quality rejected) do not count toward the 30
+    assert mon.calibration(rows(12) + rows(40, band=None), "v1")["text"] == "insufficient data (12 of 30)"
     cal = mon.calibration(rows(30) + rows(5, band="unlikely", crao=False), "v1")
     assert cal["status"] == "ok" and cal["bands"]["likely"] == {"n": 30, "mean_p": 0.8, "observed_crao_rate": 1.0}
     assert cal["bands"]["unlikely"]["observed_crao_rate"] == 0.0
@@ -131,14 +133,18 @@ def test_export_holds_only_consented_signed_cases_de_identified_and_audited(worl
         labels = list(csv.DictReader(io.StringIO(z.read("labels.csv").decode())))
         mine = [x for x in labels if x["file"] in z.namelist()]
         assert len(mine) == len(labels) and len(labels) >= 1
-        assert {x["label"] for x in labels} == {"not CRAO"} and labels[0]["model_version"] == "no-model"
-        assert z.read(labels[0]["file"]).startswith(b"\x89PNG")
+        x = labels[0]
+        assert (x["decision"], x["crao_confirmed"], x["ai_code"], x["model_version"]) == ("override", "False", "ESCALATE", "no-model")
+        assert "not CRAO" not in z.read("labels.csv").decode()  # never the clinician's free text
+        from PIL import Image
+        im = Image.open(io.BytesIO(z.read(x["file"])))
+        assert im.format == "PNG" and not im.info and "exif" not in im.info  # re-encoded: no metadata chunks
         blob = z.read("labels.csv").decode() + " ".join(z.namelist())
         for ident in ("Testapi", "Somsri", "Malee", "TEST-API", "1960-01-01", "1955-02-02"):
             assert ident not in blob
         assert len(labels) == 1  # the care-only patient and the unsigned case are excluded
-        ev = [a for a in fhir.search("AuditEvent", action="E") if a["agent"][0]["who"]["display"] == "admin1"]
-        assert ev and ev[0]["entity"][0]["what"]["display"] == "/monitoring/export"
+        [ev] = [a for a in fhir.search("AuditEvent", action="E") if a["agent"][0]["who"]["display"] == "admin1"]
+        assert [e["what"]["reference"] for e in ev["entity"]] == [f"DiagnosticReport/{keep}"]
     finally:
         purge(fhir, other)
 
@@ -148,3 +154,32 @@ def test_audit_has_no_write_routes_and_is_admin_only(api):
     assert api.get("/audit").status_code == 403
     for method in ("put", "patch", "delete", "post"):
         assert getattr(api, method)("/audit").status_code == 405
+
+
+class FlagStore:
+    def __init__(self, flags):
+        self.flags, self.created = flags, []
+
+    def search(self, rtype, **kw):
+        return self.flags
+
+    def create(self, r, if_none_exist=None):
+        self.created.append(r)
+        return {**r, "id": "1"}
+
+
+def test_drift_dedupe_matches_the_exact_model_version(monkeypatch):
+    model = type("M", (), {"info": lambda s: {"model": "m", "version": "v1", "calibration_date": None}})()
+    monkeypatch.setattr(deps, "model", lambda: model)
+    v10 = {"status": "active", "category": [{"coding": [{"code": "drift"}]}],
+           "code": {"text": "[v10] …", "coding": [{"system": m.LOCAL, "code": "override_rate"},
+                                                  {"system": mon.VERSION_SYSTEM, "code": "v10"}]}}
+    s = FlagStore([v10])
+    monkeypatch.setattr(deps, "fhir", lambda: s)
+    rs = rows(35, "v1") + rows(15, "v1", decision="override", reason="image misread")
+    mon.check_drift(rs)
+    [flag] = [r for r in s.created if r["resourceType"] == "Flag"]  # v10's open flag does not hide v1's alert
+    assert mon._coded(flag, mon.VERSION_SYSTEM) == "v1"
+    s.flags, s.created = [flag], []
+    mon.check_drift(rs)
+    assert [r for r in s.created if r["resourceType"] == "Flag"] == []  # same version already open

@@ -53,6 +53,10 @@ class Store:
     def __init__(self, consent=True, down=False):
         self.consent, self.down, self.created, self.transactions = consent, down, [], []
 
+    def read(self, rtype, rid):
+        assert rtype == "Patient"
+        return {"resourceType": "Patient", "id": rid}
+
     def search(self, rtype, **kw):
         assert rtype == "Consent"
         return [m.consent("Patient/p1", "care")] if self.consent else []
@@ -214,7 +218,11 @@ def test_screening_end_to_end_with_retinal_enhancer(live, fhir, patient, monkeyp
     assert r["risk"]["thai_cv"] == {"available": False, "label": None, "risk": None, "note": EN["risk.thai_unavailable"]}
     avr = r["measurements"]["avr"]
     assert avr["value"] == 0.61 and avr["flag"] == "outside reference"
-    assert r["risk"]["enhancers"]["retinal"] == [EN["risk.enhancer.retinal_arteriolar_narrowing"]]
+    assert r["risk"]["enhancers"]["retinal"] == [EN["risk.enhancer.retinal_arteriolar_narrowing.placeholder"]]
+    assert "placeholder" in r["explanation"]["sentences"][0] and "0.61: outside" in r["explanation"]["sentences"][0]
+    for k in ("crae", "crve"):
+        assert r["measurements"][k]["flag"] == "not_assessed"
+        assert r["measurements"][k]["reason"] == "camera-dependent pixel scale"
     assert r["explanation"]["sentences"][-1] == EN["limit.screening.not_diagnostic"]
     assert r["saved"] and r["status"] == "preliminary"
     [ra] = fhir.search("RiskAssessment", subject=f"Patient/{patient}")
@@ -291,3 +299,17 @@ def test_emergency_with_real_automorph(api, monkeypatch):
     login(api, "gp1")
     r = post(api).json()
     assert r["quality"]["accept"] and r["segmentation"]["disc_found"] and r["triage"]["level"] == "ESCALATE"
+
+
+def test_patient_id_comma_injection_is_refused(stub, monkeypatch):
+    s = use(stub, monkeypatch, Store())
+    r = post(stub, pid="X,Patient/123")
+    assert r.status_code == 422 and s.transactions == []
+    assert stub.get("/media/1,2").status_code == 422 and stub.get("/cases/a,b").status_code == 422
+
+
+@pytest.mark.fhir
+def test_unknown_patient_is_404(live, monkeypatch):
+    monkeypatch.setattr(segment, "segment", fake_seg)
+    login(live, "gp1")
+    assert post(live, pid="99999999").status_code == 404
