@@ -91,3 +91,18 @@ export function ageOf(birth: string | null): number | null {
 export function PageTitle({ children }: { children: ReactNode }): ReactNode {
   return <h1 className="mb-6 text-xl font-semibold">{children}</h1>
 }
+
+/** Load data on mount / when deps change; `reload` re-fetches. */
+export function useLoad<T>(fn: () => Promise<T>, deps: unknown[]): { data: T | null; error: string; reload: () => void } {
+  const [data, setData] = useState<T | null>(null)
+  const [error, setError] = useState('')
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    let live = true
+    setError('')
+    fn().then((d) => live && setData(d)).catch((e: Error) => live && setError(e.message))
+    return () => { live = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [...deps, n])
+  return { data, error, reload: () => setN((x) => x + 1) }
+}

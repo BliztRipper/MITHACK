@@ -3,6 +3,8 @@ import { DatabaseZap, LogOut, Menu } from 'lucide-react'
 import { api, events, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
 import Login from './pages/Login'
+import Patient from './pages/Patient'
+import Patients from './pages/Patients'
 
 interface Route { path: RegExp; roles: Role[]; nav?: string; href?: string; page: (m: string[]) => ReactNode }
 
@@ -10,7 +12,8 @@ interface Route { path: RegExp; roles: Role[]; nav?: string; href?: string; page
 const CLIN: Role[] = ['gp', 'reviewer']
 const soon = (): ReactNode => <p>Coming in the next commit.</p>
 const ROUTES: Route[] = [
-  { path: /^\/patients$/, roles: CLIN, nav: 'Patients', href: '/patients', page: soon },
+  { path: /^\/patients$/, roles: CLIN, nav: 'Patients', href: '/patients', page: () => <Patients /> },
+  { path: /^\/patients\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Patient key={id} id={id} /> },
   { path: /^\/new$/, roles: CLIN, nav: 'New case', href: '/new', page: soon },
   { path: /^\/queue$/, roles: CLIN, nav: 'Review queue', href: '/queue', page: soon },
   { path: /^\/monitoring$/, roles: ['reviewer', 'admin'], nav: 'Monitoring', href: '/monitoring', page: soon },
