@@ -3,7 +3,7 @@
 Prepared for the Siriraj x MIT Hackathon "Agentic Healthcare: From Models to Trustworthy Medicine", Cardiovascular track. Date: 2026-10-17.
 Base paper: Gungor, Sarbout et al., "AI-Based Detection of CRAO Within 4.5 Hours on Standard Fundus Photographs", JAHA 2025 (`CRAO-AI-detection.md`).
 Evidence notes: `outputs/.drafts/crao-ai-detection-prototype-research-{literature,clinical,data,build}.md`. Numbered citations refer to the Sources list at the end.
-Prototype code: `experiments/crao-prototype/`.
+Prototype code: `app/` (the first prototype in `experiments/crao-prototype/` was ported there and removed; see git history).
 
 ---
 
@@ -13,7 +13,7 @@ Prototype code: `experiments/crao-prototype/`.
 - **The clinical payoff has shifted since the paper.** Both phase-3 thrombolysis RCTs within 4.5 h were null: THEIA 19/29 (66%) vs 13/27 (48%), adjusted OR 1.1 (0.07–18.39), p=0.95 [2], and TenCRAOS 20% vs 24% with one fatal brain bleed [3]. REVISION stopped for futility [4]. AHA 2026 calls IV thrombolysis for CRAO "uncertain" (class 2b, via a secondary quote; the primary was blocked) [5]. *Inference:* pitch the tool as "catch the eye stroke and start a same-day stroke work-up", not "enable the clot-buster".
 - **The strongest reason to catch CRAO fast is the stroke that follows.** Stroke/heart-attack risk peaks in days 1–7 after CRAO (IRR 44.5) [6]. Roughly 7–32% have acute or silent brain infarcts on MRI, depending on setting and selection [7][8][9]. In single studies, new AF was found in about half within 2 years (n=100) [10] and ≥70% carotid stenosis in 40% [11]. The IRR comes from one Korean series and combines stroke and heart attack [6].
 - **Recommended enhanced version ("Eye-Stroke Navigator"):** a rule-based agent around the image model. It adds (1) a quality gate with "retake" advice, (2) onset-time and symptom intake, (3) a rule that a normal-looking photo does not reassure a patient with sudden one-eye vision loss within 24 h or with unknown onset, (4) a giant cell arteritis (GCA) red-flag branch, (5) an abstain band that escalates to OCT or tele-ophthalmology, and (6) a stroke work-up checklist. An LLM may only write the summary, never make the call.
-- **A working prototype already exists** in `experiments/crao-prototype/`: quality gate, the paper's preprocessing, training script, rule-based triage and a Gradio UI. All self-checks pass, a 1-epoch training run completed, and the app served on localhost. **No accuracy has been measured**; it needs real data.
+- **A working prototype already exists** (first built in `experiments/crao-prototype/`, now ported into `app/`): quality gate, the paper's preprocessing, training script and rule-based triage (the Gradio UI was replaced by the React app). All self-checks pass, a 1-epoch training run completed, and the app served on localhost. **No accuracy has been measured**; it needs real data.
 - **Data ceiling (must say on stage):** only about 151 public retinal-artery-occlusion images were found across the sources checked (Mendeley, CC BY 4.0; ODIR-5K unverified, BRSET's occlusion label unsplit), and none is labelled hyperacute [12]. A public-data prototype can show "RAO vs look-alikes", not the paper's 4.5 h result.
 
 ---
@@ -98,7 +98,7 @@ flowchart LR
 
 ## 4. The easy prototype (built and checked)
 
-`experiments/crao-prototype/`:
+First prototype, ported into `app/` (`experiments/crao-prototype/` removed; `vision.py` → `app/api/vision/`, `triage.py` → `app/api/rules/`, `train.py` → `app/ml/`, `app.py` → `app/web/`):
 
 | File | What it does | Check run |
 |---|---|---|

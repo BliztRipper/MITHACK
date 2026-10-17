@@ -1,4 +1,4 @@
-"""The base paper's preprocessing (migrated from experiments/crao-prototype/vision.py).
+"""The base paper's preprocessing (migrated from the former prototype vision.py, see git history).
 
 Gungor et al. (JAHA 2025): CLAHE on the L channel in LAB, then background estimation by
 dilation + median blur, subtracted from the image. Kernel sizes are not given in the paper;

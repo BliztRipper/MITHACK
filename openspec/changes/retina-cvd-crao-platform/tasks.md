@@ -63,8 +63,8 @@
 ## 8. Integration and migration
 
 - [x] 8.1 Add one Playwright e2e test in `tests/frontend/`: login as GP → seeded patient → Emergency case with a cached RAO image → heatmap visible → sign with override → report shows final status; verify `npx playwright test` passes with IRIS, API and web running — deviation: asserts the explicit no-model heatmap state; flip to a visible heatmap once a trained model exists
-- [ ] 8.2 Run the full stack from a clean start per design Migration Plan steps 1–2 and walk both modes plus consent withdrawal by hand; verify the AuditEvents and FHIR resources for the walkthrough exist in IRIS
-- [ ] 8.3 Delete `experiments/crao-prototype/` once 2.1, 2.2 and 4.1 tests pass, and update `outputs/crao-ai-detection-prototype.md` references to point at `app/`; verify `grep -r "experiments/crao-prototype"` finds no live code references
+- [x] 8.2 Run the full stack from a clean start per design Migration Plan steps 1–2 and walk both modes plus consent withdrawal by hand; verify the AuditEvents and FHIR resources for the walkthrough exist in IRIS
+- [x] 8.3 Delete `experiments/crao-prototype/` once 2.1, 2.2 and 4.1 tests pass, and update `outputs/crao-ai-detection-prototype.md` references to point at `app/`; verify `grep -r "experiments/crao-prototype"` finds no live code references
 
 ## Workflow follow-up
 

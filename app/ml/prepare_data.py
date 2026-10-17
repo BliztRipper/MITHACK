@@ -4,7 +4,7 @@ Usage: python app/ml/prepare_data.py [arrange|count]   (default: arrange, then c
 Raw inputs (data/ is gitignored):
   data/raw/mendeley_rao/{JSIEC_RAO,RFMiD_RAO,Crawling_RAO}/   Mendeley RAO v2 (public download, 151 images)
   data/raw/rfmid/**/*.png|jpg                                 RFMiD 1.0 images (IEEE DataPort, login needed)
-Leakage rules (experiments/crao-prototype/README.md): RFMiD images that are RAO are dropped from "other";
+Leakage rules (the former prototype README, see git history): RFMiD images that are RAO are dropped from "other";
 the 127 web-crawled images stay in their own split (data/crawled/crao), never in train/val.
 """
 import csv
@@ -15,7 +15,7 @@ from pathlib import Path
 
 DATA = Path(__file__).resolve().parents[2] / "data"
 RAW = DATA / "raw"
-# Expected Mendeley RAO v2 contents (experiments/crao-prototype/README.md lines 16-18).
+# Expected Mendeley RAO v2 contents (the former prototype README, see git history).
 EXPECTED_RAO = {"Crawling_RAO": 127, "JSIEC_RAO": 16, "RFMiD_RAO": 8}
 # RFMiD 1.0 labels CSV (RFMiD_Training_Labels.csv etc.): ID, Disease_Risk, DR, ..., BRVO, ..., CRVO, ..., ODE, ..., AION, ...
 # Column names are from memory of the RFMiD 1.0 release, unverified (no data yet); the filter fails loudly if one is absent.
