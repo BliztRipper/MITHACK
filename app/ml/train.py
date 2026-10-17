@@ -137,7 +137,8 @@ def main():
     root, dev = Path(args.data), default_device()
     train_ds = image_folder(root / "train", transform(args.arch, train=True))
     eval_ds = datasets.ImageFolder(root / "train", transform(args.arch))
-    assert train_ds.classes == ["crao", "other"], train_ds.classes
+    if train_ds.classes != ["crao", "other"]:  # not an assert: python -O would flip column 0
+        raise SystemExit(f"class order must be [crao, other], got {train_ds.classes}")
     targets = np.array(train_ds.targets)
     torch.manual_seed(0)
 
@@ -157,7 +158,8 @@ def main():
     crawled = root / "crawled"
     if (crawled / "crao").exists():  # separate split: CRAO only, so sensitivity only
         cds = datasets.ImageFolder(crawled, transform(args.arch))
-        assert cds.classes == ["crao"], cds.classes
+        if cds.classes != ["crao"]:
+            raise SystemExit(f"crawled split must hold only crao, got {cds.classes}")
         report["crawled_split"] = metrics(*predict(model, cds, dev))
     torch.save({"arch": args.arch, "state": model.cpu().state_dict(), "version": f"{args.arch}-{report['trained']}"},
                args.out)

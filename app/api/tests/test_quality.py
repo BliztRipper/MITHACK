@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 import pytest
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 from skimage import data as skdata
 
 from vision import quality
@@ -95,3 +96,35 @@ def test_intake_rejects_files_over_20_mb():
 def test_intake_rejects_corrupt_image():
     with pytest.raises(Rejected, match="could not be read"):
         quality.intake(b"\x89PNG\r\n\x1a\n" + b"junk")
+
+
+def test_small_retinal_field_is_refused():
+    img = good_rgb()
+    h, w = img.shape[:2]
+    disc = np.zeros((h, w), np.uint8)
+    cv2.circle(disc, (w // 2, h // 2), int(h * 0.2), 1, -1)  # a fundus photo whose field of view is only a small circle
+    small = img * disc[..., None]
+    g = quality.heuristic(small)
+    assert not g.accept and g.reasons[0] == quality.SMALL_FIELD
+
+
+def test_png_under_20_mb_with_huge_pixel_count_is_rejected_not_a_500(monkeypatch):
+    buf = io.BytesIO()
+    Image.fromarray(good_rgb()).save(buf, "PNG")
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 1000)  # bomb error needs 2x the limit
+    with pytest.raises(Rejected, match="could not be read"):
+        quality.intake(buf.getvalue())
+
+
+def test_intake_strips_png_text_chunks_and_exif():
+    exif = Image.Exif()
+    exif[0x010F] = "CameraMaker"
+    info = PngInfo()
+    info.add_text("Author", "Patient Name")
+    buf = io.BytesIO()
+    Image.fromarray(good_rgb()).save(buf, "PNG", pnginfo=info, exif=exif)
+    src = Image.open(io.BytesIO(buf.getvalue()))
+    assert src.text and src.getexif()  # precondition
+    _, clean = quality.intake(buf.getvalue())
+    stored = Image.open(io.BytesIO(clean))
+    assert not stored.info and not stored.getexif()

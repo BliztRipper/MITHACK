@@ -92,7 +92,8 @@ def main():
     net.load_state_dict(ckpt["state"])
     net.to(dev).eval()
     val = image_folder(Path(args.data) / "val", transform(ckpt["arch"]))
-    assert val.classes == ["crao", "other"], val.classes
+    if val.classes != ["crao", "other"]:  # not an assert: python -O would flip column 0
+        raise SystemExit(f"class order must be [crao, other], got {val.classes}")
     logits, ys = [], []
     with torch.no_grad():
         for x, y in torch.utils.data.DataLoader(val, batch_size=32):

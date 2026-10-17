@@ -1,6 +1,7 @@
 """AutoMorph wrapper. Sample: AutoMorph's own images/100.png (Apache-2.0, github.com/rmaphoh/AutoMorph)."""
 import importlib.util
 import pathlib
+import subprocess
 
 import cv2
 import numpy as np
@@ -64,5 +65,18 @@ def test_good_image_passes_both_heuristic_and_m1(seg):
 
 @pytest.mark.slow
 def test_face_is_not_gradable_and_gets_no_masks():
-    s = segment.segment(skdata.astronaut(), features=False)
-    assert not s.gradable and s.vessel is None and s.disc_centre is None
+    ran = []
+    real = segment.subprocess.run
+    segment.subprocess.run = lambda *a, **k: ran.append(a[0]) or real(*a, **k)  # prove both stages ran, not crashed
+    try:
+        s = segment.segment(skdata.astronaut(), features=False)
+    finally:
+        segment.subprocess.run = real
+    assert len(ran) == 2 and not s.gradable and s.vessel is None and s.disc_centre is None
+
+
+def test_subprocess_failure_raises_instead_of_reporting_ungradable(monkeypatch):
+    fail = subprocess.CompletedProcess([], 1, stdout="", stderr="ModuleNotFoundError: torch")
+    monkeypatch.setattr(segment.subprocess, "run", lambda *a, **k: fail)
+    with pytest.raises(segment.SegmentationError, match="ModuleNotFoundError"):
+        segment.segment(skdata.astronaut(), features=False)

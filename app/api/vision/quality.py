@@ -47,7 +47,7 @@ def intake(data: bytes) -> tuple[np.ndarray, bytes]:
     try:
         im = Image.open(io.BytesIO(data))
         im = ImageOps.exif_transpose(im).convert("RGB")  # keep the displayed orientation, then drop the tags
-    except (UnidentifiedImageError, OSError) as e:
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as e:
         raise Rejected("image could not be read") from e
     rgb = np.array(im)
     buf = io.BytesIO()

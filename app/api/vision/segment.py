@@ -35,6 +35,10 @@ class Segmentation:
     avr: float | None = None
 
 
+class SegmentationError(RuntimeError):
+    """AutoMorph itself failed (not a clinical 'ungradable' verdict)."""
+
+
 def _run(data: Path, features: bool) -> str:
     env = {k: v for k, v in os.environ.items() if k != "PYTHONSAFEPATH"}  # AutoMorph imports siblings from the script dir
     env.update(AUTOMORPH_DATA=str(data), PYTORCH_ENABLE_MPS_FALLBACK="1",
@@ -43,6 +47,8 @@ def _run(data: Path, features: bool) -> str:
     for cmd in ([sys.executable, "generate_resolution.py"], ["sh", "run.sh"] + ([] if features else ["--no_feature"])):
         p = subprocess.run(cmd, cwd=AUTOMORPH, env=env, capture_output=True, text=True)
         log += p.stdout + p.stderr
+        if p.returncode:
+            raise SegmentationError(f"AutoMorph {cmd[-1] if len(cmd) > 1 else cmd[0]} exited {p.returncode}:\n" + log[-2000:])
     return log
 
 
@@ -77,7 +83,9 @@ def _disc(mask: np.ndarray):
 def _features(m3: Path) -> dict:
     for f in ("Disc_Features.csv", "Macular_Features.csv"):  # M3 writes the row to one, by image type
         if (m3 / f).exists():
-            for row in csv.DictReader(open(m3 / f, newline="")):
+            with open(m3 / f, newline="") as fh:
+                rows = list(csv.DictReader(fh))
+            for row in rows:
                 if row["Name"] == NAME:
                     def num(k):
                         try:
@@ -100,7 +108,8 @@ def segment(rgb: np.ndarray, features: bool = True) -> Segmentation:
         res = data / "Results"
         if not (res / "M1" / "Good_quality" / NAME).exists():  # M1 bad grade, or M0 found no fundus to crop
             return Segmentation(gradable=False)
-        crop = next(r for r in csv.DictReader(open(res / "M0" / "crop_info.csv")) if r["Name"] == NAME)
+        with open(res / "M0" / "crop_info.csv", newline="") as fh:
+            crop = next(r for r in csv.DictReader(fh) if r["Name"] == NAME)
         read = {k: cv2.imread(str(res / "M2" / k / "raw" / NAME)) for k in ("artery_vein", "optic_disc_cup")}
         read["binary_vessel"] = cv2.imread(str(res / "M2" / "binary_vessel" / "raw_binary" / NAME))
         if any(v is None for v in read.values()):

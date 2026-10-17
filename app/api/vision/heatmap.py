@@ -30,5 +30,6 @@ def heatmap(model: CraoModel, rgb: np.ndarray) -> tuple[np.ndarray, bytes]:
     colour = cv2.applyColorMap((grey * 255).astype(np.uint8), cv2.COLORMAP_JET)  # BGR
     rgba = np.dstack([colour, (grey * 255).astype(np.uint8)])                    # BGRA for cv2.imencode
     ok, png = cv2.imencode(".png", rgba)
-    assert ok
+    if not ok:
+        raise ValueError("could not encode heatmap PNG")
     return grey, png.tobytes()
