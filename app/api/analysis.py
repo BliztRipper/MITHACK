@@ -136,7 +136,7 @@ def screening(img: dict, i) -> dict:
     enh = risk.enhancers(p.risk, outside, i.clinical_enhancers)
     # the AVR interval is a placeholder: every sentence built on it says so (keys with ".placeholder")
     ph = ".placeholder" if CONFIG["risk"]["avr_reference"]["status"] == "placeholder" else ""
-    htn, arcus = risk.htn_stage1(i.sbp, i.dbp, p.risk), risk.arcus_prompt(i.age, i.arcus_senilis)
+    htn, arcus = risk.htn_stage1(i.sbp, i.dbp, p.risk, bool(by)), risk.arcus_prompt(i.age, i.arcus_senilis)
     r = {
         "pce": {"label": p.variant, "risk": p.risk, "band": band, "not_valid": T[p.reason] if p.reason else None,
                 "intensity_only": T["risk.pce_intensity_only"] if by and by.startswith("risk.bypass.diabetes") and p.risk is not None else None,

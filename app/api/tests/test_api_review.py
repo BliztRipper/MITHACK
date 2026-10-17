@@ -79,12 +79,13 @@ def test_final_report_has_every_section(world):
 
 def test_thai_patient_summary_for_signed_screening_case(world):
     rid = world.case("screening")
-    assert world.get(f"/cases/{rid}/summary", params={"lang": "th"}).status_code == 409  # not signed yet
+    th = templates("th")
+    assert world.get(f"/cases/{rid}/summary", params={"lang": "th"}).json()["text"] == [  # not signed yet
+        th["summary.awaiting_review"], th["summary.seek_care"]]
     world.post(f"/cases/{rid}/sign", json={"decision": "confirm"})
     band = world.get(f"/cases/{rid}").json()["analysis"]["risk"]["pce"]["band"]
-    th = templates("th")
     assert world.get(f"/cases/{rid}/summary", params={"lang": "th"}).json() == {
-        "lang": "th", "text": [th[f"summary.screening.pce.{band}"], th["summary.seek_care"]]}
+        "lang": "th", "text": [th[f"summary.screening.pce.{band}"], th["summary.screening.pce_caveat"], th["summary.seek_care"]]}
 
 
 def test_out_of_age_screening_summary_does_not_promise_statin_discussion(world):

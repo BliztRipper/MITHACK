@@ -42,12 +42,17 @@
  "explain.emergency.no_model": "No model loaded: no CRAO probability is available, so the case is escalated for specialist review.",
  "summary.override": "Your doctor has reviewed your eye photo and will explain the result and the next step.",
  "summary.screening.bypass": "The usual risk score does not apply to you. Your doctor will discuss cholesterol-lowering treatment with you.",
- "summary.screening.not_valid": "The heart-risk calculator does not apply at your age. Your doctor will review your risk factors with you.",
+ "summary.screening.not_valid": "The heart-risk calculator does not apply to your age or test results. Your doctor will review your risk factors with you.",
  "summary.seek_care": "Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking.",
  "risk.enhancer.retinal_arteriolar_narrowing.placeholder": "Risk enhancer: retinal arteriolar narrowing (investigational, not a guideline-listed risk enhancer) — artery-to-vein ratio outside a placeholder reference interval, not clinically validated",
  "explain.screening.measurements.placeholder": "Artery-to-vein ratio {avr}: {flag} reference (placeholder interval, not clinically validated).",
  "risk.not_valid.pce_age": "PCE risk not calculated: outside validated age range (40–79).",
  "risk.bypass.diabetes": "Statin benefit group — diabetes 40–75: moderate-intensity statin indicated regardless of calculated risk.",
  "risk.bypass.diabetes.no_ldl": "Statin benefit group — diabetes 40–75: statin indicated if LDL ≥70 mg/dL — LDL not entered.",
- "risk.pce_intensity_only": "This PCE number informs statin intensity only; it is not the basis for treatment."
+ "risk.pce_intensity_only": "This PCE number informs statin intensity only; it is not the basis for treatment.",
+ "risk.htn_stage1.bypass": "Stage 1 hypertension (130–139 / 80–89 mmHg) in a statin-benefit group: the calculated 10-year risk does not apply to the blood-pressure decision. Treat blood pressure per guideline (with clinical ASCVD or diabetes: blood-pressure medication plus lifestyle modification).",
+ "summary.screening.pce_caveat": "This estimate comes from a calculator developed in the United States and may overestimate risk for Thai patients. Please discuss it with your doctor.",
+ "summary.awaiting_review": "Your result is awaiting review by a clinician. Your doctor will tell you the result and the next step.",
+ "summary.emergency.crao_confirmed": "Your doctor has confirmed a blocked artery in the eye (a stroke of the eye). You need urgent checks today for stroke and heart causes.",
+ "summary.emergency.not_crao": "Your doctor has checked your eye photo and does not think it shows a blocked eye artery. Your doctor will explain the next step for your vision complaint."
 }

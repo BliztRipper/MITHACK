@@ -148,3 +148,10 @@ def test_retinal_enhancer_is_labelled_investigational_in_both_languages():
         assert "retinal arteriolar narrowing (investigational, not a guideline-listed risk enhancer)" in templates("en")[k]
         assert "ไม่ใช่ปัจจัยเสริมความเสี่ยงที่แนวปฏิบัติระบุ" in templates("th")[k]
     assert "placeholder" in templates("en")["risk.enhancer.retinal_arteriolar_narrowing.placeholder"]
+
+
+def test_htn_stage1_in_a_statin_benefit_group_is_not_based_on_the_pce_number():
+    for r in (None, 6, 12):
+        k = risk.htn_stage1(135, 85, r, bypass=True)
+        assert k == "risk.htn_stage1.bypass" and "below 10%" not in txt(k) and "does not apply" in txt(k)
+    assert risk.htn_stage1(150, 85, 6, bypass=True) is None  # stage 2 is unchanged

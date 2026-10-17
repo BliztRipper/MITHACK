@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 import deps
 from fhir import mapping as m
 from fhir.client import FhirError
+from rules.risk import PCE_BANDS
 from rules.text import templates
 from routes.cases import AI_LABEL
 from routes.patients import mode_of, summary as patient_summary
@@ -18,6 +19,7 @@ from routes.patients import mode_of, summary as patient_summary
 router = APIRouter(tags=["review"])
 CLINICIANS = deps.role("gp", "reviewer")
 REVIEW = f"{m.LOCAL}/review"
+PCE_SUMMARIES = {f"summary.screening.pce.{b}" for b in PCE_BANDS}
 REASONS = ("image misread", "clinical findings disagree", "poor image", "other")
 
 
@@ -177,21 +179,38 @@ def history(rid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
 def patient_summary_text(rid: deps.FhirId, request: Request, lang: Literal["en", "th"] = "en", u: dict = Depends(CLINICIANS)):
     """Fixed-template patient summary of a signed result, with when to seek emergency care."""
     request.state.audit = ("R", f"DiagnosticReport/{rid}")
-    rep = readable(rid, u)
-    if rep["status"] == "preliminary":
-        raise HTTPException(409, "the summary is available after signing")
     t = templates(lang)
-    return {"lang": lang, "text": [t[summary_key(rep)], t["summary.seek_care"]]}
+    return {"lang": lang, "text": [t[k] for k in summary_keys(readable(rid, u))]}
+
+
+def summary_keys(rep: dict) -> list[str]:
+    """Unsigned: only "awaiting review" (no AI result reaches the patient). PCE summaries add the caveat that a
+    US-derived calculator may overestimate risk for Thai patients."""
+    if rep["status"] == "preliminary":
+        return ["summary.awaiting_review", "summary.seek_care"]
+    k = summary_key(rep)
+    return [k, *(["summary.screening.pce_caveat"] if k in PCE_SUMMARIES else []), "summary.seek_care"]
+
+
+def _emergency_key(c: str, sign: dict) -> str:
+    """Keyed on the clinician's signed decision (CRAO yes/no, override reason), never on the AI level alone."""
+    if sign.get("crao"):
+        return "summary.emergency.STROKE_PATHWAY" if c == "STROKE_PATHWAY" else "summary.emergency.crao_confirmed"
+    if sign.get("decision") == "override":
+        return "summary.emergency.RETAKE" if sign.get("reason") == "poor image" else "summary.emergency.not_crao"
+    return "summary.emergency.not_crao" if c in ("STROKE_PATHWAY", "URGENT") else f"summary.emergency.{c}"
 
 
 def summary_key(rep: dict) -> str:
-    """Template key for a signed report. Overridden, amended or legacy reports without an AI code (e.g. seeded
-    history) get the clinician-led sentence: the AI band is not the authoritative result there."""
-    c = code(rep)
-    if c is None or rep["status"] == "amended" or any(r.get("decision") == "override" for r in reviews(rep)):
+    """Template key for a signed report. Amended reports, overridden Screening reports and legacy reports without
+    an AI code (e.g. seeded history) get the clinician-led sentence: the AI band is not the authoritative result."""
+    c, rv = code(rep), reviews(rep)
+    if c is None or rep["status"] == "amended":
         return "summary.override"
     if mode_of(rep) == "emergency":
-        return f"summary.emergency.{c}"
+        return _emergency_key(c, next((r for r in rv if r.get("action") == "sign"), {}))
+    if any(r.get("decision") == "override" for r in rv):
+        return "summary.override"
     if c == "not-valid":
         return "summary.screening.not_valid"
     return "summary.screening.bypass" if c == "bypass" else f"summary.screening.pce.{c.removeprefix('pce-')}"

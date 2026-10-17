@@ -104,11 +104,14 @@ def bypass(i: Inputs) -> str | None:
     return None
 
 
-def htn_stage1(sbp: float, dbp: float | None, risk_pct: float | None) -> str | None:
-    """ACC/AHA stage 1: SBP 130-139 or DBP 80-89, with neither in the stage 2 range."""
+def htn_stage1(sbp: float, dbp: float | None, risk_pct: float | None, bypass: bool = False) -> str | None:
+    """ACC/AHA stage 1: SBP 130-139 or DBP 80-89, with neither in the stage 2 range. In a statin-benefit group
+    (bypass) the PCE number is never the basis for the blood-pressure sentence."""
     if sbp >= 140 or (dbp is not None and dbp >= 90):
         return None
     if 130 <= sbp or (dbp is not None and dbp >= 80):
+        if bypass:
+            return "risk.htn_stage1.bypass"
         if risk_pct is None:  # e.g. age 30-39: no PCE, so no risk statement
             return "risk.htn_stage1"
         return "risk.htn_stage1.ge10" if risk_pct >= 10 else "risk.htn_stage1.lt10"
