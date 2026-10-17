@@ -39,7 +39,7 @@ patient → mode → PDPA consent → inputs → fundus upload → EXIF strip �
 - IRIS for Health is the **FHIR R4 clinical data repository** and the only clinical store. No second database (spec fhir-clinical-records: FHIR server is the system of record; design D8).
 - Each case save is one **transaction Bundle**, all or nothing. Seeding uses **conditional create**, so re-running it adds no duplicates (design D8; spec fhir-clinical-records: Synthetic Thai demo patients).
 - **Version history underpins crypto-shredding.** FHIR keeps history on delete, so images are encrypted per patient and the patient key is destroyed on consent withdrawal. History copies then cannot be decrypted (design D9; spec patient-data-protection: Consent withdrawal and erasure).
-- **14 resource types** in use: Patient, Consent, Encounter, Media, Observation, Condition, RiskAssessment, DiagnosticReport, Device, Provenance, AuditEvent, Practitioner, Flag and Organization (spec fhir-clinical-records: Resource mapping; design D8).
+- **14 resource types** in use: Patient, Consent, Encounter, Media, Observation, Condition, RiskAssessment, DiagnosticReport, Device, Provenance, AuditEvent, Practitioner, Flag and Organization (spec fhir-clinical-records: Resource mapping; design D8). The code adds Practitioner and Flag (design D8) and Organization (the Flag subject, since R4 does not allow a Device subject) beyond the spec's list of 11 (`app/api/fhir/mapping.py`).
 - Starting point: the InterSystems FHIR-AI-Hackathon-Kit (MIT, attributed), IRIS for Health Community in Docker with FHIR R4 (design Context, D1).
 
 ## PDPA biometric handling
@@ -56,5 +56,5 @@ Retinal images are biometric and health data under PDPA s.26 (proposal, What Cha
 
 ## Known limits to volunteer
 - Demo cache covers 4 of 6 curated images; an uncached live analysis can exceed 90 s (design D11; task reports). AutoMorph's full pipeline took 33–61 s cold (`docs/model-card.md`).
-- AutoMorph's AVR on the gradable demo images (0.55–0.59) falls below the placeholder interval, so the retinal enhancer flags them (`docs/risk-register.md`, H7).
+- AutoMorph's AVR on the gradable demo images (0.55–0.59) falls below the placeholder interval, so the retinal enhancer flags them (`app/api/demo_cache/*/meta.json`: 0.548, 0.550, 0.588).
 - An IRIS superuser can edit records, and the audit log is not tamper-evident (design D10).

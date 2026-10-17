@@ -58,7 +58,7 @@
 ## 7. Governance documents
 
 - [x] 7.1 Write `docs/intended-use.md` (users: frontline non-ophthalmologist clinicians; decision support only; not for diagnosis; contraindications) and `docs/risk-register.md` mapping each hazard (missed CRAO, false CRAO, poor image, automation bias, data breach, drift, PCE miscalibration) to mitigations in the app and to NIST AI RMF functions and EU AI Act high-risk obligations (risk management, data governance, logging, transparency, human oversight, accuracy/robustness); verify each mitigation names a spec requirement that exists
-- [x] 7.2 Write `docs/pitch-notes.md`: corrected user flow, why risk-enhancer framing, data ceiling statement, PDPA biometric handling, business model (per-screen fee via existing DR-screening sites / hospital SaaS), Thai FDA SaMD path, RETFound licence and FLAIR swap; verify every claim cites a spec, design decision or source
+- [x] 7.2 Write `docs/pitch-notes.md`: corrected user flow, why risk-enhancer framing, data ceiling statement, PDPA biometric handling, business model (per-screen fee via existing DR-screening sites / hospital SaaS), Thai FDA SaMD path, RETFound licence and FLAIR swap; verify every claim cites a spec, design decision or source — deviation: pricing figures and the Thai FDA SaMD path are stated as hypothesis / not assessed (no source in the plan)
 
 ## 8. Integration and migration
 

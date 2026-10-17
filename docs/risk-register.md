@@ -30,7 +30,7 @@ Dark, blurred, partial or non-fundus photo gives a meaningless output.
 - Format and size limits: `spec retinal-image-intake: Accepted image formats and size`.
 - Retinal enhancers skipped, and the report says so, when the image fails: `spec cvd-risk-assessment: Risk enhancers`.
 
-NIST: Measure, Manage. EU AI Act: Art. 10, 15. **Residual: medium.** The gate is a hand-tuned heuristic (tuned on 12 camera photos). It rejects 16 of 127 web-crawled RAO figures, and AutoMorph's quality grade may disagree with it.
+NIST: Measure, Manage. EU AI Act: Art. 10, 15. **Residual: medium.** The gate is a hand-tuned heuristic (tuned on 12 camera photos, `app/api/vision/quality.py` lines 71-72). It rejects 16 of 127 web-crawled RAO figures (same source), and AutoMorph's quality grade may disagree with it.
 
 ## H4. Automation bias
 A busy GP accepts every output; the heatmap is read as a lesion map.
@@ -75,7 +75,7 @@ PCE was not derived in Asian populations and may overestimate risk. Coefficients
 - Method is recorded with each result: `spec fhir-clinical-records: Resource mapping`.
 - AHA PREVENT considered and rejected for demo scope (design D7).
 
-NIST: Map, Measure. EU AI Act: Art. 10, 13, 15. **Residual: medium.** The coefficients have not been checked against the published paper (design Risks), and the oracle test uses published worked examples. PCE may overestimate risk for Thai patients. The AVR reference interval is a literature placeholder, and AutoMorph's AVR (0.55–0.59 on the gradable demo images) falls below it, so the retinal enhancer flags every demo image.
+NIST: Map, Measure. EU AI Act: Art. 10, 13, 15. **Residual: medium.** The coefficients have not been checked against the published paper (design Risks), and the oracle test uses published worked examples. PCE may overestimate risk for Thai patients. The AVR reference interval is a literature placeholder, and AutoMorph's AVR (0.55–0.59 on the gradable demo images, `app/api/demo_cache/*/meta.json`) falls below it, so the retinal enhancer flags every gradable demo image.
 
 ## Coverage by EU AI Act obligation
 
