@@ -39,3 +39,9 @@ def test_fhir_error_keeps_no_response_body(fhir):
         fhir.create({"resourceType": "Patient", "name": [{"family": "SecretFamilyName"}], "gender": "bogus"})
     assert e.value.status == 400 and "SecretFamilyName" not in str(e.value)
     assert "error:" in e.value.outcome
+
+
+def test_search_drops_operation_outcome_entries(fhir):
+    """IRIS adds a search.mode "outcome" OperationOutcome for some parameters (e.g. Flag?status=active)."""
+    assert all(r["resourceType"] == "Flag" for r in fhir.search("Flag", status="active"))
+    assert all(r["resourceType"] == "Patient" for r in fhir.search("Patient", status="active"))

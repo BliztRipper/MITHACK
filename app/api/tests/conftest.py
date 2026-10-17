@@ -76,6 +76,9 @@ def live(api, fhir, monkeypatch):
     monkeypatch.setattr(deps, "fhir", lambda: fhir)
     api.store = fhir
     yield api
+    for f in fhir.search("Flag"):  # drift alerts and incidents raised by the test
+        if f.get("period", {}).get("start", "") >= start:
+            fhir.delete("Flag", f["id"])
     for a in fhir.search("AuditEvent", date=f"ge{start}"):
         if a["agent"][0]["who"].get("display") in TEST_USERS:
             fhir.delete("AuditEvent", a["id"])

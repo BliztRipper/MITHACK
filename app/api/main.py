@@ -5,17 +5,18 @@
 """
 import logging
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
-from routes import auth, cases, patients, review
+from rules.text import CONFIG
+from routes import auth, cases, monitoring, patients, review
 
 app = FastAPI(title="Retina CVD/CRAO API")
-for r in (auth, patients, cases, review):
+for r in (auth, patients, cases, review, monitoring):
     app.include_router(r.router)
 
 
@@ -66,3 +67,14 @@ def health():
     except (FhirUnavailable, FhirError, RuntimeError):
         store = "unavailable"
     return {"api": "ok", "record_store": store}
+
+
+@app.get("/about")
+def about(u: dict = Depends(deps.user)):
+    """Thresholds with their validation status, and the loaded model (spec: thresholds visible)."""
+    model = deps.model()
+    t = CONFIG["triage"]
+    lo, hi = model.thresholds() if model else (t["p_low"]["value"], t["p_high"]["value"])
+    return {"config": {k: CONFIG[k] for k in ("triage", "risk", "monitoring")},
+            "crao_thresholds": {"p_low": lo, "p_high": hi, "source": "model checkpoint" if model else "config.yaml"},
+            "model": model.info() if model else None, "model_status": "loaded" if model else "no model loaded"}

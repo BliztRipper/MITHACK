@@ -133,6 +133,11 @@ def sign(rid: str, body: Sign, request: Request, u: dict = Depends(CLINICIANS)):
     if body.decision == "override":  # the clinician finding is authoritative; the AI output stays in presentedForm
         rep["conclusion"] = body.finding
     out = _write(rep, u, {"action": "sign", "ai_conclusion": record(rep).get("conclusion"), **body.model_dump()})
+    from routes import monitoring  # import here: monitoring builds on this module
+    try:
+        monitoring.check_drift()  # drift is re-checked on every signature
+    except Exception as e:  # the signature is saved; a failed check is retried when the dashboard opens
+        monitoring.log.error("drift check failed error=%s", type(e).__name__)
     return {**item(out), "reviews": reviews(out)}
 
 

@@ -32,6 +32,7 @@ def analysis_error(case_id: str, e: Exception) -> HTTPException:
 
 AI_LABEL = "AI-assisted, not a diagnosis"
 NOT_SAVED = "record store unavailable, not saved"
+NO_MODEL = "no-model"
 CONSENT_REQUIRED = {"code": "consent_required", "message": "no active consent for retinal image processing"}
 
 
@@ -88,14 +89,20 @@ def _conditions(mode, inputs) -> list:
     return [(text, key.replace("treated_htn", "hypertension")) for key, text in c if getattr(inputs, key)]
 
 
+def device(model) -> tuple[dict, str]:
+    """The Device for a model version, and its identifier value (conditional create: one per version)."""
+    info = model.info() if model else {"model": "none", "version": NO_MODEL, "calibration_date": None}
+    ident = f"{info['model']}-{info['version']}"
+    d = m.device(f"crao-{info['model']}", info["version"] or "unversioned", info["calibration_date"] or "uncalibrated")
+    d["identifier"] = [{"system": f"{m.LOCAL}/device", "value": ident}]
+    return d, ident
+
+
 def save(pid, u, model, fundus, pngs, mode, obs, risks, conditions, conclusion, code, record) -> str:
     """One transaction Bundle (all or nothing): images encrypted first, so only ciphertext reaches FHIR."""
     ks, pref = deps.keys(), f"Patient/{pid}"
     cts = [(k, *ks.encrypt(pid, b)) for k, b in [("fundus", fundus), *((k, pngs[k]) for k in analysis.OVERLAYS if k in pngs)]]
-    info = model.info() if model else {"model": "none", "version": "no-model", "calibration_date": None}
-    dev, ident = m.urn(), f"{info['model']}-{info['version']}"
-    d = m.device(f"crao-{info['model']}", info["version"] or "unversioned", info["calibration_date"] or "uncalibrated")
-    d["identifier"] = [{"system": f"{m.LOCAL}/device", "value": ident}]
+    (d, ident), dev = device(model), m.urn()
     es, rep = m.case_bundle(mode, pref, deps.practitioner(u), dev, cts, obs, risks, conditions,
                             status="preliminary", conclusion=conclusion)
     es = [m.entry(dev, d, f"identifier={m.LOCAL}/device|{ident}")] + \
@@ -150,6 +157,7 @@ def create_case(request: Request, patient_id: str = Form(), mode: Literal["scree
     seg = img["segmentation"]
     result = {"case_id": case_id, "report_id": None, "saved": False, "save_error": None, "status": "preliminary",
               "label": AI_LABEL, "mode": mode, "patient_id": patient_id, "cached": hit is not None,
+              "model_version": analysis.version(model) or NO_MODEL,
               "quality": {"accept": q["accept"], "score": q["score"], "reasons": q["reasons"], "parts": q["parts"]},
               "segmentation": None if seg is None else {"disc_found": seg["disc_centre"] is not None,
                                                          "disc_centre": seg["disc_centre"], "disc_diameter": seg["disc_diameter"]},

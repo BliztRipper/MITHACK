@@ -57,7 +57,8 @@ class FhirClient:
         """Returns all matching resources (follows next links)."""
         out, bundle = [], self._req("GET", f"/{rtype}", params={"_count": 100, **params})
         while True:
-            out += [e["resource"] for e in bundle.get("entry", [])]
+            # skip search.mode "outcome" entries (IRIS adds an OperationOutcome for some parameters)
+            out += [e["resource"] for e in bundle.get("entry", []) if e.get("search", {}).get("mode") != "outcome"]
             nxt = next((l["url"] for l in bundle.get("link", []) if l["relation"] == "next"), None)
             if not nxt:
                 return out
