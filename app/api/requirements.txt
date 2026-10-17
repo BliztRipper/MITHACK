@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+torch==2.3.1
+torchvision
+timm
+opencv-python-headless
+numpy
+httpx
+cryptography
+bcrypt
+itsdangerous
+pyyaml
+grad-cam  # module name: pytorch_grad_cam
+pytest
