@@ -18,3 +18,7 @@ __pycache__/
 *.pt
 *.pth
 *.onnx
+.claude/state/
+.claude/sessions/
+data/
+.keys/
