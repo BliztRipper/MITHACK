@@ -44,7 +44,7 @@
 - [x] 5.4 Implement `POST /cases` (mode + inputs + image → quality gate → segmentation → Screening: measurements + risk, or Emergency: probability + heatmap + triage → explanation) saving a preliminary case as one transaction, with demo-cache lookup by SHA-256 (design D11); verify an end-to-end API test for each mode and for a RETAKE image returns the spec'd fields
 - [x] 5.5 Implement review endpoints: queue (Emergency first, ESCALATE visible to reviewers), confirm, override with required reason, amend (status amended, history kept), Provenance on sign; verify tests for each clinician-review and report-status scenario
 - [x] 5.6 Implement monitoring endpoints: metrics per model version and period, calibration summary with the 30-case minimum, rolling-50 drift alerts (quality, uncertain, override, agreement upper limit) as Flags with acknowledge, incident flag/close, and de-identified consented export (zip + labels CSV, audited); verify tests for each model-monitoring scenario
-- [ ] 5.7 Populate `app/api/demo_cache/` for the 6 curated CC BY images with attribution in `demo_cache/SOURCES.md`; verify each cached case returns in under 2 s via `POST /cases` — PARTIAL (user): 4 of 6 licensed demo images (2 RAO, derived poor-quality, AutoMorph sample); CRVO-mimic, normal and hypertensive-looking pending licensed images
+- [ ] 5.7 Populate `app/api/demo_cache/` for the 6 curated CC BY images with attribution in `demo_cache/SOURCES.md`; verify each cached case returns in under 2 s via `POST /cases` — PARTIAL (user): 5 of 6 licensed demo images (2 RAO, derived poor-quality, AutoMorph sample, NEI normal, BRVO mimic); hypertensive-looking still missing (no licensed image with confirmed provenance)
 
 ## 6. Web app
 

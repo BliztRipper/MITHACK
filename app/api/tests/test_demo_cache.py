@@ -27,7 +27,7 @@ def test_each_cached_case_returns_in_under_2_seconds(live, patient, monkeypatch)
     monkeypatch.setattr(analysis.segment, "segment", lambda *a, **k: pytest.fail("cache miss: pipeline ran"))
     login(live, "gp1")
     live.post(f"/patients/{patient}/consent", json=CONSENT)
-    files = {hashlib.sha256(p.read_bytes()).hexdigest(): p for p in IMAGES.glob("*.png")}
+    files = {hashlib.sha256(p.read_bytes()).hexdigest(): p for p in IMAGES.iterdir() if p.suffix in (".png", ".jpg")}
     assert set(ENTRIES) <= files.keys()
     for sha in ENTRIES:
         for mode, inputs in (("emergency", '{"hours_since_onset": 2, "sudden_painless_monocular": true, "gca_symptoms": false}'),

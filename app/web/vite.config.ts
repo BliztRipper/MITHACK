@@ -13,8 +13,8 @@ const demoImages = (): Plugin => ({
   configureServer(server) {
     server.middlewares.use('/demo-images/', (req, res, next) => {
       const file = path.join(DEMO, path.basename(req.url ?? ''))
-      if (!file.endsWith('.png') || !fs.existsSync(file)) return next()
-      res.setHeader('Content-Type', 'image/png')
+      if (!/\.(png|jpg)$/.test(file) || !fs.existsSync(file)) return next()
+      res.setHeader('Content-Type', file.endsWith('.jpg') ? 'image/jpeg' : 'image/png')
       fs.createReadStream(file).pipe(res)
     })
   },

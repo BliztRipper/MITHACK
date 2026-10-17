@@ -1,0 +1,17 @@
+{
+ "model_version": null,
+ "segmentation": null,
+ "p": null,
+ "quality": {
+  "accept": false,
+  "score": 0.41642210529898877,
+  "reasons": [
+   "blurred: refocus and hold the camera steady"
+  ],
+  "parts": {
+   "fov": 1.0,
+   "exposure": 0.8880295763867613,
+   "sharpness": 0.41642210529898877
+  }
+ }
+}
