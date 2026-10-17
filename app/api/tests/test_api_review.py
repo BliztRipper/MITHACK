@@ -25,6 +25,7 @@ def world(live, fhir, patient, monkeypatch):
         r = post(live, pid=patient) if mode == "emergency" else post(live, "screening", json.dumps(SCREENING), pid=patient)
         return r.json()["report_id"]
     live.case = case
+    live.pid = patient
     return live
 
 
@@ -84,6 +85,16 @@ def test_thai_patient_summary_for_signed_screening_case(world):
     th = templates("th")
     assert world.get(f"/cases/{rid}/summary", params={"lang": "th"}).json() == {
         "lang": "th", "text": [th[f"summary.screening.pce.{band}"], th["summary.seek_care"]]}
+
+
+def test_out_of_age_screening_summary_does_not_promise_statin_discussion(world):
+    r = post(world, "screening", json.dumps({**SCREENING, "age": 35}), pid=world.pid)
+    rid = r.json()["report_id"]
+    world.post(f"/cases/{rid}/sign", json={"decision": "confirm"})
+    for lang in ("en", "th"):
+        t = templates(lang)
+        assert world.get(f"/cases/{rid}/summary", params={"lang": lang}).json()["text"] == [t["summary.screening.not_valid"], t["summary.seek_care"]]
+        assert t["summary.screening.not_valid"] != t["summary.screening.bypass"]
 
 
 def test_queue_lists_emergency_first(world, fhir):

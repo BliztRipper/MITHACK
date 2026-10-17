@@ -4,6 +4,7 @@ AutoMorph is replaced by a fake segmentation (the real one takes ~30 s; tests/te
 """
 import base64
 import io
+import json
 import logging
 
 import cv2
@@ -23,7 +24,8 @@ from vision import crao_model, segment
 
 SAMPLE = (segment.AUTOMORPH / "images" / "100.png").read_bytes()  # AutoMorph sample fundus (Apache-2.0)
 EMERGENCY = '{"hours_since_onset": 2, "sudden_painless_monocular": true, "gca_symptoms": false}'
-SCREENING = {"age": 60, "sex": "male", "smoking": "current", "sbp": 150, "dbp": 85, "tc": 220, "hdl": 45, "ldl": 140}
+SCREENING = {"age": 60, "sex": "male", "smoking": "current", "sbp": 150, "dbp": 85, "tc": 220, "hdl": 45, "ldl": 140,
+             "diabetes": False, "treated_htn": False, "ascvd": False, "african_american": False}
 CONSENT = {"care": True, "model_improvement": False, "retention_years": 10, "right_to_withdraw_explained": True}
 EN = templates("en")
 
@@ -122,11 +124,11 @@ def test_unsupported_and_oversize_files_rejected_with_reason(stub, monkeypatch):
 
 def test_implausible_value_rejected_naming_the_range(stub, monkeypatch):
     use(stub, monkeypatch, Store())
-    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 400}')
+    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 400, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
     assert r.status_code == 422
     [err] = r.json()["detail"]
     assert err["loc"][-1] == "sbp" and "260" in err["msg"]
-    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 120, "tc": 5}')
+    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 120, "tc": 5, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
     assert r.status_code == 422 and "50" in r.json()["detail"][0]["msg"]
 
 
@@ -259,6 +261,12 @@ def test_diabetes_40_75_states_statin_group_and_labels_pce_as_intensity_only(stu
     b = post(stub, "screening", json.dumps({**SCREENING, **extra})).json()["risk"]
     assert b["bypass"] == EN[key] and b["pce"]["suggestion"] is None and b["enhancers"]["note"] is None
     assert b["pce"]["risk"] > 0 and b["pce"]["intensity_only"] == EN["risk.pce_intensity_only"]
+
+
+@pytest.mark.parametrize("field", ["diabetes", "treated_htn", "ascvd", "african_american"])
+def test_screening_requires_explicit_yes_no_inputs(stub, field):
+    r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k != field}))
+    assert r.status_code == 422 and field in r.text
 
 
 def test_non_diabetic_has_no_intensity_only_label_and_age_35_shows_out_of_range_text(stub, monkeypatch):

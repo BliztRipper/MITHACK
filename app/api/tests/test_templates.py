@@ -4,13 +4,14 @@ import re
 from rules import risk
 from rules.text import CONFIG, templates
 
-RULES = pathlib.Path(__file__).resolve().parents[1] / "rules"
+API = pathlib.Path(__file__).resolve().parents[1]
+SOURCES = [*(API / "rules").glob("*.py"), API / "analysis.py", *(API / "routes").glob("*.py")]
 KEY = re.compile(r'"((?:risk|limit|explain|summary)\.[A-Za-z0-9_.]+)"')
 
 
 def used_keys():
     # Scans source so keys added later (e.g. explanation region keys) are checked automatically.
-    return {k for f in RULES.glob("*.py") for k in KEY.findall(f.read_text())}
+    return {k for f in SOURCES for k in KEY.findall(f.read_text())}
 
 
 def test_both_templates_define_the_same_keys():
@@ -19,7 +20,8 @@ def test_both_templates_define_the_same_keys():
 
 def test_every_key_used_by_the_rules_is_present_in_both_templates():
     used = used_keys()
-    assert "risk.bypass.ascvd" in used  # the scan finds something
+    assert "risk.bypass.ascvd" in used  # the scan finds rules keys
+    assert "summary.screening.not_valid" in used  # ...and route keys (built keys like pce.{band} are checked below)
     for lang in ("en", "th"):
         assert used <= templates(lang).keys(), used - templates(lang).keys()
 

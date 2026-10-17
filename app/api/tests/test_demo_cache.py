@@ -31,7 +31,7 @@ def test_each_cached_case_returns_in_under_2_seconds(live, patient, monkeypatch)
     assert set(ENTRIES) <= files.keys()
     for sha in ENTRIES:
         for mode, inputs in (("emergency", '{"hours_since_onset": 2, "sudden_painless_monocular": true, "gca_symptoms": false}'),
-                             ("screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 135, "tc": 210, "hdl": 50}')):
+                             ("screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 135, "tc": 210, "hdl": 50, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')):
             t = time.perf_counter()
             r = live.post("/cases", data={"patient_id": patient, "mode": mode, "inputs": inputs},
                           files={"image": (files[sha].name, files[sha].read_bytes())})

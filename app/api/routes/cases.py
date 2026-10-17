@@ -48,15 +48,15 @@ class ScreeningInputs(BaseModel):
     age: int = Field(ge=18, le=110)
     sex: Literal["male", "female"]
     smoking: Literal["never", "former", "current"]
-    diabetes: bool = False
+    diabetes: bool
     sbp: float = Field(ge=60, le=260)
     dbp: float | None = Field(None, ge=30, le=160)
-    treated_htn: bool = False
+    treated_htn: bool
     tc: float | None = Field(None, ge=50, le=500)
     hdl: float | None = Field(None, ge=10, le=200)
     ldl: float | None = Field(None, ge=10, le=400)
-    african_american: bool = False
-    ascvd: bool = False
+    african_american: bool
+    ascvd: bool
     arcus_senilis: bool = False
     clinical_enhancers: list[str] = Field(default_factory=list, max_length=10)
 

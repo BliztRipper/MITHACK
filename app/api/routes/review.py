@@ -192,4 +192,6 @@ def summary_key(rep: dict) -> str:
         return "summary.override"
     if mode_of(rep) == "emergency":
         return f"summary.emergency.{c}"
-    return "summary.screening.bypass" if c in ("bypass", "not-valid") else f"summary.screening.pce.{c.removeprefix('pce-')}"
+    if c == "not-valid":
+        return "summary.screening.not_valid"
+    return "summary.screening.bypass" if c == "bypass" else f"summary.screening.pce.{c.removeprefix('pce-')}"
