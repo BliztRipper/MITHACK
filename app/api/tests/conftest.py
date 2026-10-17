@@ -58,6 +58,8 @@ def api(monkeypatch, tmp_path):
     import main
     ks = KeyStore(os.urandom(32), tmp_path / "keys.json")
     monkeypatch.setattr(deps, "keys", lambda: ks)
+    import analysis
+    monkeypatch.setattr(analysis, "CACHE", tmp_path / "cache")  # the real demo cache would bypass test fakes
     c = TestClient(main.app)
     c.store = Recorder()
     monkeypatch.setattr(deps, "fhir", lambda: c.store)

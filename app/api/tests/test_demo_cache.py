@@ -9,12 +9,13 @@ import deps
 from conftest import login
 from test_api_cases import CONSENT
 
-IMAGES = analysis.CACHE / "images"
-ENTRIES = sorted(p.parent.name for p in analysis.CACHE.glob("*/meta.json"))
+CACHE = analysis.CACHE
+IMAGES = CACHE / "images"
+ENTRIES = sorted(p.parent.name for p in CACHE.glob("*/meta.json"))
 
 
 def test_every_cached_case_is_attributed():
-    sources = (analysis.CACHE / "SOURCES.md").read_text()
+    sources = (CACHE / "SOURCES.md").read_text()
     assert ENTRIES and all(sha in sources for sha in ENTRIES)
 
 
@@ -22,6 +23,7 @@ def test_every_cached_case_is_attributed():
 @pytest.mark.skipif(not IMAGES.exists(), reason="run python -m demo_cache.build first (needs the local data/ copies)")
 def test_each_cached_case_returns_in_under_2_seconds(live, patient, monkeypatch):
     monkeypatch.setattr(deps, "model", lambda: None)
+    monkeypatch.setattr(analysis, "CACHE", CACHE)
     monkeypatch.setattr(analysis.segment, "segment", lambda *a, **k: pytest.fail("cache miss: pipeline ran"))
     login(live, "gp1")
     live.post(f"/patients/{patient}/consent", json=CONSENT)
