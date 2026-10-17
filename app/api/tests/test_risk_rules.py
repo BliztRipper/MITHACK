@@ -95,3 +95,8 @@ def test_arcus_in_young_patient_prompts_lipid_check_without_changing_risk():
     assert "check lipid profile; consider familial hypercholesterolaemia" in txt(k)
     assert risk.arcus_prompt(50, True) == "risk.arcus.observation"
     assert risk.arcus_prompt(38, False) is None
+
+
+def test_stage1_hypertension_without_pce_risk_gives_label_without_risk_statement():
+    k = risk.htn_stage1(135, 85, None)
+    assert k == "risk.htn_stage1" and "below 10%" not in txt(k)

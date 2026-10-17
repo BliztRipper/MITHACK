@@ -1,7 +1,7 @@
 import pathlib
 import re
 
-from rules import triage
+from rules import risk
 from rules.text import CONFIG, templates
 
 RULES = pathlib.Path(__file__).resolve().parents[1] / "rules"
@@ -35,8 +35,10 @@ def test_patient_summaries_exist_for_every_triage_level_and_pce_band():
     en = templates("en")
     for lvl in ("STROKE_PATHWAY", "URGENT", "ESCALATE", "RETAKE", "ROUTINE"):
         assert f"summary.emergency.{lvl}" in en
-    for b in ("low", "borderline", "intermediate", "high"):
-        assert f"summary.screening.{b}" in en
+    for b in risk.PCE_BANDS:
+        assert f"summary.screening.pce.{b}" in en
+    for b in risk.THAI_BANDS:
+        assert f"summary.screening.thai.{b}" in en
 
 
 def test_every_threshold_has_a_status_and_triage_ones_are_placeholders():
@@ -51,7 +53,9 @@ def test_every_threshold_has_a_status_and_triage_ones_are_placeholders():
     assert all(v["status"] == "placeholder" for v in CONFIG["triage"].values())
 
 
-def test_config_triage_values_match_the_rule_constants():
-    c = {k: v["value"] for k, v in CONFIG["triage"].items()}
-    assert c == {"p_high": triage.P_HIGH, "p_low": triage.P_LOW, "quality_min": triage.QUALITY_MIN,
-                 "hyperacute_h": triage.HYPERACUTE_H, "acute_h": triage.ACUTE_H}
+def test_region_explanations_exist_in_both_languages():
+    for lang in ("en", "th"):
+        tpl = templates(lang)
+        for region in ("macula", "optic_disc", "arcades", "periphery", "unavailable"):
+            assert tpl[f"explain.emergency.region.{region}"]
+    assert "cherry-red spot" in templates("en")["explain.emergency.region.macula"]

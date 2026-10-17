@@ -41,3 +41,8 @@ def test_range_edges_are_valid(field, value):
 
 def test_missing_lab_is_not_valid():
     assert pce(Inputs(age=55, sex="male", sbp=120)).risk is None
+
+
+def test_unknown_sex_is_not_valid_not_a_crash():
+    r = pce(Inputs(age=55, sex="M", sbp=120, tc=213, hdl=50))
+    assert r.risk is None and r.reason == "risk.not_valid.sex"

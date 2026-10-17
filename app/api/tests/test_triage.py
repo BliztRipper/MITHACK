@@ -121,3 +121,41 @@ def test_reasons_for_uncertain_and_unlikely_bands():
     assert "p=0.50 in uncertain band [0.3, 0.7)" in triage(Case(0.5, 0.9, 2.0)).reasons
     r = triage(Case(0.1, 0.9, 72.0)).reasons
     assert "p=0.10 < 0.3" in r and "onset 72.0 h" in " ".join(r)
+
+
+# --- fix round 1 ---
+def test_gca_with_no_model_puts_arteritis_first():
+    t = triage(Case(None, 0.9, 2.0, gca_symptoms=True))
+    assert t.level == "ESCALATE" and "arteritis" in t.actions[0]
+    assert any("No model loaded" in a for a in t.actions)
+
+
+def has(reasons, *words):
+    return all(any(w in r for r in reasons) for w in words)
+
+
+def test_reasons_no_model_lists_inputs():
+    assert has(triage(Case(None, 0.9, 2.0, gca_symptoms=True)).reasons,
+               "no model loaded", "quality 0.90", "onset 2.0 h", "GCA symptoms", "sudden painless")
+
+
+def test_reasons_retake_lists_inputs():
+    assert has(triage(Case(0.9, 0.2, None)).reasons, "quality 0.20 < 0.5", "onset unknown", "sudden painless")
+
+
+def test_reasons_escalate_uncertain_lists_inputs():
+    assert has(triage(Case(0.5, 0.9, 2.0)).reasons, "uncertain band", "quality 0.90", "onset 2.0 h", "sudden painless")
+
+
+def test_reasons_likely_lists_symptoms():
+    assert has(triage(Case(0.9, 0.9, 2.0, sudden_painless_monocular_loss=False)).reasons, "not reported")
+    assert has(triage(Case(0.9, 0.9, 2.0, gca_symptoms=True)).reasons, "GCA symptoms")
+
+
+def test_thresholds_come_from_config(monkeypatch):
+    from rules.text import CONFIG
+    assert triage(Case(0.5, 0.9, 2.0)).level == "ESCALATE"
+    monkeypatch.setitem(CONFIG["triage"]["p_high"], "value", 0.4)
+    assert triage(Case(0.5, 0.9, 2.0)).level == "STROKE_PATHWAY"
+    monkeypatch.setitem(CONFIG["triage"]["quality_min"], "value", 0.95)
+    assert triage(Case(0.5, 0.9, 2.0)).level == "RETAKE"

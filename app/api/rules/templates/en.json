@@ -36,8 +36,19 @@
  "summary.emergency.ESCALATE": "A specialist eye doctor needs to look at your images urgently.",
  "summary.emergency.RETAKE": "The photo was not clear enough. It will be retaken, or you will be referred without delay.",
  "summary.emergency.ROUTINE": "Your photo does not suggest an emergency. Please see an eye doctor routinely for your vision complaint.",
- "summary.screening.low": "Your 10-year risk of heart disease and stroke is low. Keep up healthy habits.",
- "summary.screening.borderline": "Your 10-year risk is borderline. Talk with your doctor about lifestyle and whether other factors matter.",
- "summary.screening.intermediate": "Your 10-year risk is intermediate. Talk with your doctor about lifestyle and possible treatment.",
- "summary.screening.high": "Your 10-year risk is high. Talk with your doctor about treatment and follow-up."
+ "summary.screening.pce.low": "Your 10-year risk of heart disease and stroke is low. Keep up healthy habits.",
+ "summary.screening.pce.borderline": "Your 10-year risk is borderline. Talk with your doctor about lifestyle and whether other factors matter.",
+ "summary.screening.pce.intermediate": "Your 10-year risk is intermediate. Talk with your doctor about lifestyle and possible treatment.",
+ "summary.screening.pce.high": "Your 10-year risk is high. Talk with your doctor about treatment and follow-up.",
+ "risk.not_valid.sex": "Not valid: sex must be recorded as male or female.",
+ "risk.htn_stage1": "Stage 1 hypertension (130–139 / 80–89 mmHg): lifestyle modification and recheck; 10-year risk could not be calculated for this age.",
+ "explain.emergency.region.macula": "The model focused on the macula. CRAO typically whitens the macula and can produce a cherry-red spot at the fovea; please confirm on the image.",
+ "explain.emergency.region.optic_disc": "The model focused on the optic disc. Please confirm on the image whether the disc looks swollen or pale.",
+ "explain.emergency.region.arcades": "The model focused on the vascular arcades. Please confirm on the image whether the arteries look narrowed or the retina is pale along them.",
+ "explain.emergency.region.periphery": "The model focused on the peripheral retina, away from the usual sites of CRAO findings. Please review the whole image.",
+ "explain.emergency.region.unavailable": "The optic disc could not be located, so no region-based explanation is given.",
+ "summary.screening.thai.low": "Your 10-year risk of heart disease and stroke is low. Keep up healthy habits.",
+ "summary.screening.thai.moderate": "Your 10-year risk is moderate. Talk with your doctor about lifestyle changes and whether treatment is needed.",
+ "summary.screening.thai.high": "Your 10-year risk is high. Talk with your doctor about treatment and follow-up.",
+ "summary.screening.thai.very_high": "Your 10-year risk is very high. Please discuss treatment and close follow-up with your doctor soon."
 }

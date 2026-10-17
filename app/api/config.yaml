@@ -1,7 +1,7 @@
 # Clinical thresholds. status "placeholder" = not clinically validated: the UI must show
 # "placeholder, not clinically validated" next to these (spec: Configurable thresholds).
 # status "published" = taken from the named guideline/paper, still shown in the About panel.
-triage:            # kept equal to rules/triage.py constants (tests/test_config.py checks)
+triage:            # single source: rules/triage.py reads these at call time
   p_high:       {value: 0.70, status: placeholder}   # at or above: likely CRAO
   p_low:        {value: 0.30, status: placeholder}   # below: unlikely
   quality_min:  {value: 0.5,  status: placeholder}   # below: RETAKE

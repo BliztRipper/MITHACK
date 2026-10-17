@@ -59,6 +59,8 @@ def pce(i: Inputs) -> Result:
     ok = _in("age", i.age, r) and _in("tc", i.tc, r) and _in("hdl", i.hdl, r) and _in("sbp", i.sbp, r)
     race = "aa" if i.african_american else "white"
     label = "PCE (African American)" if i.african_american else "PCE (white)"
+    if i.sex not in ("male", "female"):
+        return Result(label, None, reason="risk.not_valid.sex")
     if not ok:
         return Result(label, None, reason="risk.not_valid.pce_range")
     c, mean, s0 = _PCE[f"{race}_{i.sex}"]
@@ -74,12 +76,16 @@ def _band(x: float, edges: list[float], names: tuple[str, ...]) -> str:
     return names[sum(x >= e for e in edges)]
 
 
+PCE_BANDS = ("low", "borderline", "intermediate", "high")
+THAI_BANDS = ("low", "moderate", "high", "very_high")
+
+
 def pce_band(r: float) -> str:
-    return _band(r, R["pce_band_edges"]["value"], ("low", "borderline", "intermediate", "high"))
+    return _band(r, R["pce_band_edges"]["value"], PCE_BANDS)
 
 
 def thai_band(r: float) -> str:
-    return _band(r, R["thai_band_edges"]["value"], ("low", "moderate", "high", "very_high"))
+    return _band(r, R["thai_band_edges"]["value"], THAI_BANDS)
 
 
 def suggestion(scale: str, band: str) -> str:
@@ -96,11 +102,13 @@ def bypass(i: Inputs) -> str | None:
     return None
 
 
-def htn_stage1(sbp: float, dbp: float | None, risk_pct: float) -> str | None:
+def htn_stage1(sbp: float, dbp: float | None, risk_pct: float | None) -> str | None:
     """ACC/AHA stage 1: SBP 130-139 or DBP 80-89, with neither in the stage 2 range."""
     if sbp >= 140 or (dbp is not None and dbp >= 90):
         return None
     if 130 <= sbp or (dbp is not None and dbp >= 80):
+        if risk_pct is None:  # e.g. age 30-39: no PCE, so no risk statement
+            return "risk.htn_stage1"
         return "risk.htn_stage1.ge10" if risk_pct >= 10 else "risk.htn_stage1.lt10"
     return None
 
