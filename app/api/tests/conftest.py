@@ -64,13 +64,21 @@ def api(monkeypatch, tmp_path):
     return c
 
 
+TEST_USERS = ("gp1", "gp2", "oph1", "admin1", "anonymous")
+
+
 @pytest.fixture
 def live(api, fhir, monkeypatch):
-    """The api client wired to the real IRIS store."""
+    """The api client wired to the real IRIS store; deletes the AuditEvents the test users wrote."""
     import deps
+    from fhir import mapping as m
+    start = m.now()
     monkeypatch.setattr(deps, "fhir", lambda: fhir)
     api.store = fhir
-    return api
+    yield api
+    for a in fhir.search("AuditEvent", date=f"ge{start}"):
+        if a["agent"][0]["who"].get("display") in TEST_USERS:
+            fhir.delete("AuditEvent", a["id"])
 
 
 def login(client, user):
@@ -98,12 +106,8 @@ def purge(fhir, pid):
 
 @pytest.fixture
 def patient(fhir, request):
-    """A throwaway patient (no consent) and cleanup of it plus the AuditEvents the test wrote."""
+    """A throwaway patient (no consent), deleted with everything pointing at it."""
     from fhir import mapping as m
-    start = m.now()
     pid = fhir.create(m.patient(f"TEST-API-{request.node.name[:20]}", "Testapi", "Somsri", "female", "1960-01-01"))["id"]
     yield pid
     purge(fhir, pid)
-    for a in fhir.search("AuditEvent", date=f"ge{start}"):
-        if a["agent"][0]["who"].get("display") in ("gp1", "gp2", "oph1", "admin1", "anonymous"):
-            fhir.delete("AuditEvent", a["id"])

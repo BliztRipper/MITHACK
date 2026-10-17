@@ -11,10 +11,10 @@ from starlette.concurrency import run_in_threadpool
 import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
-from routes import auth, cases
+from routes import auth, cases, patients
 
 app = FastAPI(title="Retina CVD/CRAO API")
-for r in (auth, cases):
+for r in (auth, patients, cases):
     app.include_router(r.router)
 
 
@@ -26,8 +26,11 @@ ACTIONS = {"GET": "R", "POST": "C", "PUT": "U", "PATCH": "U", "DELETE": "D"}
 def audit(request: Request, status: int):
     """One AuditEvent per patient-data request (design D10). Handlers may set request.state.audit =
     (action, "Type/id"); otherwise the URL path is recorded. Never the query string (it can hold names)."""
+    a = getattr(request.state, "audit", None)
+    if a == "written":  # the handler already recorded its own event (consent withdrawal)
+        return
     u = getattr(request.state, "user", None) or {"username": "anonymous", "role": "none"}
-    action, entity = getattr(request.state, "audit", None) or (ACTIONS.get(request.method, "E"), None)
+    action, entity = a or (ACTIONS.get(request.method, "E"), None)
     ev = m.audit_event(u["username"], u["role"], action, entity or "", "0" if status < 400 else "4" if status < 500 else "8")
     if not entity:
         ev["entity"] = [{"what": {"display": request.url.path}}]
