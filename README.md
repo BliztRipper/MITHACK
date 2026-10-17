@@ -80,3 +80,9 @@ cd app/api && .venv/bin/python -m demo_cache.build
 This writes `app/api/demo_cache/<sha256>/` (pipeline outputs) and `app/api/demo_cache/images/` (the files behind
 the "Cached: …" buttons). Sources and licences: `app/api/demo_cache/SOURCES.md`. An uncached photo runs the full
 pipeline and can take up to about 2 minutes.
+
+## Reference paper
+
+The project builds on the paper "AI-Based Early Detection of CRAO on Retinal Images". The PDF is not
+redistributed in this repository (its licence is unconfirmed); obtain it from the publisher and keep it
+locally under `papers/` (gitignored).

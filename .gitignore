@@ -30,3 +30,6 @@ data/
 .playwright-mcp/
 playwright-report/
 test-results/
+
+# Third-party papers: keep local only (redistribution rights unconfirmed)
+papers/*.pdf
