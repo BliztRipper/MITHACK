@@ -2,11 +2,11 @@
 
 ## 1. Setup and risk spikes
 
-- [ ] 1.1 Request Hugging Face access to `YukunZhou/RETFound_mae_natureCFP` and record the request date in `docs/model-card.md`; verify the request shows as pending or granted on the model page
+- [ ] 1.1 Request Hugging Face access to `YukunZhou/RETFound_mae_natureCFP` and record the request date in `docs/model-card.md`; verify the request shows as pending or granted on the model page — DEFERRED (user, 2026-10-17): no model training planned; EfficientNet-B0 remains the backbone (D2)
 - [x] 1.2 Create the `app/{api,ml,web,fhir}` and `docs/` layout from design D1, with a Python 3.11 venv and `app/api/requirements.txt` (fastapi, uvicorn, torch 2.3.1, torchvision, timm, opencv-python-headless, numpy, httpx, cryptography, bcrypt, itsdangerous, pyyaml, pytorch-grad-cam, pytest); verify `python -c "import torch; print(torch.backends.mps.is_available())"` prints True
 - [x] 1.3 Add AutoMorph as a git submodule under `app/api/vision/automorph/`, download its weights, and run it on 3 sample fundus images on MPS; verify masks and the features CSV are produced and record per-image latency in `docs/model-card.md` (decides full pipeline vs M2-only per design D5)
 - [x] 1.4 Adapt the InterSystems kit's IRIS for Health Docker setup into `app/fhir/docker-compose.yml` (bound to 127.0.0.1, MIT attribution in `app/fhir/README.md`); verify `curl http://localhost:32783/csp/healthshare/demo/fhir/r4/metadata` returns a CapabilityStatement
-- [ ] 1.5 Download Mendeley RAO v2 and RFMiD 1.0 into `data/` (gitignored) and arrange `data/{train,val}/{crao,other}` per the prototype README's leakage rules (RFMiD RAO dropped from "other", web-crawled images in a separate split); verify the class counts printed by a short count script match the README
+- [ ] 1.5 Download Mendeley RAO v2 and RFMiD 1.0 into `data/` (gitignored) and arrange `data/{train,val}/{crao,other}` per the prototype README's leakage rules (RFMiD RAO dropped from "other", web-crawled images in a separate split); verify the class counts printed by a short count script match the README — DEFERRED (user): Mendeley RAO downloaded and arranged; RFMiD needs an IEEE DataPort login and training is not planned, so the negative class stays empty
 
 ## 2. Clinical rules (pure Python, no I/O)
 
@@ -30,11 +30,11 @@
 
 - [x] 4.1 Split `vision.py` into `vision/quality.py` and `vision/preprocess.py`, add EXIF/GPS stripping, file type and 20 MB checks, a non-fundus check (field-of-view circle) and named retake reasons; combine with AutoMorph M1 grade (both must pass); verify tests with a dark, a blurred, a face and a good image give the expected accept/reason
 - [x] 4.2 Implement `vision/segment.py` wrapping AutoMorph (per-request temp dir) to return vessel, A/V and disc RGBA overlays, disc centre/diameter, CRAE, CRVE and AVR; verify on a sample image that overlays align with the image size and AVR is a number in (0.3, 1.5)
-- [ ] 4.3 Move `train.py` to `app/ml/`, add the RETFound ViT-L path (last-block fine-tune, layer-wise LR decay) beside the EfficientNet-B0 path, and 5-fold CV reporting with 95% CIs; verify a run produces `model.pt` and a metrics JSON (use EfficientNet-B0 if RETFound access is still pending)
-- [ ] 4.4 Implement `ml/calibrate.py` (temperature scaling on the validation fold; P_LOW for sensitivity ≥0.95, P_HIGH for specificity ≥0.90) writing temperature, thresholds and calibration date into the checkpoint; verify validation-set ECE before/after is printed and the checkpoint holds the fields
+- [ ] 4.3 Move `train.py` to `app/ml/`, add the RETFound ViT-L path (last-block fine-tune, layer-wise LR decay) beside the EfficientNet-B0 path, and 5-fold CV reporting with 95% CIs; verify a run produces `model.pt` and a metrics JSON (use EfficientNet-B0 if RETFound access is still pending) — DEFERRED (user): train.py written and unit-tested; refuses to run without negatives; no training planned
+- [ ] 4.4 Implement `ml/calibrate.py` (temperature scaling on the validation fold; P_LOW for sensitivity ≥0.95, P_HIGH for specificity ≥0.90) writing temperature, thresholds and calibration date into the checkpoint; verify validation-set ECE before/after is printed and the checkpoint holds the fields — DEFERRED (user): calibrate.py written and unit-tested on hand-made logits; needs a trained model
 - [x] 4.5 Implement `vision/crao_model.py` (load any checkpoint arch, calibrated probability, band, "no model loaded" degradation) and `vision/heatmap.py` (Grad-CAM, ViT reshape transform for RETFound); verify tests for missing weights → None and that a heatmap PNG matches the input size
 - [x] 4.6 Implement `rules/explain.py`: fovea estimate from disc and laterality, region masks, heatmap mass per region, template fill, limitations always appended, region omitted when no disc; verify tests with synthetic heatmaps centred on macula vs disc pick the right region
-- [ ] 4.7 Write `docs/model-card.md` (intended use, training data and licences, CV metrics with CIs, calibration, thresholds as placeholders, known failure modes: hyperacute, poor images, mimics) from the 4.3/4.4 outputs; verify every number in it matches the metrics JSON
+- [ ] 4.7 Write `docs/model-card.md` (intended use, training data and licences, CV metrics with CIs, calibration, thresholds as placeholders, known failure modes: hyperacute, poor images, mimics) from the 4.3/4.4 outputs; verify every number in it matches the metrics JSON — DEFERRED (user): model card states no trained model; metrics require 4.3/4.4
 
 ## 5. API
 
@@ -44,7 +44,7 @@
 - [x] 5.4 Implement `POST /cases` (mode + inputs + image → quality gate → segmentation → Screening: measurements + risk, or Emergency: probability + heatmap + triage → explanation) saving a preliminary case as one transaction, with demo-cache lookup by SHA-256 (design D11); verify an end-to-end API test for each mode and for a RETAKE image returns the spec'd fields
 - [x] 5.5 Implement review endpoints: queue (Emergency first, ESCALATE visible to reviewers), confirm, override with required reason, amend (status amended, history kept), Provenance on sign; verify tests for each clinician-review and report-status scenario
 - [x] 5.6 Implement monitoring endpoints: metrics per model version and period, calibration summary with the 30-case minimum, rolling-50 drift alerts (quality, uncertain, override, agreement upper limit) as Flags with acknowledge, incident flag/close, and de-identified consented export (zip + labels CSV, audited); verify tests for each model-monitoring scenario
-- [ ] 5.7 Populate `app/api/demo_cache/` for the 6 curated CC BY images with attribution in `demo_cache/SOURCES.md`; verify each cached case returns in under 2 s via `POST /cases`
+- [ ] 5.7 Populate `app/api/demo_cache/` for the 6 curated CC BY images with attribution in `demo_cache/SOURCES.md`; verify each cached case returns in under 2 s via `POST /cases` — PARTIAL (user): 4 of 6 licensed demo images (2 RAO, derived poor-quality, AutoMorph sample); CRVO-mimic, normal and hypertensive-looking pending licensed images
 
 ## 6. Web app
 
