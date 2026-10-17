@@ -6,15 +6,16 @@
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
-from routes import auth, cases, patients
+from routes import auth, cases, patients, review
 
 app = FastAPI(title="Retina CVD/CRAO API")
-for r in (auth, patients, cases):
+for r in (auth, patients, cases, review):
     app.include_router(r.router)
 
 
@@ -49,6 +50,11 @@ async def session_and_audit(request: Request, call_next):
     if request.url.path.startswith(PATIENT_DATA):
         await run_in_threadpool(audit, request, response.status_code)
     return response
+
+
+@app.exception_handler(FhirUnavailable)
+def store_down(request: Request, e: FhirUnavailable):
+    return JSONResponse({"detail": "record store unavailable"}, status_code=503)
 
 
 @app.get("/health")

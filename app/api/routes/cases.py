@@ -103,6 +103,8 @@ def save(pid, u, model, fundus, pngs, mode, obs, risks, conditions, conclusion, 
     r = next(e["resource"] for e in es if e["fullUrl"] == rep)
     r["category"] = [{"coding": [{"system": m.LOCAL, "code": mode}]}]
     r["conclusionCode"] = [{"coding": [{"system": m.LOCAL, "code": code}]}]
+    for link, (kind, _, _) in zip(r.get("media", []), cts):
+        link["comment"] = kind  # fundus | vessel | artery_vein | disc | heatmap
     r["presentedForm"] = [{"contentType": "application/json", "title": "analysis", "data": _b64(json.dumps(record).encode())}]
     out = deps.fhir().transaction(es)
     i = next(n for n, e in enumerate(es) if e["fullUrl"] == rep)

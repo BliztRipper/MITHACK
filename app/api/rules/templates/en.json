@@ -52,5 +52,8 @@
  "summary.screening.thai.high": "Your 10-year risk is high. Talk with your doctor about treatment and follow-up.",
  "summary.screening.thai.very_high": "Your 10-year risk is very high. Please discuss treatment and close follow-up with your doctor soon.",
  "explain.emergency.no_model": "No model loaded: no CRAO probability is available, so the case is escalated for specialist review.",
- "risk.thai_unavailable": "Thai CV Risk unavailable: the equation is not yet implemented in this build. PCE is shown instead, with its population caveat."
+ "risk.thai_unavailable": "Thai CV Risk unavailable: the equation is not yet implemented in this build. PCE is shown instead, with its population caveat.",
+ "summary.override": "Your doctor has reviewed your eye photo and will explain the result and the next step.",
+ "summary.screening.bypass": "The usual risk score does not apply to you. Your doctor will discuss cholesterol-lowering treatment with you.",
+ "summary.seek_care": "Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking."
 }
