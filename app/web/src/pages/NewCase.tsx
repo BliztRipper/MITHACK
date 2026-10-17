@@ -14,7 +14,7 @@ const CACHED = [ // dev server serves these from app/api/demo_cache/images (vite
   ['rao_rfmid_892.png', 'Cached: RAO example (RFMiD 892)'],
   ['screening_automorph_100.png', 'Cached: screening example'],
   ['poor_quality_rfmid_217.png', 'Cached: poor quality'],
-  ['normal_nei_eda06.jpg', 'Cached: Normal (NEI, public domain)'],
+  ['normal_nei_eda06.jpg', 'Cached: Retake demo: low-resolution normal (NEI, public domain)'],
   ['mimic_brvo_ku2011.jpg', 'Cached: BRVO — CRAO mimic (CC BY 2.0)'],
 ]
 const sentence = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)

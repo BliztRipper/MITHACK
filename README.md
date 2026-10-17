@@ -14,7 +14,7 @@ Specs: `openspec/changes/retina-cvd-crao-platform/`.
 ## Honest limits
 - **No trained CRAO model.** The app runs with "no model loaded": no CRAO probability, no heatmap, and every gradable
   Emergency case is routed to ESCALATE (specialist review). Training code is in `app/ml/`, but no weights are shipped.
-- **The demo cache holds 4 of the 6 planned demo images** (2 RAO examples, 1 screening example, 1 poor-quality example).
+- **The demo cache holds 5 of the 6 planned demo images** (2 RAO examples, 1 BRVO look-alike, 1 screening example (AutoMorph sample), 1 poor-quality example and 1 low-resolution normal that demonstrates the retake path); hypertensive-looking is still missing.
 - **Thresholds are placeholders**, not clinically validated (labelled so in the UI and in `app/api/config.yaml`),
   including the artery-to-vein ratio reference interval.
 - PCE was derived in US populations and may overestimate risk for Thai patients; the app says so.
@@ -72,7 +72,7 @@ Vite dev runs React StrictMode, which mounts pages twice: each page view writes 
 A production build does not.
 
 ## Demo cache (images)
-The demo images are gitignored: reuse rights for the source images are not confirmed, so never commit them.
+The upload-ready source photos (`demo_cache/images/`) are gitignored and not committed. The derived pipeline outputs (`demo_cache/<sha256>/` `meta.json` and overlay PNGs) are committed; they are derivatives of CC BY 4.0, CC BY 2.0, public-domain and Apache-2.0 sources, credited in `app/api/demo_cache/SOURCES.md`.
 To build the cache locally from your own `data/` copy (`data/raw/mendeley_rao/RFMiD_RAO/` and the AutoMorph sample):
 ```
 cd app/api && .venv/bin/python -m demo_cache.build
