@@ -58,12 +58,14 @@
     cur.classList.add('fading');
     setTimeout(() => { swap(); next.classList.add('fading'); requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('fading'))); }, 200);
   };
+  $$('.sheet').forEach((sh, i) => { sh.hidden = i > 0; }); // no-JS shows every sheet
   tabs.forEach((t, i) => {
     t.addEventListener('click', () => select(t));
     t.addEventListener('keydown', (e) => {
       const d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
-      if (!d) return;
-      e.preventDefault(); const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); select(n);
+      const j = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : d ? (i + d + tabs.length) % tabs.length : -1;
+      if (j < 0) return;
+      e.preventDefault(); tabs[j].focus(); select(tabs[j]);
     });
   });
 

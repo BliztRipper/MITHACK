@@ -24,8 +24,8 @@
         <svg class="layer" data-name="disc" viewBox="0 0 1000 1074" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><circle cx="874" cy="503" r="77" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="12 9"/></svg>
       </div>
       <figcaption class="stage-cap">
-        <span class="stage-layer" aria-live="polite"><span class="tech" id="layer-name">photo only</span></span>
-        <span class="stage-credit">AutoMorph sample image 100.png (Apache-2.0). Layers: this app's AutoMorph segmentation output.</span>
+        <span class="stage-layer"><span class="tech" id="layer-name">photo only</span></span>
+        <span class="stage-credit"><span class="credit-long">AutoMorph sample image 100.png (Apache-2.0). Layers: this app's AutoMorph segmentation output.</span><span class="credit-short">AutoMorph sample, Apache-2.0</span></span>
       </figcaption>
     </figure>
 
@@ -45,8 +45,8 @@
       </header>
 
       <section class="intro" aria-label="Why the retina" data-layer="vessel">
-        <p class="first">Thailand already photographs the retina at scale. Community hospitals run diabetic-retinopathy screening cameras, so the photo this tool reads needs no new hardware.</p>
-        <p>Cardiovascular disease kills about 80,000 Thais a year. Many high-risk people are never assessed, because a full work-up needs labs and a clinician's time.</p>
+        <p class="first">Thailand already photographs the retina at scale. Community hospitals run diabetic-retinopathy screening cameras. This tool uses retinal cameras already in diabetic-eye screening; no new camera is assumed.</p>
+        <p>Cardiovascular disease causes about 120,000 deaths a year in Thailand (GBD estimate, via the World Heart Federation). Many high-risk people are never assessed, because a full work-up needs labs and a clinician's time.</p>
         <p>On the acute side, central retinal artery occlusion, an eye stroke, is missed by non-ophthalmologists in the hours when stroke work-up matters most.</p>
         <p>So one capture flow serves both: Screening for the slow risk, Emergency for the fast one. The software prepares the case; a clinician decides it.</p>
       </section>
@@ -116,11 +116,12 @@
         <p id="sug-out" class="sug">A moderate-intensity statin is reasonable; risk enhancers favour starting. Reinforce lifestyle change.</p>
         <p id="enh-out" class="enh" hidden>In the 5–7.5% band, risk enhancers favour a statin discussion. Enhancers do not change the calculated risk.</p>
         <p class="caveat">PCE was not derived in Asian populations and may overestimate risk.</p>
+        <p class="caveat">This number does not decide treatment for everyone. Known atherosclerotic CVD, LDL cholesterol of 190 mg/dL or higher, or diabetes at 40–75 (with LDL 70 mg/dL or higher) skip the calculator: a statin is indicated regardless of calculated risk. For diabetes, the PCE number informs statin intensity only; it is not the basis for treatment.</p>
         <p id="risk-note" class="sheet-foot">This control sets the risk value directly; it does not compute PCE. Band edges <span class="tech">5.0 / 7.5 / 20.0 %</span> from the 2018 AHA/ACC cholesterol guideline, as in <span class="tech">config.yaml</span>.</p>
         <noscript><p class="sheet-foot">Bands: below 5 % low; 5 to under 7.5 % borderline; 7.5 to under 20 % intermediate; 20 % and above high.</p></noscript>
       </article>
 
-      <article class="sheet" id="s-emerg" role="tabpanel" aria-labelledby="t-emerg" data-ui hidden>
+      <article class="sheet" id="s-emerg" role="tabpanel" aria-labelledby="t-emerg" data-ui>
         <p class="sheet-meta"><span>Emergency · model <span class="tech">no-model</span></span><span class="stamp">PRELIMINARY · AI-assisted, not a diagnosis</span></p>
         <p class="level">ESCALATE: specialist review</p>
         <ol class="actions"><li>No model loaded: send image to tele-ophthalmology</li></ol>
@@ -138,7 +139,7 @@
         <p class="sheet-foot">In this build, with no model loaded, only Retake and Escalate can occur. Thresholds <span class="tech">p 0.30 / 0.70</span> are placeholders.</p>
       </article>
 
-      <article class="sheet" id="s-signed" role="tabpanel" aria-labelledby="t-signed" data-ui hidden>
+      <article class="sheet" id="s-signed" role="tabpanel" aria-labelledby="t-signed" data-ui>
         <p class="sheet-meta"><span>Emergency · report 8948</span><span class="stamp stamp-final">FINAL · signed by gp1 · 17 Oct, 21:03</span></p>
         <p class="level">Clinician decision</p>
         <dl class="decision">
@@ -153,7 +154,7 @@
         <p class="sheet-foot">Saved as one FHIR transaction Bundle: <span class="tech">DiagnosticReport</span>, <span class="tech">Provenance</span> (device and author), <span class="tech">AuditEvent</span>.</p>
       </article>
 
-      <article class="sheet sheet-narrow" id="s-summary" role="tabpanel" aria-labelledby="t-summary" data-ui hidden>
+      <article class="sheet sheet-narrow" id="s-summary" role="tabpanel" aria-labelledby="t-summary" data-ui>
         <p class="sheet-meta"><span>Patient summary · English</span></p>
         <p>Your doctor has reviewed your eye photo and will explain the result and the next step.</p>
         <p><strong>Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking.</strong></p>
@@ -182,6 +183,13 @@
         <li class="on">Consent</li><li>Quality gate</li><li>Preliminary</li><li>Signed</li>
       </ol>
     </div>
+    <noscript>
+      <ol class="sheet-foot noscript-stages">
+        <li>Then the photo is checked. EXIF and GPS are stripped, and a dark or blurred photo is refused with a reason to retake, plus a note never to delay referral for it.</li>
+        <li>Next, a result with reasons. The level arrives with every reason behind it and the label AI-assisted, not a diagnosis. Nothing is final yet.</li>
+        <li>Last, a clinician signs. Confirm or override, with a reason. An override is kept as a labelled case for offline retraining; the deployed model never learns at runtime.</li>
+      </ol>
+    </noscript>
   </section>
 
   <section class="records" id="records" aria-labelledby="records-h">
@@ -240,7 +248,7 @@
 </main>
 
 <footer class="foot">
-  <p class="credits"><b>Pictures.</b> Fundus photograph: AutoMorph sample <span class="tech">images/100.png</span>, github.com/rmaphoh/AutoMorph, Apache-2.0 (original dataset not stated upstream). Overlays: this app's AutoMorph segmentation of that image; the disc ring is drawn from its measured position. Interface screenshots: the project's own app, with synthetic patients. Fonts: Inter and JetBrains Mono, SIL Open Font License.</p><!-- taste-skill-ignore: font credit -->
+  <p class="credits"><b>Pictures.</b> Fundus photograph: AutoMorph sample <span class="tech">images/100.png</span>, github.com/rmaphoh/AutoMorph, Apache-2.0 (original dataset not stated upstream). Overlays: this app's AutoMorph segmentation of that image; the disc ring is drawn from its measured position. Interface screenshots: the project's own app, with synthetic patients. Deaths: 120,370 a year in Thailand, IHME GBD via World Heart Federation, World Heart Observatory (labelled 2024, source note 2021). Fonts: Inter and JetBrains Mono, SIL Open Font License.</p><!-- taste-skill-ignore: font credit -->
   <div class="foot-line">
     <span>Retina CVD/CRAO, a hackathon prototype</span>
     <nav aria-label="Footer"><a href="#outputs">Outputs</a><a href="#flow">Flow</a><a href="#records">Records</a><a href="#limits">Limits</a></nav>

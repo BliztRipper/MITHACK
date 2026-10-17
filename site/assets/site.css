@@ -100,6 +100,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 .index button[aria-selected="true"] { color: var(--ink); }
 .sheet-stage { grid-column: 7 / 13; height: 88svh; min-height: 640px; background: var(--tone); border-radius: var(--radius); overflow: hidden; padding: 72px 0 0 64px; position: relative; }
 .sheet { width: 560px; max-width: calc(100% - 32px); min-height: calc(100% + 40px); background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; box-shadow: var(--lift); /* taste-skill-ignore */ padding: 32px 32px 48px; font-size: var(--f-small); line-height: 1.5; transition: opacity 200ms ease; }
+.credit-short { display: none; }
 .sheet.fading { opacity: 0; }
 .sheet-narrow { width: 440px; }
 .sheet p { margin-bottom: 12px; }
@@ -181,10 +182,10 @@ tbody tr { transition: transform var(--t-hover) var(--ease-out); }
 .answers b { font-weight: 600; }
 
 /* ---------- cta and footer ---------- */
-.cta { padding: 30svh var(--pad) 20svh; }
+.cta { padding: 30svh var(--pad) 16svh; }
 .cta p { font-size: var(--f-lead); max-width: 34ch; margin-bottom: 24px; }
 .foot { padding: 0 var(--pad) 30px; font-size: var(--f-small); }
-.credits { color: var(--muted); max-width: 58ch; margin-bottom: 48px; }
+.credits { color: var(--muted); max-width: 66ch; margin-bottom: 48px; }
 .credits b { color: var(--ink); font-weight: 600; }
 .foot-line { display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: baseline; }
 .foot-line nav { display: flex; gap: 24px; }
@@ -215,6 +216,7 @@ html.js .hero.in h1 .ln > span { transform: none; }
   .limits h2, .answers { grid-column: 1; }
 }
 @media (max-width: 900px) {
+  .credit-short { display: inline; }
   .split { display: block; }
   .stage { position: relative; top: 0; height: 40svh; }
   .hero-card { min-height: 0; margin-top: -24px; position: relative; padding-bottom: 28px; }
@@ -228,7 +230,7 @@ html.js .hero.in h1 .ln > span { transform: none; }
   .module { grid-template-columns: 1fr; gap: 16px; margin-bottom: 64px; }
   .panel { max-height: 360px; max-width: 460px; }
   .stage-cap { top: 0; bottom: auto; }
-  .stage-credit { display: none; }
+  .credit-long { display: none; }
   .flow { padding-top: 120px; }
   .flow-fields { grid-template-columns: 1fr; min-height: 0; }
   .flow-frag { order: -1; height: 46svh; padding: 20px; place-items: start center; }
@@ -271,3 +273,9 @@ html.js .hero.in h1 .ln > span { transform: none; }
   .btn, .btn-icon, .panel, .index button, .band-bar span, .flow-frag img { transition: none; }
   .btn:hover, .module:hover .panel, .index button:hover { transform: none; }
 }
+
+/* Without JavaScript every sheet and flow stage shows, stacked. */
+html:not(.js) .index, html:not(.js) .flow-control { display: none; }
+html:not(.js) .sheet-stage { height: auto; min-height: 0; padding: 16px; display: grid; gap: 16px; justify-items: start; }
+html:not(.js) .sheet { min-height: 0; border-radius: var(--radius); padding-bottom: 32px; }
+.noscript-stages { max-width: 60ch; padding: 24px var(--pad) 0 calc(var(--pad) + 1.5em); }
