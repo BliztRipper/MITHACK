@@ -64,7 +64,7 @@ export function StatusBadge({ status, signer }: { status: string; signer?: strin
       </span>
     )
   return (
-    <span className="chip py-1 text-sm bg-status-final text-paper print:border print:border-black print:bg-transparent print:text-black">
+    <span className="chip py-1 text-sm bg-status-final text-paper [print-color-adjust:exact] print:bg-black print:text-white">
       <FileCheck2 size={16} aria-hidden />FINAL{signer ? ` · signed by ${signer}` : ''}{status === 'amended' ? ' · amended' : ''}
     </span>
   )

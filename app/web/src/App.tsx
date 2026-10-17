@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DatabaseZap, LogOut, Menu } from 'lucide-react'
 import { api, events, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
@@ -91,6 +91,19 @@ export default function App(): ReactNode {
   }, [checkHealth])
 
   const menuOpen = menuAt === path
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const railRef = useRef<HTMLElement>(null)
+  useEffect(() => { // narrow-screen menu: focus moves in on open; Escape closes it and returns focus to the toggle
+    if (!menuOpen) return
+    railRef.current?.querySelector<HTMLElement>('a, button')?.focus()
+    const onKey = (ev: KeyboardEvent): void => {
+      if (ev.code !== 'Escape' && ev.key !== 'Escape') return
+      setMenuAt(null)
+      toggleRef.current?.focus()
+    }
+    addEventListener('keydown', onKey)
+    return () => removeEventListener('keydown', onKey)
+  }, [menuOpen])
   if (user === undefined) return null
   if (user === null) return <>{storeDown && <Banner />}<Login onLogin={(u) => { setUser(u); navigate('/') }} /></>
 
@@ -109,12 +122,12 @@ export default function App(): ReactNode {
         {storeDown && <Banner />}
         <header className="flex items-center justify-between border-b border-rule bg-surface px-4 py-2 lg:hidden print:hidden">
           <span className="font-semibold">Retina CVD/CRAO</span>
-          <button className="btn-secondary" aria-expanded={menuOpen} aria-controls="rail" onClick={() => setMenuAt(menuOpen ? null : path)}>
+          <button ref={toggleRef} className="btn-secondary" aria-expanded={menuOpen} aria-controls="rail" onClick={() => setMenuAt(menuOpen ? null : path)}>
             <Menu size={20} aria-hidden />Menu
           </button>
         </header>
         <div className="flex flex-1">
-          <aside id="rail" className={`${menuOpen ? 'block' : 'hidden'} fixed inset-y-0 left-0 z-20 w-56 border-r border-rule bg-surface lg:static lg:block print:hidden`}>
+          <aside id="rail" ref={railRef} className={`${menuOpen ? 'block' : 'hidden'} fixed inset-y-0 left-0 z-20 w-56 border-r border-rule bg-surface lg:static lg:block print:hidden`}>
             <Nav user={user} path={pathname} onSignOut={signOut} />
           </aside>
           <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 print:p-0">

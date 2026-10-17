@@ -14,9 +14,10 @@ const NUMBERS: NumField[] = [
   { key: 'waist', label: 'Waist circumference', unit: 'cm', min: 40, max: 200 },
   { key: 'height', label: 'Height', unit: 'cm', min: 100, max: 230 },
 ]
-const BOOLS: [string, string][] = [
-  ['diabetes', 'Diabetes'], ['treated_htn', 'On treatment for hypertension'], ['ascvd', 'Known atherosclerotic CVD'],
-  ['african_american', 'Race group: African American (used by PCE only)'], ['arcus_senilis', 'Arcus senilis observed'],
+// Equation inputs: explicit yes/no, never defaulted, so a forgotten answer cannot silently lower the risk.
+const ANSWERS: [string, string][] = [
+  ['diabetes', 'Diabetes?'], ['treated_htn', 'On treatment for hypertension?'], ['ascvd', 'Known atherosclerotic CVD?'],
+  ['african_american', 'Race group African American? (used by PCE only)'],
 ]
 
 export type Values = Record<string, string | boolean | null>
@@ -28,7 +29,8 @@ export function initialValues(mode: Mode, d: PatientDetail): { values: Values; d
     smoking: '', clinical_enhancers: '' }
   const dates: Record<string, string> = {}
   for (const f of NUMBERS) values[f.key] ??= ''
-  for (const [k] of BOOLS) values[k] = false
+  for (const [k] of ANSWERS) values[k] = null
+  values.arcus_senilis = false // a clinical observation, not an equation input
   for (const [k, v] of Object.entries(d.latest)) {
     if (!v) continue
     values[k] = typeof v.value === 'boolean' ? v.value : String(v.value)
@@ -58,6 +60,7 @@ export function validate(mode: Mode, v: Values): Record<string, string> {
   }
   if (!v.sex) e.sex = 'Choose male or female'
   if (!v.smoking) e.smoking = 'Choose smoking status'
+  for (const [k] of ANSWERS) if (v[k] === null) e[k] = 'Answer yes or no'
   if (String(v.clinical_enhancers).split('\n').filter((s) => s.trim()).length > 10) e.clinical_enhancers = 'At most 10 enhancers'
   return e
 }
@@ -68,7 +71,8 @@ export function toInputs(mode: Mode, v: Values): Record<string, unknown> {
     return { hours_since_onset: v.onset_unknown ? null : Number(v.hours_since_onset), sudden_painless_monocular: v.sudden_painless_monocular, gca_symptoms: v.gca_symptoms }
   const out: Record<string, unknown> = { sex: v.sex, smoking: v.smoking }
   for (const f of NUMBERS) if (v[f.key] !== '') out[f.key] = Number(v[f.key])
-  for (const [k] of BOOLS) out[k] = Boolean(v[k])
+  for (const [k] of ANSWERS) out[k] = v[k]
+  out.arcus_senilis = Boolean(v.arcus_senilis)
   out.clinical_enhancers = String(v.clinical_enhancers).split('\n').map((s) => s.trim()).filter(Boolean)
   return out
 }
@@ -143,15 +147,16 @@ export default function InputsForm({ mode, values: v, dates, errors, onChange }:
           <ErrorText id={`${f.key}-err`}>{errors[f.key]}</ErrorText>
         </div>
       ))}
-      <fieldset className="flex flex-col gap-2 lg:col-span-2">
-        <legend className="mb-1">History and observations</legend>
-        {BOOLS.map(([k, label]) => (
-          <label key={k} className="flex items-center gap-2">
-            <input type="checkbox" className="check" checked={Boolean(v[k])} onChange={(e) => onChange(k, e.target.checked)} />{label}
-            {dates[k] && <span className="text-sm text-muted">(from record, {fmtDate(dates[k])})</span>}
-          </label>
-        ))}
-      </fieldset>
+      {ANSWERS.map(([k, label]) => (
+        <div key={k}>
+          <YesNo name={k} label={`${label} (required)`} value={v[k]} error={errors[k]} onChange={onChange} />
+          {dates[k] && <p className="mt-1 text-sm text-muted">from record, {fmtDate(dates[k])}</p>}
+        </div>
+      ))}
+      <label className="flex items-center gap-2 lg:col-span-2">
+        <input type="checkbox" className="check" checked={Boolean(v.arcus_senilis)} onChange={(e) => onChange('arcus_senilis', e.target.checked)} />Arcus senilis observed
+        {dates.arcus_senilis && <span className="text-sm text-muted">(from record, {fmtDate(dates.arcus_senilis)})</span>}
+      </label>
       <div className="lg:col-span-2">
         <label htmlFor="clinical_enhancers" className="mb-1 block">Clinical risk enhancers (one per line, optional)</label>
         <textarea id="clinical_enhancers" rows={3} className="input h-auto py-2" value={String(v.clinical_enhancers)}

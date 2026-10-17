@@ -25,11 +25,11 @@ export function Decision({ reviews }: { reviews: Review[] }): ReactNode {
   )
 }
 
-export function Disclosure(): ReactNode {
+export function Disclosure({ preliminary }: { preliminary: boolean }): ReactNode {
   return (
     <section aria-labelledby="disc-h" className="text-sm">
       <h2 id="disc-h" className="font-semibold">AI-assisted, not a diagnosis</h2>
-      <p>The image analysis, probability and suggested actions were produced by software and checked by the clinician named above. Thresholds marked placeholder are not clinically validated.</p>
+      <p>The image analysis, probability and suggested actions were produced by software and {preliminary ? 'not yet checked by a clinician' : 'checked by the clinician named above'}. Thresholds marked placeholder are not clinically validated.</p>
     </section>
   )
 }
