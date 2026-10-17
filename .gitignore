@@ -30,3 +30,6 @@ data/
 .playwright-mcp/
 playwright-report/
 test-results/
+
+# tasteskill working files
+.taste-skill/
