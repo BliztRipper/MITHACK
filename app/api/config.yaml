@@ -22,5 +22,13 @@ risk:
     sbp: {value: [70, 220],  status: published, source: "design.md D7"}
   ldl_statin_benefit: {value: 190, status: published, source: "2018 AHA/ACC"}   # mg/dL
   arcus_prompt_age:   {value: 45,  status: published, source: "spec: arcus senilis prompt"}
-  # Reference interval for Thai adults is unverified (open question in design.md).
-  avr_reference:      {value: null, status: placeholder}
+  # Literature placeholder (normal A:V ratio about 2:3 or wider); unverified for Thai adults and for
+  # Knudtson zone B (open question in design.md). Inclusive [low, high]; below low = arteriolar narrowing.
+  avr_reference:      {value: [0.67, 1.0], status: placeholder, source: "literature placeholder, not validated"}
+monitoring:        # drift alerts over the last `window` cases (spec: model-monitoring)
+  window:              {value: 50,   status: placeholder}
+  quality_reject_max:  {value: 0.30, status: placeholder}   # quality-gate rejection rate
+  uncertain_max:       {value: 0.30, status: placeholder}   # uncertain-band rate (Emergency)
+  override_max:        {value: 0.20, status: placeholder}   # override rate among signed cases
+  agreement_max:       {value: 0.98, status: placeholder}   # above: possible rubber-stamping
+  calibration_min:     {value: 30,   status: placeholder}   # signed Emergency cases before calibration shows

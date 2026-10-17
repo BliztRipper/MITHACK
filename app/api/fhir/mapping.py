@@ -29,8 +29,12 @@ OBS_CODES = {
     "height": (LOINC, "8302-2", "Body height"),
     "vessel_avr": (LOCAL, "vessel-avr", "Arteriole-venule ratio"),
     "vessel_tortuosity": (LOCAL, "vessel-tortuosity", "Vessel tortuosity"),
+    # Emergency-mode intake answers (shown to the reviewer with the image)
+    "onset_hours": (LOCAL, "hours-since-vision-loss", "Hours since vision loss"),
+    "sudden_painless_monocular": (LOCAL, "sudden-painless-monocular-loss", "Sudden painless one-eye vision loss"),
+    "gca_symptoms": (LOCAL, "gca-symptoms", "Giant cell arteritis symptoms"),
 }
-UNITS = {"sbp": "mm[Hg]", "dbp": "mm[Hg]", "tc": "mg/dL", "hdl": "mg/dL", "ldl": "mg/dL", "waist": "cm", "height": "cm"}
+UNITS = {"onset_hours": "h", "sbp": "mm[Hg]", "dbp": "mm[Hg]", "tc": "mg/dL", "hdl": "mg/dL", "ldl": "mg/dL", "waist": "cm", "height": "cm"}
 
 
 def urn():
