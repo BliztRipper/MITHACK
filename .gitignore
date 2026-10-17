@@ -27,3 +27,4 @@ data/
 .serena/
 **/.claude/state/
 **/.harness-mem/
+.playwright-mcp/
