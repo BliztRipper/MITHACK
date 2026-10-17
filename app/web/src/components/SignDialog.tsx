@@ -63,7 +63,7 @@ export default function SignDialog({ c, layers, open, onClose, onSigned }: { c: 
   )
 
   return (
-    <dialog ref={ref} onClose={onClose} aria-labelledby="sign-h" className="sign m-auto w-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface p-0 text-ink shadow-pop">
+    <dialog ref={ref} onClose={onClose} aria-labelledby="sign-h" className="sign m-auto w-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-lg border border-transparent bg-surface p-0 text-ink shadow-pop">
       <form onSubmit={submit} className="flex flex-col gap-4 p-6">
         <h2 id="sign-h" className="text-xl font-semibold">Sign result</h2>
         <div className="rounded-md bg-sunken p-3 text-sm">
