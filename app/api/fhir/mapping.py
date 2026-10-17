@@ -121,10 +121,14 @@ def risk_assessment(patient_ref, encounter_ref, method, risk_pct, device_ref):
 
 def diagnostic_report(patient_ref, encounter_ref, status, conclusion, result_refs, media_refs, performer_ref):
     """status: preliminary | final | amended."""
-    return {"resourceType": "DiagnosticReport", "status": status, "code": {"coding": [{"system": LOCAL, "code": "retinal-ai-report"}]},
-            "subject": ref(patient_ref), "encounter": ref(encounter_ref), "issued": now(), "performer": [ref(performer_ref)],
-            "result": [ref(r) for r in result_refs], "media": [{"link": ref(m)} for m in media_refs],
-            "conclusion": conclusion}
+    r = {"resourceType": "DiagnosticReport", "status": status, "code": {"coding": [{"system": LOCAL, "code": "retinal-ai-report"}]},
+         "subject": ref(patient_ref), "encounter": ref(encounter_ref), "issued": now(), "performer": [ref(performer_ref)],
+         "conclusion": conclusion}
+    if result_refs:  # IRIS rejects empty arrays
+        r["result"] = [ref(x) for x in result_refs]
+    if media_refs:
+        r["media"] = [{"link": ref(x)} for x in media_refs]
+    return r
 
 
 def provenance(target_refs, agent_ref, agent_type):
