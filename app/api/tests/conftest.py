@@ -9,9 +9,11 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="session")
 def fhir():
-    c = FhirClient(timeout=60)
     try:
+        c = FhirClient(timeout=60)
         c.health_check()
     except FhirUnavailable:
         pytest.skip("IRIS FHIR server unreachable (cd app/fhir && docker compose up -d)")
+    except RuntimeError as e:  # FHIR_USER / FHIR_PASS unset
+        pytest.skip(str(e))
     return c
