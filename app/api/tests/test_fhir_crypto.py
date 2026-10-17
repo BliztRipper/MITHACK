@@ -1,12 +1,13 @@
 import base64
 import os
+import threading
 
 import cv2
 import numpy as np
 import pytest
 
 from fhir import mapping as m
-from fhir.crypto import KeyDestroyed, KeyStore, master_key_from_env
+from fhir.crypto import ConsentWithdrawn, KeyDestroyed, KeyStore, master_key_from_env
 
 
 @pytest.fixture
@@ -34,6 +35,12 @@ def test_round_trip_fresh_nonce_and_tamper(ks):
 def test_key_file_holds_only_wrapped_keys(ks, tmp_path):
     ks.encrypt("p1", b"x")
     assert (tmp_path / "keys.json").stat().st_mode & 0o777 == 0o600
+    old = os.umask(0)  # permissive umask must not widen the key file
+    try:
+        ks.encrypt("p9", b"x")
+    finally:
+        os.umask(old)
+    assert (tmp_path / "keys.json").stat().st_mode & 0o777 == 0o600
     other = KeyStore(os.urandom(32), tmp_path / "keys.json")
     with pytest.raises(Exception):  # wrong master key cannot unwrap
         other.decrypt("p1", b"0" * 40, "x")
@@ -44,9 +51,44 @@ def test_destroy_makes_data_undecryptable(ks):
     ks.destroy("p1")
     with pytest.raises(KeyDestroyed):
         ks.decrypt("p1", blob, kid)
-    ks.encrypt("p1", b"secret")  # a new key is not the old one
+    with pytest.raises(ConsentWithdrawn):
+        ks.encrypt("p1", b"secret")
+
+
+def test_patient_id_forms_are_one_key(ks):
+    blob, kid = ks.encrypt("Patient/X", b"img")
+    assert ks.decrypt("X", blob, kid) == b"img"
+    assert ks.destroy("X") is True
     with pytest.raises(KeyDestroyed):
-        ks.decrypt("p1", blob, kid)
+        ks.decrypt("Patient/X", blob, kid)
+    assert ks.destroy("Patient/X") is False  # nothing left
+    with pytest.raises(ConsentWithdrawn):  # no new key after withdrawal
+        ks.encrypt("X", b"img")
+
+
+def test_concurrent_encrypt_destroy_keeps_destroyed_and_loses_nothing(tmp_path):
+    ks = KeyStore(os.urandom(32), tmp_path / "keys.json")
+    blob, kid = ks.encrypt("victim", b"v")
+    errs, results = [], {}
+
+    def enc(i):
+        try:
+            results[i] = ks.encrypt(f"p{i}", b"data")
+        except Exception as e:  # pragma: no cover
+            errs.append(e)
+
+    ts = [threading.Thread(target=enc, args=(i,)) for i in range(30)]
+    ts.append(threading.Thread(target=ks.destroy, args=("victim",)))
+    ts += [threading.Thread(target=enc, args=(100,)) for _ in range(5)]  # same patient, first-time race
+    [t.start() for t in ts]; [t.join() for t in ts]
+    assert not errs
+    with pytest.raises(KeyDestroyed):
+        ks.decrypt("victim", blob, kid)
+    for i in list(range(30)) + [100]:
+        b, k = results[i]
+        assert ks.decrypt(f"p{i}", b, k) == b"data"
+    # all 5 racers for p100 used the same key id (no overwritten, orphaned key)
+    assert len({k for _, k in [ks.encrypt("p100", b"x") for _ in range(3)]}) == 1
 
 
 def test_master_key_required(monkeypatch):
@@ -63,6 +105,7 @@ def test_stored_media_is_not_an_image_and_decrypts(fhir, ks):
     img = _png()
     pat = fhir.create(m.patient("TEST-CRYPTO", "Testcrypto", "A", "female", "1980-01-01"))
     pid = pat["id"]
+    med = None
     prac = fhir.create(m.practitioner("test-crypto", "Testprac", "C"))
     enc = fhir.create(m.encounter(f"Patient/{pid}", "screening", f"Practitioner/{prac['id']}"))
     try:
@@ -76,5 +119,6 @@ def test_stored_media_is_not_an_image_and_decrypts(fhir, ks):
         assert {e["url"]: e["valueString"] for e in ext} == {"algorithm": "AES-256-GCM", "keyId": kid}
         assert ks.decrypt(pid, stored, kid) == img
     finally:
-        for t, i in (("Media", med["id"]), ("Encounter", enc["id"]), ("Practitioner", prac["id"]), ("Patient", pid)):
-            fhir.delete(t, i)
+        for t, i in (("Media", med and med["id"]), ("Encounter", enc["id"]), ("Practitioner", prac["id"]), ("Patient", pid)):
+            if i:
+                fhir.delete(t, i)

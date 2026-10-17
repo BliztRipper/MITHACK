@@ -19,6 +19,14 @@ class FhirUnavailable(Exception):
     """Record store cannot be reached ("record store unavailable")."""
 
 
+def _issues(r):
+    """Only severity:code of each OperationOutcome issue; the body can echo patient data."""
+    try:
+        return ",".join(f"{i.get('severity')}:{i.get('code')}" for i in r.json().get("issue", []))
+    except ValueError:
+        return ""
+
+
 class FhirError(Exception):
     def __init__(self, status, outcome):
         super().__init__(f"FHIR {status}: {outcome}")
@@ -35,7 +43,7 @@ class FhirClient:
         except httpx.TransportError as e:
             raise FhirUnavailable("record store unavailable") from e
         if r.status_code >= 400:
-            raise FhirError(r.status_code, r.text[:500])
+            raise FhirError(r.status_code, _issues(r))
         return r.json() if r.content else {}
 
     def health_check(self):

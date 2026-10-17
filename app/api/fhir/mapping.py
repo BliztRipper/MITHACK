@@ -25,8 +25,8 @@ OBS_CODES = {
     "arcus_senilis": (LOCAL, "arcus-senilis", "Arcus senilis"),
     "crao_probability": (LOCAL, "crao-probability", "CRAO probability (AI)"),
     "quality_score": (LOCAL, "image-quality-score", "Image quality score"),
-    "waist": (LOCAL, "waist-circumference", "Waist circumference"),
-    "height": (LOCAL, "height", "Height"),
+    "waist": (LOINC, "8280-0", "Waist circumference"),
+    "height": (LOINC, "8302-2", "Body height"),
     "vessel_avr": (LOCAL, "vessel-avr", "Arteriole-venule ratio"),
     "vessel_tortuosity": (LOCAL, "vessel-tortuosity", "Vessel tortuosity"),
 }
@@ -81,14 +81,17 @@ def encounter(patient_ref, mode, practitioner_ref):
             "period": {"start": now()}}
 
 
-def media(patient_ref, encounter_ref, ciphertext, key_id, kind="fundus", alg="AES-256-GCM"):
+def media(patient_ref, encounter_ref, ciphertext, key_id, kind="fundus", alg="AES-256-GCM", device_ref=None):
     """ciphertext is already encrypted (see fhir/crypto.py); the image never reaches FHIR in clear."""
-    return {"resourceType": "Media", "status": "completed",
+    r = {"resourceType": "Media", "status": "completed",
             "type": {"coding": [{"system": LOCAL, "code": kind}]},  # fundus | overlay
             "subject": ref(patient_ref), "encounter": ref(encounter_ref),
             "extension": [{"url": ENC_EXT, "extension": [
                 {"url": "algorithm", "valueString": alg}, {"url": "keyId", "valueString": key_id}]}],
             "content": {"contentType": "application/octet-stream", "data": base64.b64encode(ciphertext).decode()}}
+    if device_ref:  # overlays are AI-produced; the fundus photo is not
+        r["device"] = ref(device_ref)
+    return r
 
 
 def observation(key, value, patient_ref, encounter_ref, device_ref=None):
@@ -176,7 +179,7 @@ def case_bundle(mode, patient_ref, practitioner_ref, device_ref, ciphertexts, ob
     media_urns = []
     for kind, data, key_id in ciphertexts:
         u = urn(); media_urns.append(u)
-        es.append(entry(u, media(patient_ref, enc, data, key_id, kind)))
+        es.append(entry(u, media(patient_ref, enc, data, key_id, kind, device_ref=device_ref if kind != "fundus" else None)))
     results = []
     for k, v in obs.items():
         u = urn(); results.append(u)

@@ -32,3 +32,10 @@ def test_unreachable_server_raises(monkeypatch):
     monkeypatch.setenv("FHIR_USER", "x"), monkeypatch.setenv("FHIR_PASS", "x")
     with pytest.raises(FhirUnavailable, match="record store unavailable"):
         FhirClient(base="http://127.0.0.1:9/x", timeout=2).health_check()
+
+
+def test_fhir_error_keeps_no_response_body(fhir):
+    with pytest.raises(FhirError) as e:
+        fhir.create({"resourceType": "Patient", "name": [{"family": "SecretFamilyName"}], "gender": "bogus"})
+    assert e.value.status == 400 and "SecretFamilyName" not in str(e.value)
+    assert "error:" in e.value.outcome

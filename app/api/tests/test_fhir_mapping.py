@@ -46,6 +46,8 @@ def test_screening_bundle_accepted(fhir, actors):
          "quality_score": 0.9, "vessel_avr": 0.6},
         risks=[("Thai CV Risk (lab)", 12.5), ("PCE (white)", 15.0)], conditions=[("Hypertension", "hypertension")],
         conclusion="Moderate risk")
+    media = {e["resource"]["type"]["coding"][0]["code"]: e["resource"] for e in es if e["resource"]["resourceType"] == "Media"}
+    assert media["overlay"]["device"] == {"reference": a["dev"]} and "device" not in media["fundus"]
     resp = _save_and_cleanup(fhir, es, CASE_TYPES)
     assert all(e["response"]["status"].startswith("201") for e in resp["entry"])
 
@@ -63,6 +65,10 @@ def test_iris_rejects_invalid_resource(fhir, actors):
     bad["status"] = "bogus"
     with pytest.raises(FhirError):
         fhir.create(bad)
+
+
+def test_height_waist_are_loinc():
+    assert m.OBS_CODES["height"][:2] == (m.LOINC, "8302-2") and m.OBS_CODES["waist"][:2] == (m.LOINC, "8280-0")
 
 
 def test_loinc_codes_exact():
