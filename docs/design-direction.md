@@ -57,7 +57,7 @@ Values are sRGB hex so the contrast table is exact. They were derived from OKLCH
   --color-band-uncertain: #7b5100;
   --color-band-likely: #a00f15;
 
-  /* ---- 10-year CVD risk, ordinal 1..4 (PCE and Thai CV both have 4 bands) ---- */
+  /* ---- 10-year ASCVD risk (PCE), ordinal 1..4 (ACC/AHA bands) ---- */
   --color-risk-1: #eedacb;         /* ink text on it */
   --color-risk-2: #e0b491;         /* ink text */
   --color-risk-3: #c16d45;         /* ink text, >=18.66px bold only (4.54:1) */
@@ -249,8 +249,9 @@ Keyboard: every control is in tab order (radios with arrow keys). `1/2/3` shortc
 
 ### 3.11 Risk panel (Screening)
 
-- The headline is **Thai CV Risk**: a label ("Thai CV Risk (lab)" or "(non-lab)") above `font-mono text-3xl` `14.2 %`, with "10-year" and the band name as text. A 4-segment ordinal bar uses `risk-1…4`, each labelled with its range (`<10 %`, `10–<20`, `20–<30`, `≥30`), and the patient's segment has a 2 px `ink` outline plus a triangle marker. Outside 30–70: show "outside validated age range (30–70)" in place of the number, with no bar.
-- **PCE** sits second, smaller (`text-xl` value), in the same bar style with ACC/AHA ranges, and always with the caveat directly under it, `text-sm text-muted` and never collapsed: "PCE was not derived in Asian populations and may overestimate risk."
+- The headline is **PCE 10-year ASCVD risk**: a label ("10-year ASCVD risk (PCE)") above `font-mono text-3xl` `14.2 %`, with "10-year" and the band name as text. A 4-segment ordinal bar uses `risk-1…4`, each labelled with its ACC/AHA range (`<5 %`, `5–<7.5`, `7.5–<20`, `≥20`), and the patient's segment has a 2 px `ink` outline plus a triangle marker. Outside 40–79: show "outside validated age range (40–79)" in place of the number, with no bar.
+- The caveat sits directly under the number, `text-sm text-muted` and never collapsed: "PCE was not derived in Asian populations and may overestimate risk."
+- **Statin group:** when the patient is in a 2018 AHA/ACC statin benefit group (known ASCVD, LDL ≥ 190, diabetes 40–75 with LDL ≥ 70), a bordered statement names the group and says the indication holds regardless of calculated risk. Any PCE number shown then informs statin intensity only.
 - **Bypass** (known ASCVD or LDL ≥ 190): this replaces both numbers with a bordered statement, `text-lg font-medium` ("Secondary prevention: risk calculators do not apply"). No suggestion is shown.
 - **Enhancers:** a list with source tags ("retinal", "clinical"). The fixed line "Enhancers do not change the calculated risk" always shows. "Retinal enhancers not assessed (image failed quality)" shows when relevant.
 - **Measurements:** a small table of AVR, CRAE and CRVE with value (mono), reference interval, flag word ("within reference" / "outside reference"), and a `placeholder` chip on the reference.
