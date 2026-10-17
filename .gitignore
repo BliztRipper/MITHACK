@@ -28,3 +28,5 @@ data/
 **/.claude/state/
 **/.harness-mem/
 .playwright-mcp/
+playwright-report/
+test-results/
