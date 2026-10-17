@@ -124,7 +124,7 @@ dialog::backdrop { background: rgb(14 18 22 / 0.45); }
 @keyframes travel { from { transform: translateX(calc(var(--p) * -100%)); } }
 .layer-in { animation: fade-in 120ms var(--ease-out); }
 .iris-in { animation: slide-down 220ms var(--ease-out); }
-.marker-in { animation: travel 420ms var(--ease-out); }
+.marker-in { animation: travel 250ms var(--ease-out); }
 .row-hover { transition: background-color 150ms ease; }
 dialog.sign { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out), overlay 180ms allow-discrete, display 180ms allow-discrete; opacity: 0; transform: scale(0.96); }
 dialog.sign[open] { opacity: 1; transform: none; }

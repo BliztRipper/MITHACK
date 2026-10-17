@@ -35,8 +35,8 @@ function CaseScreen({ c, reload }: { c: CaseRecord; reload: () => void }): React
         <div className="flex flex-wrap items-start gap-2 print:hidden">
           {preliminary && (
             <div>
-              <button className="btn-primary" disabled={Boolean(signBlock)} onClick={() => setSigning(true)}>Sign result</button>
-              {signBlock && <p className="mt-1 text-sm text-muted">Cannot sign: {signBlock}.</p>}
+              <button className="btn-primary" disabled={Boolean(signBlock)} aria-describedby={signBlock ? 'sign-why' : undefined} onClick={() => setSigning(true)}>Sign result</button>
+              {signBlock && <p id="sign-why" className="mt-1 text-sm text-muted">Cannot sign: {signBlock}.</p>}
             </div>
           )}
           <button className="btn-secondary" onClick={() => print()}><Printer size={20} aria-hidden />Print report</button>

@@ -115,7 +115,7 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
             ))}
           </div>
           {(vesselOff('all') || vesselOff('av')) && (
-            <p id="vessel-why" className="mt-1 text-sm">Vessel layer not available{storeDown ? ': record store unavailable' : ' for this case'}.</p>
+            <p id="vessel-why" className="mt-1 text-sm">{storeDown ? 'Vessel layer not available: record store unavailable.' : 'Segmentation not available for this image.'}</p>
           )}
         </fieldset>
         <div className="flex flex-wrap gap-2">
@@ -127,7 +127,7 @@ export default function Stage({ fundus, overlays, seg, layers, setLayers, captio
         </div>
         {!discFound && seg && <p id="disc-why" className="text-sm">Optic disc not located; region-based explanation omitted.</p>}
         {!overlays.heatmap && <p id="heat-why" className="text-sm text-stage-muted">Heatmap not available for this case.</p>}
-        {!seg && <p className="text-sm">Segmentation not available for this image: no vessel or disc layers.</p>}
+        {!seg && <p id="disc-why" className="text-sm">Segmentation not available for this image: no vessel or disc layers.</p>}
         <label className="flex items-center gap-3">
           <span>Overlay opacity</span>
           <input type="range" min={0} max={100} step={5} value={layers.opacity} onChange={(e) => set({ opacity: Number(e.target.value) })} className="w-48" />
