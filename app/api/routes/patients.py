@@ -10,6 +10,7 @@ from fhir.client import FhirError
 from fhir.withdrawal import withdraw
 
 router = APIRouter(tags=["patients"])
+WITHDRAWN = "consent was withdrawn and images erased; re-enrolment is not supported in this demo"
 CLINICIANS = deps.role("gp", "reviewer")
 PURPOSES = {"care": "care", "model-improvement": "model_improvement"}
 OBS_KEYS = {code: k for k, (_, code, _) in m.OBS_CODES.items()}
@@ -75,8 +76,10 @@ def detail(pid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
             latest[k] = {"value": v, "date": o.get("effectiveDateTime")}
     reps = sorted(f.search("DiagnosticReport", subject=pref, code=f"{m.LOCAL}|retinal-ai-report"),
                   key=lambda r: r.get("issued", ""), reverse=True)
+    # only cases this user may open; seeded history (spec: prior results visible) is listed but not openable
     cases = [{"report_id": r["id"], "date": r.get("issued"), "mode": mode_of(r), "status": r["status"],
-              "result": r.get("conclusion")} for r in reps]
+              "result": r.get("conclusion"), "readable": ok} for r in reps
+             if (ok := deps.may_read(u, r)) or any(i["system"] == m.SEED_SYSTEM for i in r.get("identifier", []))]
     return {"patient": summary(p), "consent": consent(pid), "latest": latest, "cases": cases}
 
 
@@ -100,6 +103,8 @@ def record_consent(pid: deps.FhirId, body: ConsentIn, request: Request, u: dict 
     if not (body.care and body.right_to_withdraw_explained) or body.retention_years < 1:
         raise HTTPException(422, "care consent, a retention period and the right to withdraw are all required")
     read_patient(pid)
+    if deps.keys().withdrawn(pid):  # the tombstone refuses new image keys, so a new consent could never be used
+        raise HTTPException(409, WITHDRAWN)
     have, rec = consent(pid), deps.practitioner(u)
     end = (datetime.now(timezone.utc) + timedelta(days=365 * body.retention_years)).date().isoformat()
     for purpose, key in PURPOSES.items():

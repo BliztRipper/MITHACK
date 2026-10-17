@@ -10,7 +10,7 @@ export interface User { username: string; role: Role; name: string }
 export interface PatientSummary { id: string; hn: string | null; name: string; gender: string | null; birth_date: string | null }
 export interface Consent { care: boolean; model_improvement: boolean }
 export interface Dated { value: number | boolean | string; date: string }
-export interface PriorCase { report_id: string; date: string | null; mode: Mode; status: string; result: string | null }
+export interface PriorCase { report_id: string; date: string | null; mode: Mode; status: string; result: string | null; readable: boolean }
 export interface PatientDetail {
   patient: PatientSummary
   consent: Consent

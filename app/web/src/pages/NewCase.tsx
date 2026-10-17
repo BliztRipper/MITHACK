@@ -126,7 +126,8 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
       if (r.quality.accept && r.report_id) return navigate(`/cases/${r.report_id}`)
       if (r.quality.accept) { setLayers(defaultLayers(mode)); setStep(4) }
     } catch (e) {
-      if (e instanceof ApiError && e.status === 403) { setConsentOk(false); setStep(1); return }
+      // 403 no consent / 409 consent withdrawn: say why here; going back to the consent step could loop
+      if (e instanceof ApiError && (e.status === 403 || e.status === 409)) { setConsentOk(false); setErrors({ _: `Not saved: ${e.message}.` }); return }
       if (e instanceof ApiError && e.status === 422) { setErrors(fieldErrors(e)); setStep(2); return }
       setErrors({ _: e instanceof ApiError && e.status === 503 ? 'Cannot verify consent while the record store is down. Analysis is blocked.' : (e as Error).message })
     } finally {
@@ -163,6 +164,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
               {busy ? <><LoaderCircle size={20} className="animate-spin" aria-hidden />Analysing…</> : 'Analyse photo'}
             </button>
             {!file && <p className="mt-1 text-sm text-muted">Choose a photo first.</p>}
+            {busy && <p className="mt-1 text-sm text-muted" role="status">An uncached photo can take up to about 2 minutes to analyse.</p>}
           </div>
         </div>
       ))}

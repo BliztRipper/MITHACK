@@ -124,11 +124,11 @@ def test_unsupported_and_oversize_files_rejected_with_reason(stub, monkeypatch):
 
 def test_implausible_value_rejected_naming_the_range(stub, monkeypatch):
     use(stub, monkeypatch, Store())
-    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 400, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
+    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 400, "tc": 200, "hdl": 45, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
     assert r.status_code == 422
     [err] = r.json()["detail"]
     assert err["loc"][-1] == "sbp" and "260" in err["msg"]
-    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 120, "tc": 5, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
+    r = post(stub, "screening", '{"age": 60, "sex": "male", "smoking": "never", "sbp": 120, "tc": 5, "hdl": 45, "diabetes": false, "treated_htn": false, "ascvd": false, "african_american": false}')
     assert r.status_code == 422 and "50" in r.json()["detail"][0]["msg"]
 
 
@@ -263,8 +263,8 @@ def test_diabetes_40_75_states_statin_group_and_labels_pce_as_intensity_only(stu
     assert b["pce"]["risk"] > 0 and b["pce"]["intensity_only"] == EN["risk.pce_intensity_only"]
 
 
-@pytest.mark.parametrize("field", ["diabetes", "treated_htn", "ascvd", "african_american"])
-def test_screening_requires_explicit_yes_no_inputs(stub, field):
+@pytest.mark.parametrize("field", ["diabetes", "treated_htn", "ascvd", "african_american", "tc", "hdl"])
+def test_screening_requires_explicit_yes_no_inputs_and_lipids(stub, field):
     r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k != field}))
     assert r.status_code == 422 and field in r.text
 
@@ -341,3 +341,19 @@ def test_unknown_patient_is_404(live, monkeypatch):
     monkeypatch.setattr(segment, "segment", fake_seg)
     login(live, "gp1")
     assert post(live, pid="99999999").status_code == 404
+
+
+@pytest.mark.parametrize("extra", [{"diabetes": True}, {"ascvd": True}])
+def test_stage1_htn_in_a_statin_benefit_group_never_says_lifestyle_only(stub, monkeypatch, extra):
+    import json
+    use(stub, monkeypatch, Store())
+    b = post(stub, "screening", json.dumps({**SCREENING, "sbp": 135, "dbp": 85, **extra})).json()["risk"]
+    assert b["htn_stage1"] == EN["risk.htn_stage1.bypass"]
+
+
+def test_save_for_a_withdrawn_patient_is_409_with_a_clear_message(stub, monkeypatch):
+    s = use(stub, monkeypatch, Store())
+    deps.keys().destroy("p1")  # tombstone: consent was withdrawn and images erased
+    r = post(stub)
+    assert r.status_code == 409 and "re-enrolment is not supported" in r.json()["detail"]
+    assert s.transactions == []

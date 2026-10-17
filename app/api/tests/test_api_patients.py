@@ -61,3 +61,27 @@ def test_no_route_takes_identifiers_in_the_query_string_and_access_log_is_off():
              for p in op.get("parameters", []) if p["in"] == "query"}
     assert query <= {"days", "lang"}  # nothing that can hold a name, HN or date of birth
     assert main.RUN["access_log"] is False
+
+
+def test_consent_after_withdrawal_is_409_not_a_new_consent(live, fhir, patient):
+    login(live, "gp1")
+    live.post(f"/patients/{patient}/consent", json=CONSENT)
+    live.post(f"/patients/{patient}/withdraw")
+    r = live.post(f"/patients/{patient}/consent", json=CONSENT)
+    assert r.status_code == 409 and "re-enrolment is not supported" in r.json()["detail"]
+    assert live.get(f"/patients/{patient}/consent").json()["care"] is False
+
+
+def test_patient_view_lists_only_cases_the_user_may_open(live, fhir, patient, monkeypatch):
+    import json
+    import deps
+    from test_api_cases import SCREENING, fake_seg, post
+    from vision import segment
+    monkeypatch.setattr(segment, "segment", fake_seg)
+    monkeypatch.setattr(deps, "model", lambda: None)
+    login(live, "gp1")
+    live.post(f"/patients/{patient}/consent", json=CONSENT)
+    rid = post(live, "screening", json.dumps(SCREENING), pid=patient).json()["report_id"]
+    assert [c["report_id"] for c in live.get(f"/patients/{patient}").json()["cases"]] == [rid]
+    login(live, "gp2")
+    assert live.get(f"/patients/{patient}").json()["cases"] == []

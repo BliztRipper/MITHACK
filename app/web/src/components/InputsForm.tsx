@@ -8,8 +8,8 @@ const NUMBERS: NumField[] = [
   { key: 'age', label: 'Age', unit: 'years', min: 18, max: 110, required: true, step: 1 },
   { key: 'sbp', label: 'Systolic blood pressure', unit: 'mmHg', min: 60, max: 260, required: true },
   { key: 'dbp', label: 'Diastolic blood pressure', unit: 'mmHg', min: 30, max: 160 },
-  { key: 'tc', label: 'Total cholesterol', unit: 'mg/dL', min: 50, max: 500 },
-  { key: 'hdl', label: 'HDL cholesterol', unit: 'mg/dL', min: 10, max: 200 },
+  { key: 'tc', label: 'Total cholesterol', unit: 'mg/dL', min: 50, max: 500, required: true },
+  { key: 'hdl', label: 'HDL cholesterol', unit: 'mg/dL', min: 10, max: 200, required: true },
   { key: 'ldl', label: 'LDL cholesterol (optional)', unit: 'mg/dL', min: 10, max: 400 },
 ]
 // Equation inputs: explicit yes/no, never defaulted, so a forgotten answer cannot silently lower the risk.

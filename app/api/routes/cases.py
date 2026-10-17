@@ -15,7 +15,7 @@ import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
 from fhir.crypto import ConsentWithdrawn, KeyDestroyed
-from routes.patients import consent, read_patient
+from routes.patients import WITHDRAWN, consent, read_patient
 from vision import quality
 
 router = APIRouter(tags=["cases"])
@@ -52,8 +52,8 @@ class ScreeningInputs(BaseModel):
     sbp: float = Field(ge=60, le=260)
     dbp: float | None = Field(None, ge=30, le=160)
     treated_htn: bool
-    tc: float | None = Field(None, ge=50, le=500)
-    hdl: float | None = Field(None, ge=10, le=200)
+    tc: float = Field(ge=50, le=500)   # required: spec "Risk factor inputs" (PCE needs both)
+    hdl: float = Field(ge=10, le=200)
     ldl: float | None = Field(None, ge=10, le=400)
     african_american: bool
     ascvd: bool
@@ -167,7 +167,7 @@ def create_case(request: Request, patient_id: str = Form(pattern=deps.ID_PATTERN
         result["saved"] = True
         request.state.audit = ("C", f"DiagnosticReport/{result['report_id']}")
     except ConsentWithdrawn:
-        raise HTTPException(403, CONSENT_REQUIRED) from None
+        raise HTTPException(409, WITHDRAWN) from None
     except (FhirUnavailable, FhirError) as e:  # all-or-nothing transaction: nothing was stored
         log.error("case save failed case=%s error=%s: %s", case_id, type(e).__name__, e)
         result["save_error"] = NOT_SAVED if isinstance(e, FhirUnavailable) else "record store refused the save, not saved"

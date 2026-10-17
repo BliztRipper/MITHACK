@@ -107,6 +107,9 @@ class KeyStore:
                 withdrawn.append(pid)
             return keys.pop(pid, None) is not None
 
+    def withdrawn(self, patient_id):
+        return _pid(patient_id) in self._load()[1]
+
     def has_key(self, patient_id, key_id=None):
         e = self._load()[0].get(_pid(patient_id))
         return bool(e) and (key_id is None or e["key_id"] == key_id)
