@@ -70,7 +70,7 @@ export default function App(): ReactNode {
   const path = usePath()
   const [user, setUser] = useState<User | null | undefined>(undefined) // undefined = still checking the cookie
   const [storeDown, setStoreDown] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuAt, setMenuAt] = useState<string | null>(null) // the narrow-screen menu closes itself on navigation
 
   const checkHealth = useCallback(() => {
     api.health().then((h) => setStoreDown(h.record_store === 'unavailable')).catch(() => setStoreDown(true))
@@ -89,8 +89,8 @@ export default function App(): ReactNode {
       events.removeEventListener('store-down', checkHealth)
     }
   }, [checkHealth])
-  useEffect(() => setMenuOpen(false), [path])
 
+  const menuOpen = menuAt === path
   if (user === undefined) return null
   if (user === null) return <>{storeDown && <Banner />}<Login onLogin={(u) => { setUser(u); navigate('/') }} /></>
 
@@ -109,7 +109,7 @@ export default function App(): ReactNode {
         {storeDown && <Banner />}
         <header className="flex items-center justify-between border-b border-rule bg-surface px-4 py-2 lg:hidden print:hidden">
           <span className="font-semibold">Retina CVD/CRAO</span>
-          <button className="btn-secondary" aria-expanded={menuOpen} aria-controls="rail" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="btn-secondary" aria-expanded={menuOpen} aria-controls="rail" onClick={() => setMenuAt(menuOpen ? null : path)}>
             <Menu size={20} aria-hidden />Menu
           </button>
         </header>
