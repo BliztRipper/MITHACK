@@ -3,7 +3,9 @@ import { Camera, Check, LoaderCircle, TriangleAlert } from 'lucide-react'
 import { api, ApiError, fieldErrors, type CaseResult, type Mode, type PatientDetail } from '../api'
 import ConsentStep from '../components/ConsentStep'
 import InputsForm, { initialValues, toInputs, validate, type Values } from '../components/InputsForm'
-import { ErrorText, Link, PageTitle, useLoad } from '../components/ui'
+import ResultView from '../components/ResultView'
+import { defaultLayers, type Layers } from '../components/Stage'
+import { ErrorText, Link, navigate, PageTitle, useLoad } from '../components/ui'
 import { PatientSearch } from './Patients'
 
 const STEPS = ['Mode', 'Consent', 'Inputs', 'Photo', 'Result']
@@ -79,6 +81,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
   const [preview, setPreview] = useState('')
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<CaseResult | null>(null)
+  const [layers, setLayers] = useState<Layers>(defaultLayers('screening'))
   const onReady = useCallback((ok: boolean) => setConsentOk(ok), [])
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
@@ -120,7 +123,8 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
     try {
       const r = await api.createCase(f)
       setResult(r)
-      if (r.quality.accept) setStep(4)
+      if (r.quality.accept && r.report_id) return navigate(`/cases/${r.report_id}`)
+      if (r.quality.accept) { setLayers(defaultLayers(mode)); setStep(4) }
     } catch (e) {
       if (e instanceof ApiError && e.status === 403) { setConsentOk(false); setStep(1); return }
       if (e instanceof ApiError && e.status === 422) { setErrors(fieldErrors(e)); setStep(2); return }
@@ -162,13 +166,9 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
           </div>
         </div>
       ))}
-      {step === 4 && result && (
-        <div className="card max-w-3xl">
-          <p className="font-medium">{result.conclusion}</p>
-          {result.report_id ? <Link href={`/cases/${result.report_id}`} className="text-accent underline">Open case {result.report_id}</Link>
-            : <ErrorText>{result.save_error}</ErrorText>}
-        </div>
-      )}
+      {step === 4 && result && <ResultView r={result} fundus={preview} patient={patient.patient} status={result.status}
+        overlays={Object.fromEntries(Object.entries(result.overlays ?? {}).filter(([, v]) => v).map(([k, v]) => [k, `data:image/png;base64,${v}`]))}
+        layers={layers} setLayers={setLayers} />}
       {step < 3 && (
         <div className="mt-8 flex max-w-4xl justify-between border-t border-rule pt-4">
           <button className="btn-secondary" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</button>

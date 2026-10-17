@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { DatabaseZap, LogOut, Menu } from 'lucide-react'
 import { api, events, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
+import Case from './pages/Case'
 import Login from './pages/Login'
 import NewCase from './pages/NewCase'
 import Patient from './pages/Patient'
@@ -17,6 +18,7 @@ const ROUTES: Route[] = [
   { path: /^\/patients\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Patient key={id} id={id} /> },
   { path: /^\/new$/, roles: CLIN, nav: 'New case', href: '/new', page: () => <NewCase /> },
   { path: /^\/new\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <NewCase key={id} patientId={id} /> },
+  { path: /^\/cases\/([A-Za-z0-9.-]{1,64})$/, roles: CLIN, page: ([id]) => <Case key={id} id={id} /> },
   { path: /^\/queue$/, roles: CLIN, nav: 'Review queue', href: '/queue', page: soon },
   { path: /^\/monitoring$/, roles: ['reviewer', 'admin'], nav: 'Monitoring', href: '/monitoring', page: soon },
   { path: /^\/audit$/, roles: ['admin'], nav: 'Audit', href: '/audit', page: soon },
