@@ -51,6 +51,16 @@ def test_heatmap_far_from_disc_and_macula_names_the_periphery():
     assert run(blob(60, 560)).region == "periphery"
 
 
+def test_region_pick_ignores_heat_outside_the_field_of_view():
+    fov = np.zeros((H, W), bool)
+    fov[50:550, 100:750] = True
+    fx, fy = explain.fovea(DISC_RIGHT, DD, W)
+    heat = blob(fx, fy) * 0.5
+    heat[:, :100] = 1.0  # strong attention on the black border
+    e = explain.explain(0.82, "likely", 0.9, heat, DISC_RIGHT, DD, None, fov)
+    assert e.region == "macula" and e.fractions["periphery"] < 0.5
+
+
 def test_no_disc_omits_region_but_keeps_probability_and_limitations():
     e = run(blob(400, 300), disc=None, dd=None)
     en = templates("en")

@@ -9,6 +9,7 @@ from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 from vision.crao_model import CraoModel
+from vision.preprocess import fov_mask
 
 
 def _vit_reshape(tokens, grid=14):
@@ -17,7 +18,8 @@ def _vit_reshape(tokens, grid=14):
 
 
 def heatmap(model: CraoModel, rgb: np.ndarray) -> tuple[np.ndarray, bytes]:
-    """Return (CAM in 0..1 at HxW, RGBA PNG at HxW; alpha follows attention so cold areas stay transparent)."""
+    """Return (CAM in 0..1 at HxW, RGBA PNG at HxW; alpha follows attention so cold areas stay transparent).
+    Both are zero outside the field of view, so region mass and the overlay ignore the black border."""
     net = model.net
     if model.arch == "retfound_vit_l":
         layers, reshape = [net.blocks[-1].norm1], lambda t: _vit_reshape(t, net.patch_embed.grid_size[0])
@@ -26,7 +28,7 @@ def heatmap(model: CraoModel, rgb: np.ndarray) -> tuple[np.ndarray, bytes]:
     with GradCAM(model=net, target_layers=layers, reshape_transform=reshape) as cam:
         grey = cam(input_tensor=model.input(rgb), targets=[ClassifierOutputTarget(0)])[0]  # class 0 = crao
     h, w = rgb.shape[:2]
-    grey = np.clip(cv2.resize(grey, (w, h)), 0, 1)
+    grey = np.clip(cv2.resize(grey, (w, h)), 0, 1) * fov_mask(rgb)  # attention outside the retina is not a finding
     colour = cv2.applyColorMap((grey * 255).astype(np.uint8), cv2.COLORMAP_JET)  # BGR
     rgba = np.dstack([colour, (grey * 255).astype(np.uint8)])                    # BGRA for cv2.imencode
     ok, png = cv2.imencode(".png", rgba)

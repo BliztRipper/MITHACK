@@ -83,6 +83,16 @@ def test_efficientnet_heatmap_png_matches_input_size(tmp_path):
     assert png_shape(png) == ("RGBA", (400, 300))
 
 
+def test_heatmap_is_zero_outside_the_field_of_view(tmp_path):
+    m = crao_model.load(save(tmp_path, "efficientnet_b0"), device="cpu")
+    img = rgb(300, 400)
+    img[:, :60] = 0  # black border outside the round field of view
+    cam, png = heatmap.heatmap(m, img)
+    assert cam[:, :60].max() == 0
+    alpha = np.asarray(Image.open(io.BytesIO(png)))[..., 3]
+    assert alpha[:, :60].max() == 0
+
+
 @pytest.mark.slow
 def test_retfound_constructed_model_loads_and_heatmap_matches_input_size(tmp_path):
     m = crao_model.load(save(tmp_path, "retfound_vit_l"), device="cpu")
