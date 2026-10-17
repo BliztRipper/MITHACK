@@ -11,6 +11,16 @@ curl http://localhost:32783/csp/healthshare/demo/fhir/r4/metadata
 
 Bound to 127.0.0.1 only. No volume: `docker compose down` drops data (re-run setup and seed).
 
+## Reset the demo (one command)
+```
+FHIR_USER=... FHIR_PASS=... app/fhir/reset.sh
+```
+Runs `docker compose down && up -d`, waits for IRIS, runs `setup.script`, waits for `/metadata`, deletes
+`app/api/.keys/keys.json` (only that file; `APP_MASTER_KEY` is untouched) and seeds 20 patients. Always reset this
+way: IRIS reuses patient ids after a reset, and a stale withdrawal tombstone in `keys.json` would block a new patient.
+
+The image is pinned by digest in `docker-compose.yml` (how to bump is noted there).
+
 ## Attribution
 `docker-compose.yml` and `setup.script` are adapted from
 [intersystems-community/FHIR-AI-Hackathon-Kit](https://github.com/intersystems-community/FHIR-AI-Hackathon-Kit)

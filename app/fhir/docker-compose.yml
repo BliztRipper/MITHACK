@@ -2,6 +2,9 @@
 services:
   iris:
     container_name: iris-fhir
-    image: intersystems/irishealth-community:latest-cd
+    # Pinned to the tested build (IRIS for Health 2026.2.0.221.0, arm64). The digest wins over the tag, so this is
+    # byte-identical to what was tested. To bump: docker pull intersystems/irishealth-community:<tag>, then
+    # docker image inspect <that image> --format '{{index .RepoDigests 0}}', paste it here and re-run the tests.
+    image: intersystems/irishealth-community:2026.2@sha256:462de1fb3597272fde0e03afad006af1b18b59c90f1c1fb5566c79b027a7af0a
     ports:
       - "127.0.0.1:32783:52773"  # web gateway; FHIR only on localhost (D10)
