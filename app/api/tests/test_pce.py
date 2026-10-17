@@ -29,7 +29,7 @@ def test_out_of_range_is_not_valid_not_clamped(field, value):
     i = ex("female", False)
     setattr(i, field, value)
     r = pce(i)
-    assert r.risk is None and r.reason == "risk.not_valid.pce_range"
+    assert r.risk is None and r.reason == ("risk.not_valid.pce_age" if field == "age" else "risk.not_valid.pce_range")
 
 
 @pytest.mark.parametrize("field,value", [("age", 40), ("age", 79), ("tc", 130), ("tc", 320), ("hdl", 20), ("hdl", 100), ("sbp", 90), ("sbp", 200)])

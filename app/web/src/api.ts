@@ -25,7 +25,7 @@ export interface Crao {
 export interface Triage { level: Level; actions: string[]; reasons: string[] }
 export interface Measure { value: number | null; flag: string | null; reference?: [number, number]; reference_status?: string; unit?: string; reason?: string; note?: string }
 export interface Risk {
-  pce: { label: string; risk: number | null; band: string | null; not_valid: string | null; notes: string[]; suggestion: string | null; suggestion_label: string }
+  pce: { label: string; risk: number | null; band: string | null; not_valid: string | null; intensity_only: string | null; notes: string[]; suggestion: string | null; suggestion_label: string }
   bypass: string | null
   htn_stage1: string | null
   enhancers: { retinal: string[]; clinical: string[]; not_assessed: string | null; note: string | null }

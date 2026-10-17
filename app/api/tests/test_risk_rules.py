@@ -92,3 +92,59 @@ def test_arcus_in_young_patient_prompts_lipid_check_without_changing_risk():
 def test_stage1_hypertension_without_pce_risk_gives_label_without_risk_statement():
     k = risk.htn_stage1(135, 85, None)
     assert k == "risk.htn_stage1" and "below 10%" not in txt(k)
+
+
+# --- 2018 AHA/ACC diabetes statin benefit group, PCE age window, retinal enhancer label ---------------
+
+def dm(age, ldl, **kw):
+    return Inputs(age=age, sex="female", sbp=130, diabetes=True, ldl=ldl, **kw)
+
+
+def test_diabetes_40_75_with_ldl_70_plus_states_moderate_intensity_statin():
+    k = risk.bypass(dm(55, 120))
+    assert "diabetes 40–75: moderate-intensity statin indicated regardless of calculated risk" in txt(k)
+
+
+@pytest.mark.parametrize("age,ldl", [(40, 70), (75, 70), (60, 189)])
+def test_diabetes_group_edges_are_inclusive(age, ldl):
+    assert risk.bypass(dm(age, ldl)) == "risk.bypass.diabetes"
+
+
+@pytest.mark.parametrize("age,ldl", [(39, 120), (76, 120), (55, 69)])
+def test_diabetes_outside_group_falls_to_pce_bands(age, ldl):
+    assert risk.bypass(dm(age, ldl)) is None
+
+
+def test_non_diabetic_ldl_100_is_not_a_statin_group():
+    assert risk.bypass(Inputs(age=55, sex="male", sbp=130, ldl=120)) is None
+
+
+def test_diabetes_40_75_without_ldl_says_statin_indicated_if_ldl_70_plus():
+    k = risk.bypass(dm(55, None))
+    assert "diabetes 40–75: statin indicated if LDL ≥70 mg/dL — LDL not entered" in txt(k)
+
+
+def test_statin_group_precedence_ascvd_then_ldl190_then_diabetes():
+    assert risk.bypass(dm(55, 200, ascvd=True)) == "risk.bypass.ascvd"
+    assert risk.bypass(dm(55, 200)) == "risk.bypass.ldl190"
+    assert risk.bypass(dm(55, 100)) == "risk.bypass.diabetes"
+
+
+def test_pce_number_in_diabetes_group_is_labelled_as_informing_intensity_only():
+    assert "informs statin intensity only" in txt("risk.pce_intensity_only")
+
+
+@pytest.mark.parametrize("age", [35, 82])
+def test_pce_out_of_validated_age_gives_no_number(age):
+    p = risk.pce(Inputs(age=age, sex="male", sbp=130, tc=200, hdl=50))
+    assert p.risk is None and p.reason == "risk.not_valid.pce_age"
+    assert "outside validated age range (40–79)" in txt(p.reason)
+    assert "(40–79)" in templates("th")[p.reason]
+
+
+def test_retinal_enhancer_is_labelled_investigational_in_both_languages():
+    for suffix in ("", ".placeholder"):
+        k = "risk.enhancer.retinal_arteriolar_narrowing" + suffix
+        assert "retinal arteriolar narrowing (investigational, not a guideline-listed risk enhancer)" in templates("en")[k]
+        assert "ไม่ใช่ปัจจัยเสริมความเสี่ยงที่แนวปฏิบัติระบุ" in templates("th")[k]
+    assert "placeholder" in templates("en")["risk.enhancer.retinal_arteriolar_narrowing.placeholder"]

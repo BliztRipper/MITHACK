@@ -40,9 +40,8 @@ export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
   return (
     <section aria-labelledby="risk-h" className="flex flex-col gap-6">
       <h2 id="risk-h" className="sr-only">10-year cardiovascular risk</h2>
-      {risk.bypass ? (
-        <p className="rounded-lg border-2 border-ink p-4 text-lg font-medium">{risk.bypass}</p>
-      ) : (
+      {risk.bypass && <p className="rounded-lg border-2 border-ink p-4 text-lg font-medium">{risk.bypass}</p>}
+      {(!risk.bypass || pce.intensity_only) && (
         <>
           <div className="flex flex-col gap-2">
             <h3 className="font-semibold">{pce.label}</h3>
@@ -52,6 +51,7 @@ export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
                 <OrdinalBar bands={PCE_BANDS} current={pce.band} />
               </>
             )}
+            {pce.intensity_only && <p className="text-sm font-medium">{pce.intensity_only}</p>}
             {pce.notes.map((n) => <p key={n} className="text-sm text-muted">{n}</p>)}
           </div>
         </>

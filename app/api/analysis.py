@@ -139,6 +139,7 @@ def screening(img: dict, i) -> dict:
     htn, arcus = risk.htn_stage1(i.sbp, i.dbp, p.risk), risk.arcus_prompt(i.age, i.arcus_senilis)
     r = {
         "pce": {"label": p.variant, "risk": p.risk, "band": band, "not_valid": T[p.reason] if p.reason else None,
+                "intensity_only": T["risk.pce_intensity_only"] if by and by.startswith("risk.bypass.diabetes") and p.risk is not None else None,
                 "notes": [T[k] for k in p.notes],
                 "suggestion": None if by or band is None else T[risk.suggestion("pce", band)],
                 "suggestion_label": T["risk.discussion_label"]},

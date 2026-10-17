@@ -59,6 +59,8 @@ def pce(i: Inputs) -> Result:
     label = "PCE (African American)" if i.african_american else "PCE (white)"
     if i.sex not in ("male", "female"):
         return Result(label, None, reason="risk.not_valid.sex")
+    if not _in("age", i.age, r):
+        return Result(label, None, reason="risk.not_valid.pce_age")
     if not ok:
         return Result(label, None, reason="risk.not_valid.pce_range")
     c, mean, s0 = _PCE[f"{race}_{i.sex}"]
@@ -87,11 +89,18 @@ def suggestion(scale: str, band: str) -> str:
 
 
 def bypass(i: Inputs) -> str | None:
-    """Statin-benefit groups: no primary-prevention number may be shown as the basis for treatment."""
+    """Statin-benefit groups (precedence: ASCVD > LDL >=190 > diabetes 40-75): no primary-prevention
+    number may be shown as the basis for treatment."""
     if i.ascvd:
         return "risk.bypass.ascvd"
     if i.ldl is not None and i.ldl >= R["ldl_statin_benefit"]["value"]:
         return "risk.bypass.ldl190"
+    lo, hi = R["diabetes_statin_age"]["value"]
+    if i.diabetes and lo <= i.age <= hi:
+        if i.ldl is None:
+            return "risk.bypass.diabetes.no_ldl"  # never fall through to a primary-prevention suggestion
+        if i.ldl >= R["diabetes_statin_ldl"]["value"]:
+            return "risk.bypass.diabetes"
     return None
 
 

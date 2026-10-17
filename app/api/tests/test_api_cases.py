@@ -251,6 +251,26 @@ def test_statin_benefit_group_gets_no_primary_prevention_suggestion(stub, monkey
             assert v not in r.text
 
 
+@pytest.mark.parametrize("extra,key", [({"diabetes": True}, "risk.bypass.diabetes"),
+                                       ({"diabetes": True, "ldl": None}, "risk.bypass.diabetes.no_ldl")])
+def test_diabetes_40_75_states_statin_group_and_labels_pce_as_intensity_only(stub, monkeypatch, extra, key):
+    import json
+    use(stub, monkeypatch, Store())
+    b = post(stub, "screening", json.dumps({**SCREENING, **extra})).json()["risk"]
+    assert b["bypass"] == EN[key] and b["pce"]["suggestion"] is None and b["enhancers"]["note"] is None
+    assert b["pce"]["risk"] > 0 and b["pce"]["intensity_only"] == EN["risk.pce_intensity_only"]
+
+
+def test_non_diabetic_has_no_intensity_only_label_and_age_35_shows_out_of_range_text(stub, monkeypatch):
+    import json
+    use(stub, monkeypatch, Store())
+    ok = post(stub, "screening", json.dumps(SCREENING)).json()["risk"]["pce"]
+    assert ok["intensity_only"] is None and ok["suggestion"]
+    b = post(stub, "screening", json.dumps({**SCREENING, "age": 35})).json()
+    assert b["risk"]["pce"]["risk"] is None and b["risk"]["pce"]["not_valid"] == EN["risk.not_valid.pce_age"]
+    assert "outside validated age range (40–79)" in b["conclusion"]
+
+
 # --- record store down / analysis failure --------------------------------------------------------------
 
 def test_record_store_down_returns_analysis_unsaved_with_no_partial_save(stub, monkeypatch):

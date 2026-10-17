@@ -17,6 +17,8 @@ risk:
     hdl: {value: [20, 100],  status: published, source: "Goff 2013"}
     sbp: {value: [90, 200],  status: published, source: "Goff 2013"}
   ldl_statin_benefit: {value: 190, status: published, source: "2018 AHA/ACC"}   # mg/dL
+  diabetes_statin_age: {value: [40, 75], status: published, source: "2018 AHA/ACC"}
+  diabetes_statin_ldl: {value: 70, status: published, source: "2018 AHA/ACC"}   # mg/dL
   arcus_prompt_age:   {value: 45,  status: published, source: "spec: arcus senilis prompt"}
   # Literature placeholder (normal A:V ratio about 2:3 or wider); unverified for Thai adults and for
   # Knudtson zone B (open question in design.md). Inclusive [low, high]; below low = arteriolar narrowing.

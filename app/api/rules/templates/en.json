@@ -10,7 +10,7 @@
  "risk.htn_stage1.ge10": "Stage 1 hypertension (130–139 / 80–89 mmHg) with 10-year risk 10% and above: consider blood-pressure medication plus lifestyle modification.",
  "risk.bypass.ascvd": "Known atherosclerotic CVD - secondary prevention: risk calculators do not apply.",
  "risk.bypass.ldl190": "LDL cholesterol 190 mg/dL or higher: high-intensity statin is indicated regardless of calculated risk.",
- "risk.enhancer.retinal_arteriolar_narrowing": "Risk enhancer: retinal arteriolar narrowing (artery-to-vein ratio outside reference)",
+ "risk.enhancer.retinal_arteriolar_narrowing": "Risk enhancer: retinal arteriolar narrowing (investigational, not a guideline-listed risk enhancer) — artery-to-vein ratio outside reference",
  "risk.enhancer_note.borderline": "In the 5–7.5% band, risk enhancers favour a statin discussion. Enhancers do not change the calculated risk.",
  "risk.retinal_not_assessed": "Retinal enhancers were not assessed.",
  "risk.arcus.observation": "Arcus senilis recorded as a clinical observation; it is not an input to the risk equations.",
@@ -43,6 +43,10 @@
  "summary.override": "Your doctor has reviewed your eye photo and will explain the result and the next step.",
  "summary.screening.bypass": "The usual risk score does not apply to you. Your doctor will discuss cholesterol-lowering treatment with you.",
  "summary.seek_care": "Go to the emergency department at once if you have new sudden loss of vision, weakness or numbness of the face, arm or leg, or trouble speaking.",
- "risk.enhancer.retinal_arteriolar_narrowing.placeholder": "Risk enhancer: retinal arteriolar narrowing (artery-to-vein ratio outside a placeholder reference interval, not clinically validated)",
- "explain.screening.measurements.placeholder": "Artery-to-vein ratio {avr}: {flag} reference (placeholder interval, not clinically validated)."
+ "risk.enhancer.retinal_arteriolar_narrowing.placeholder": "Risk enhancer: retinal arteriolar narrowing (investigational, not a guideline-listed risk enhancer) — artery-to-vein ratio outside a placeholder reference interval, not clinically validated",
+ "explain.screening.measurements.placeholder": "Artery-to-vein ratio {avr}: {flag} reference (placeholder interval, not clinically validated).",
+ "risk.not_valid.pce_age": "PCE risk not calculated: outside validated age range (40–79).",
+ "risk.bypass.diabetes": "Statin benefit group — diabetes 40–75: moderate-intensity statin indicated regardless of calculated risk.",
+ "risk.bypass.diabetes.no_ldl": "Statin benefit group — diabetes 40–75: statin indicated if LDL ≥70 mg/dL — LDL not entered.",
+ "risk.pce_intensity_only": "This PCE number informs statin intensity only; it is not the basis for treatment."
 }
