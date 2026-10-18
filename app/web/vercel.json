@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://blizt-retina-demo.hf.space/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

@@ -56,6 +56,11 @@ cd app/web && npm run dev
 Open http://localhost:5173 and sign in as `gp1` (GP), `oph1` (ophthalmologist reviewer) or `admin1` (admin).
 Health check: `curl http://localhost:5173/api/health`.
 
+## Hosted demo web app
+`app/web/vercel.json` rewrites `/api/:path*` to the Hugging Face Space (`https://blizt-retina-demo.hf.space`, prefix
+stripped, so the session cookie stays same-origin) and every other path to `/index.html` (deep links). JSON cannot
+hold comments, so the reason lives here. Validated by shape only: `vercel build` needs a linked project (group 3).
+
 ## Reset the demo
 `FHIR_USER=... FHIR_PASS=... app/fhir/reset.sh` recreates IRIS, runs the setup script, deletes
 `app/api/.keys/keys.json` (never `APP_MASTER_KEY`) and seeds. Use it before every demo and after any test run:
