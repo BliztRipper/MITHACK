@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Camera, Check, LoaderCircle, TriangleAlert } from 'lucide-react'
-import { api, ApiError, fieldErrors, type CaseResult, type Mode, type PatientDetail } from '../api'
+import { api, ApiError, demoMessage, fieldErrors, type CaseResult, type Mode, type PatientDetail } from '../api'
 import ConsentStep from '../components/ConsentStep'
 import InputsForm, { initialValues, toInputs, validate, type Values } from '../components/InputsForm'
 import ResultView from '../components/ResultView'
@@ -9,14 +9,6 @@ import { ErrorText, Link, navigate, PageTitle, useLoad } from '../components/ui'
 import { PatientSearch } from './Patients'
 
 const STEPS = ['Mode', 'Consent', 'Inputs', 'Photo', 'Result']
-const CACHED = [ // dev server serves these from app/api/demo_cache/images (vite.config.ts)
-  ['rao_rfmid_716.png', 'Cached: RAO example (RFMiD 716)'],
-  ['rao_rfmid_892.png', 'Cached: RAO example (RFMiD 892)'],
-  ['screening_automorph_100.png', 'Cached: screening example'],
-  ['poor_quality_rfmid_217.png', 'Cached: poor quality'],
-  ['normal_nei_eda06.jpg', 'Cached: Retake demo: low-resolution normal (NEI, public domain)'],
-  ['mimic_brvo_ku2011.jpg', 'Cached: BRVO — CRAO mimic (CC BY 2.0)'],
-]
 const sentence = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
 function StepList({ step, go }: { step: number; go: (i: number) => void }): ReactNode {
@@ -84,6 +76,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<CaseResult | null>(null)
   const [layers, setLayers] = useState<Layers>(defaultLayers('screening'))
+  const demoImages = useLoad(() => api.demoImages(), []).data ?? []
   const onReady = useCallback((ok: boolean) => setConsentOk(ok), [])
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
@@ -101,7 +94,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
     setErrors({})
   }
   const pickCached = async (name: string): Promise<void> => {
-    const r = await fetch(`/demo-images/${name}`)
+    const r = await fetch(`/api/demo-images/${name}`)
     if (!r.ok) return setErrors({ _: `Cached image ${name} is not available (run python -m demo_cache.build).` })
     pick(new File([await r.blob()], name, { type: name.endsWith('.jpg') ? 'image/jpeg' : 'image/png' }))
   }
@@ -130,6 +123,8 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
     } catch (e) {
       // 403 no consent / 409 consent withdrawn: say why here; going back to the consent step could loop
       if (e instanceof ApiError && (e.status === 403 || e.status === 409)) { setConsentOk(false); setErrors({ _: `Not saved: ${e.message}.` }); return }
+      const demo = demoMessage(e)
+      if (demo) { setErrors({ _: demo }); return }
       if (e instanceof ApiError && e.status === 422) { setErrors(fieldErrors(e)); setStep(2); return }
       setErrors({ _: e instanceof ApiError && e.status === 503 ? 'Cannot verify consent while the record store is down. Analysis is blocked.' : (e as Error).message })
     } finally {
@@ -156,8 +151,11 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
             {preview && <img src={preview} alt="Selected fundus photo" className="h-40 w-40 bg-stage object-contain" />}
           </div>
           <div className="flex flex-wrap gap-2">
-            {CACHED.map(([name, label]) => (
-              <button key={name} className="btn-secondary" disabled={busy} onClick={() => pickCached(name)}>{label}</button>
+            {demoImages.map((d) => (
+              <div key={d.name} className="flex flex-col items-start gap-1">
+                <button className="btn-secondary" disabled={busy} onClick={() => pickCached(d.name)}>Cached: {d.label} <span className="font-mono text-xs text-muted">{d.name}</span></button>
+                <span className="max-w-xs text-xs text-muted"><b className="font-medium text-ink">{d.licence}</b>. <span className="line-clamp-2" title={d.source}>{d.source}</span></span>
+              </div>
             ))}
           </div>
           <ErrorText>{errors._}</ErrorText>
