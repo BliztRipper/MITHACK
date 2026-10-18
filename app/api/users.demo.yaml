@@ -1,0 +1,17 @@
+# Public demo users (live-demo-deployment D4): bcrypt hashes only. The passwords are published by design
+# (GET /health lists them in demo mode, from the DEMO_PASSWORDS host secret, for the login screen).
+# demo_only: these accounts sign in only with DEMO_MODE=1. Select with USERS_FILE=users.demo.yaml.
+demo_only: true
+users:
+  gp1:
+    role: gp
+    name: Dr Somchai
+    hash: "$2b$12$Exeeg74yZlyBZ99cKGqwp.Hz7HzGq/SNOsy9v/fEh2kb5mEuZKqfe"
+  oph1:
+    role: reviewer
+    name: Dr Wilai
+    hash: "$2b$12$dfay9ew137zsZSqRbhcqv.RHhJarhi9/ec/cw1XpgIqFoDqeqI0rm"
+  admin1:
+    role: admin
+    name: Site Admin
+    hash: "$2b$12$VggItlrYAKzJeZMKlZZzceJTevLGmvSLJOwVFoA/VEWHW/kct4bFW"

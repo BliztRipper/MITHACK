@@ -1,6 +1,7 @@
 """live-demo-deployment group 1: the API as a public demo (DEMO_MODE=1)."""
 import hashlib
 import os
+import secrets
 import subprocess
 import sys
 import time
@@ -9,7 +10,7 @@ import pytest
 
 import analysis
 import deps
-from conftest import login
+from conftest import _users, login
 
 ML = ("torch", "torchvision", "timm", "cv2", "pytorch_grad_cam", "efficientnet_pytorch")
 
@@ -249,3 +250,50 @@ def test_bootstrap_on_reset_store_leaves_20_patients_and_no_key_file(live, fhir,
     assert len(fhir.search("Patient")) == 20
     assert len(fhir.search("Patient", identifier=f"{m.SEED_SYSTEM}|")) == 20
     assert not deps.keys().path.exists()
+
+
+@pytest.fixture
+def demo_users(monkeypatch, tmp_path):
+    """A demo_only users file like users.demo.yaml, with fresh random passwords published through DEMO_PASSWORDS."""
+    import bcrypt
+    pw = {u: secrets.token_urlsafe(8) for u in ("gp1", "oph1", "admin1")}
+    roles = {"gp1": "gp", "oph1": "reviewer", "admin1": "admin"}
+    f = tmp_path / "users.demo.yaml"
+    f.write_text("demo_only: true\nusers:\n" + "".join(
+        f"  {u}:\n    role: {roles[u]}\n    name: Demo {u}\n    hash: \"{bcrypt.hashpw(p.encode(), bcrypt.gensalt(4)).decode()}\"\n"
+        for u, p in pw.items()))
+    monkeypatch.setenv("DEMO_PASSWORDS", ",".join(f"{u}:{p}" for u, p in pw.items()))
+    deps.users.cache_clear()
+    yield f
+    deps.users.cache_clear()  # monkeypatch then restores the test users file
+
+
+def test_committed_demo_users_file_is_demo_only_hashes():
+    import yaml
+    d = yaml.safe_load((deps.API / "users.demo.yaml").read_text())
+    assert d["demo_only"] is True and set(d["users"]) == {"gp1", "oph1", "admin1"}
+    assert all(u["hash"].startswith("$2b$") and set(u) == {"role", "name", "hash"} for u in d["users"].values())
+
+
+@pytest.mark.parametrize("demo_on,demo_file,ok", [(True, True, True), (False, True, False), (True, False, False)])
+def test_demo_accounts_sign_in_only_with_demo_file_and_demo_mode(api, monkeypatch, demo_users, limits,
+                                                                 demo_on, demo_file, ok):
+    """1.6: the published logins come from the demo-mode health response; the users file holds only hashes."""
+    monkeypatch.setattr(deps, "DEMO", True)
+    monkeypatch.setenv("USERS_FILE", str(demo_users))
+    api.store.health_check = lambda: True
+    accounts = api.get("/health").json()["demo_accounts"]
+    assert {(a["username"], a["role"]) for a in accounts} == {("gp1", "gp"), ("oph1", "reviewer"), ("admin1", "admin")}
+    monkeypatch.setattr(deps, "DEMO", demo_on)
+    if not demo_file:
+        monkeypatch.setenv("USERS_FILE", _users.name)
+    deps.users.cache_clear()
+    for a in accounts:
+        r = api.post("/auth/login", json={"username": a["username"], "password": a["password"]})
+        assert r.status_code == (200 if ok else 401), (a["username"], r.text)
+        assert not ok or r.json()["role"] == a["role"]
+
+
+def test_health_lists_no_logins_outside_demo_mode(api, demo_users):
+    api.store.health_check = lambda: True
+    assert "demo_accounts" not in api.get("/health").json()

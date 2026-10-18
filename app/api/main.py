@@ -8,6 +8,7 @@ data must never reach logs). With the uvicorn CLI, pass --no-access-log.
 """
 import contextlib
 import logging
+import os
 import threading
 import time
 
@@ -115,7 +116,13 @@ def health():
         store = "available"
     except (FhirUnavailable, FhirError, RuntimeError):
         store = "unavailable"
-    return {"api": "ok", "record_store": store, "demo": deps.DEMO}
+    out = {"api": "ok", "record_store": store, "demo": deps.DEMO}
+    if deps.DEMO:  # public by design (design D4): the login screen lists them. Values from the DEMO_PASSWORDS
+        # host secret ("gp1:pw,oph1:pw,..."), so none sit in the repo; users.demo.yaml holds only their hashes.
+        pairs = (x.split(":", 1) for x in os.environ.get("DEMO_PASSWORDS", "").split(",") if ":" in x)
+        out["demo_accounts"] = [{"username": u, "role": deps.users()[u]["role"], "password": p}
+                                for u, p in pairs if u in deps.users()]
+    return out
 
 
 @app.get("/about")

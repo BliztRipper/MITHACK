@@ -7,7 +7,7 @@
 - [x] 1.3 Add `GET /demo-images` (manifest: name, label, source, licence, built from `demo_cache/SOURCES.md` data) and `GET /demo-images/{name}` (exact-name allow-list). Verify with tests: the list has all six curated photos with credits; an unlisted name or path-traversal attempt returns 404.
 - [x] 1.4 Add the in-process rate limiter (client address from `Fly-Client-IP`, then `X-Forwarded-For`): 10 failed logins per 10 min, 30 cases per hour per client, `429` with `Retry-After`, demo mode only. Verify with tests at the limit boundaries.
 - [x] 1.5 Add the start-up bootstrap: wait for FHIR `/metadata`; if no seed patients exist, delete the key file and run the existing seed; patient routes return 503 until done. Verify with a test against a freshly reset local IRIS: after start-up there are exactly 20 patients and no key file.
-- [ ] 1.6 Add `users.demo.yaml` (bcrypt hashes of the published demo passwords for gp1, oph1 and admin1), and have the demo-mode health/config response carry the public demo credentials for the login screen. Verify with tests: the demo accounts sign in only when `USERS_FILE=users.demo.yaml` and demo mode are set.
+- [x] 1.6 Add `users.demo.yaml` (bcrypt hashes of the published demo passwords for gp1, oph1 and admin1), and have the demo-mode health/config response carry the public demo credentials for the login screen. Verify with tests: the demo accounts sign in only when `USERS_FILE=users.demo.yaml` and demo mode are set.
 
 ## 2. Web app and landing page
 

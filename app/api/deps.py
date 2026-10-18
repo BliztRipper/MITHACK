@@ -44,7 +44,8 @@ _DUMMY = bcrypt.hashpw(b"x", bcrypt.gensalt())  # same bcrypt cost for unknown u
 
 @functools.cache
 def users() -> dict:
-    return yaml.safe_load(pathlib.Path(os.environ.get("USERS_FILE", API / "users.yaml")).read_text())["users"]
+    d = yaml.safe_load(pathlib.Path(os.environ.get("USERS_FILE", API / "users.yaml")).read_text())
+    return d["users"] if DEMO or not d.get("demo_only") else {}  # published demo accounts: demo mode only
 
 
 def check_password(username: str, password: str) -> dict | None:

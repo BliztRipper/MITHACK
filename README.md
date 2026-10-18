@@ -36,6 +36,7 @@ Specs: `openspec/changes/retina-cvd-crao-platform/`.
 | `FHIR_BASE` | API | optional FHIR base URL |
 | `CRAO_MODEL` | API | optional model weights path; unset = "no model loaded" |
 | `USERS_FILE`, `COOKIE_SECURE` | API | optional users file (default `users.yaml`); `1` behind HTTPS |
+| `DEMO_MODE`, `DEMO_PASSWORDS` | API (hosted demo) | `1` = public demo: cached demo photos only, rate limits, start-up reseed; `gp1:pw,oph1:pw,admin1:pw` listed by `/health` (with `USERS_FILE=users.demo.yaml`) |
 | `E2E_USER`, `E2E_PASS`, `E2E_HN`, `BASE_URL` | Playwright | GP login, patient HN (default HN-0005), web URL |
 
 `SESSION_SECRET`, `APP_MASTER_KEY` and the demo users' passwords live in the gitignored `app/api/demo-logins.txt`.
