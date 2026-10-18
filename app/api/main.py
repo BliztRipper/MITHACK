@@ -17,10 +17,10 @@ import deps
 from fhir import mapping as m
 from fhir.client import FhirError, FhirUnavailable
 from rules.text import CONFIG
-from routes import auth, cases, monitoring, patients, review
+from routes import auth, cases, demo, monitoring, patients, review
 
 app = FastAPI(title="Retina CVD/CRAO API")
-for r in (auth, patients, cases, review, monitoring):
+for r in (auth, patients, cases, review, monitoring, demo):
     app.include_router(r.router)
 
 

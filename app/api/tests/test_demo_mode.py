@@ -101,3 +101,24 @@ def test_demo_off_unknown_photo_still_reaches_the_consent_gate(live, patient, mo
     login(live, "gp1")
     r = post_case(live, patient, UNKNOWN)
     assert r.status_code == 403 and r.json()["detail"]["code"] == "consent_required"
+
+
+def test_demo_images_lists_the_six_curated_photos_with_credits(api):
+    """1.3: built from demo_cache/SOURCES.md; each entry names its source and licence."""
+    items = api.get("/demo-images").json()
+    assert len(items) == 6
+    assert {i["name"] for i in items} >= {"rao_rfmid_716.png", "normal_nei_eda06.jpg", "mimic_brvo_ku2011.jpg"}
+    assert all(i["label"] and i["source"] and i["licence"] for i in items)
+    assert next(i for i in items if i["name"] == "mimic_brvo_ku2011.jpg")["licence"] == "CC BY 2.0"
+
+
+@pytest.mark.skipif(not CURATED.exists(), reason="run python -m demo_cache.build first (needs the local data/ copies)")
+def test_demo_image_served_by_exact_name(api):
+    r = api.get(f"/demo-images/{CURATED.name}")
+    assert r.status_code == 200 and r.content == CURATED.read_bytes() and r.headers["content-type"] == "image/png"
+
+
+@pytest.mark.parametrize("name", ["SOURCES.md", "build.py", "x.png", "..%2FSOURCES.md", "..%2F..%2Fusers.yaml",
+                                  "%2E%2E%2Fmain.py", "rao_rfmid_716.PNG", "images%2Frao_rfmid_716.png"])
+def test_demo_image_unlisted_or_traversal_is_404(api, name):
+    assert api.get(f"/demo-images/{name}").status_code == 404
