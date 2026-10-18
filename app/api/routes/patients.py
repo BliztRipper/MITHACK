@@ -63,6 +63,15 @@ def search(body: Search, request: Request, u: dict = Depends(CLINICIANS)):
     return [summary(p) for p in found.values()]
 
 
+@router.get("/patients")
+def list_all(request: Request, u: dict = Depends(CLINICIANS)):
+    """Demo mode only: every (synthetic) patient by HN, for the pick-a-patient dropdown."""
+    if not deps.DEMO:
+        raise HTTPException(404, "Not Found")
+    request.state.audit = ("R", None)
+    return sorted((summary(p) for p in deps.fhir().search("Patient")), key=lambda p: p["hn"] or "~")
+
+
 @router.get("/patients/{pid}")
 def detail(pid: deps.FhirId, request: Request, u: dict = Depends(CLINICIANS)):
     request.state.audit = ("R", f"Patient/{pid}")

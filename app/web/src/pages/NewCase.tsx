@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Camera, Check, LoaderCircle, TriangleAlert } from 'lucide-react'
-import { api, ApiError, demoMessage, fieldErrors, type CaseResult, type Mode, type PatientDetail } from '../api'
+import { api, ApiError, demoImageUrl, demoMessage, fieldErrors, type CaseResult, type Mode, type PatientDetail } from '../api'
 import ConsentStep from '../components/ConsentStep'
 import InputsForm, { initialValues, toInputs, validate, type Values } from '../components/InputsForm'
 import ResultView from '../components/ResultView'
@@ -94,7 +94,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
     setErrors({})
   }
   const pickCached = async (name: string): Promise<void> => {
-    const r = await fetch(`/api/demo-images/${name}`)
+    const r = await fetch(demoImageUrl(name))
     if (!r.ok) return setErrors({ _: 'Demo photos are not available right now. Try again in a minute.' })
     pick(new File([await r.blob()], name, { type: name.endsWith('.jpg') ? 'image/jpeg' : 'image/png' }))
   }

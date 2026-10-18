@@ -85,3 +85,15 @@ def test_patient_view_lists_only_cases_the_user_may_open(live, fhir, patient, mo
     assert [c["report_id"] for c in live.get(f"/patients/{patient}").json()["cases"]] == [rid]
     login(live, "gp2")
     assert live.get(f"/patients/{patient}").json()["cases"] == []
+
+
+def test_list_all_patients_only_in_demo_mode(live, patient, monkeypatch):
+    """Demo dropdown: GET /patients lists every patient by HN; outside demo mode it does not exist."""
+    import deps
+    login(live, "gp1")
+    assert live.get("/patients").status_code == 404
+    monkeypatch.setattr(deps, "DEMO", True)
+    rows = live.get("/patients").json()
+    assert patient in [p["id"] for p in rows]
+    hns = [p["hn"] for p in rows if p["hn"]]
+    assert hns == sorted(hns)

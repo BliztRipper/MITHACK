@@ -1,4 +1,5 @@
 // One client for the FastAPI backend (shapes: .superpowers/sdd/tasks/task-5-report.md). Vite proxies /api.
+import * as mock from './mockdb'
 
 export type Role = 'gp' | 'reviewer' | 'admin'
 export type Mode = 'screening' | 'emergency'
@@ -103,7 +104,9 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
     init.body = JSON.stringify(body)
     init.headers = { 'Content-Type': 'application/json' }
   }
-  const r = await fetch(`/api${path}`, init)
+  let r = mock.active ? null : await fetch(`/api${path}`, init).catch(() => null)
+  // the real API always answers JSON here; no answer or an HTML page means it is not there, so use the test DB
+  if (!r?.headers.get('content-type')?.includes('json')) r = await mock.mockFetch(method, path, body)
   if (r.status === 401 && path !== '/auth/login') events.dispatchEvent(new Event('unauthorized'))
   if (r.status === 503) events.dispatchEvent(new Event('store-down'))
   const data = r.headers.get('content-type')?.includes('json') ? await r.json() : null
@@ -134,7 +137,8 @@ export interface DemoImage { name: string; label: string; source: string; licenc
 export interface DemoAccount { username: string; role: Role; password: string }
 export interface Health { api: string; record_store: 'available' | 'unavailable'; demo?: boolean; demo_accounts?: DemoAccount[] }
 
-export const mediaUrl = (id: string): string => `/api/media/${id}`
+export const mediaUrl = (id: string): string => mock.active ? mock.mockMediaUrl(id) : `/api/media/${id}`
+export const demoImageUrl = (name: string): string => mock.active ? mock.mockDemoImageUrl(name) : `/api/demo-images/${name}`
 
 export const api = {
   login: (username: string, password: string) => call<User>('POST', '/auth/login', { username, password }),
@@ -143,6 +147,7 @@ export const api = {
   health: () => call<Health>('GET', '/health'),
   demoImages: () => call<DemoImage[]>('GET', '/demo-images'),
   about: () => call<About>('GET', '/about'),
+  patients: () => call<PatientSummary[]>('GET', '/patients'), // demo mode only (404 otherwise)
   search: (q: string) => call<PatientSummary[]>('POST', '/patients/search', { q }),
   patient: (id: string) => call<PatientDetail>('GET', `/patients/${id}`),
   consent: (id: string) => call<Consent>('GET', `/patients/${id}/consent`),

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { api, fieldErrors, type PatientSummary } from '../api'
-import { ageOf, ErrorText, fmtDate, Link, navigate, PageTitle } from '../components/ui'
+import { ageOf, ErrorText, fmtDate, Link, navigate, PageTitle, useLoad } from '../components/ui'
 
 /** Search by name or HN (POST body, never the URL); each row links to hrefFor(id). */
 export function PatientSearch({ hrefFor }: { hrefFor: (id: string) => string }): ReactNode {
@@ -9,6 +9,16 @@ export function PatientSearch({ hrefFor }: { hrefFor: (id: string) => string }):
   const [searched, setSearched] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const all = useLoad(() => api.patients(), []).data // demo mode: pick from every synthetic patient instead of typing
+
+  if (all) return (
+    <label className="flex max-w-xl flex-col gap-1">Choose a patient (HN)
+      <select className="input" defaultValue="" onChange={(e) => e.target.value && navigate(hrefFor(e.target.value))}>
+        <option value="" disabled>Select HN…</option>
+        {all.map((p) => <option key={p.id} value={p.id}>{p.hn ?? '—'} · {p.name || '(no name)'}</option>)}
+      </select>
+    </label>
+  )
 
   const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
