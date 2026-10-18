@@ -11,8 +11,8 @@
 
 ## 2. Web app and landing page
 
-- [ ] 2.1 Replace the hard-coded "Cached: …" buttons with the `GET /demo-images` list (labels and credits shown), and remove the dev-only Vite image middleware's role in production (keep it for local dev or point it at the API). Verify: `npx tsc --noEmit && npm run build` are clean, and the wizard shows six credited demo photos against a local demo-mode API.
-- [ ] 2.2 In demo mode, show the persistent banner "Demo: synthetic patients, not a medical device, data resets daily" on every page, and the demo accounts on the login screen. Show a clear message for 422 `demo_photo_only` and for 429. Verify with a Playwright check against the local demo-mode stack.
+- [x] 2.1 Replace the hard-coded "Cached: …" buttons with the `GET /demo-images` list (labels and credits shown), and remove the dev-only Vite image middleware's role in production (keep it for local dev or point it at the API). Verify: `npx tsc --noEmit && npm run build` are clean, and the wizard shows six credited demo photos against a local demo-mode API.
+- [x] 2.2 In demo mode, show the persistent banner "Demo: synthetic patients, not a medical device, data resets daily" on every page, and the demo accounts on the login screen. Show a clear message for 422 `demo_photo_only` and for 429. Verify with a Playwright check against the local demo-mode stack.
 - [x] 2.3 Add `app/web/vercel.json`: rewrite `/api/:path*` to the API's public address with the prefix stripped, and every other path to `/index.html`. Verify locally with `vercel build` (or `vercel dev`) that `/api/health` proxies and deep links load.
 - [x] 2.4 Update `site/index.html`: a "Try the live demo" link to the app's public address and the three demo accounts. Verify: the taste-skill `lint.mjs` and `inspect.mjs` still report 0 FAIL.
 

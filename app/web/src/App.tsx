@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DatabaseZap, LogOut, Menu } from 'lucide-react'
-import { api, events, type Role, type User } from './api'
+import { api, events, type DemoAccount, type Role, type User } from './api'
 import { Link, navigate, Session, usePath } from './components/ui'
 import About from './pages/About'
 import Audit from './pages/Audit'
@@ -33,6 +33,14 @@ function Banner(): ReactNode {
     <div role="status" aria-live="polite" className="iris-in flex items-center gap-2 border-b-2 border-triage-urgent bg-system-warn-tint px-4 py-2 font-medium text-ink print:hidden">
       <DatabaseZap size={20} aria-hidden />
       Record store unavailable. Results still display, but nothing can be saved or signed until it is back.
+    </div>
+  )
+}
+
+function DemoBanner(): ReactNode {
+  return (
+    <div role="status" className="sticky top-0 z-30 border-b-2 border-accent bg-accent-tint px-4 py-2 text-center font-medium text-ink print:hidden">
+      Demo: synthetic patients, not a medical device, data resets daily
     </div>
   )
 }
@@ -70,10 +78,11 @@ export default function App(): ReactNode {
   const path = usePath()
   const [user, setUser] = useState<User | null | undefined>(undefined) // undefined = still checking the cookie
   const [storeDown, setStoreDown] = useState(false)
+  const [demo, setDemo] = useState<DemoAccount[] | null>(null) // null = not demo mode
   const [menuAt, setMenuAt] = useState<string | null>(null) // the narrow-screen menu closes itself on navigation
 
   const checkHealth = useCallback(() => {
-    api.health().then((h) => setStoreDown(h.record_store === 'unavailable')).catch(() => setStoreDown(true))
+    api.health().then((h) => { setStoreDown(h.record_store === 'unavailable'); setDemo(h.demo ? h.demo_accounts ?? [] : null) }).catch(() => setStoreDown(true))
   }, [])
 
   useEffect(() => {
@@ -105,7 +114,7 @@ export default function App(): ReactNode {
     return () => removeEventListener('keydown', onKey)
   }, [menuOpen])
   if (user === undefined) return null
-  if (user === null) return <>{storeDown && <Banner />}<Login onLogin={(u) => { setUser(u); navigate('/') }} /></>
+  if (user === null) return <>{demo && <DemoBanner />}{storeDown && <Banner />}<Login accounts={demo ?? []} onLogin={(u) => { setUser(u); navigate('/') }} /></>
 
   const signOut = (): void => { api.logout().finally(() => { setUser(null); navigate('/') }) }
   const pathname = path.split('?')[0]
@@ -119,6 +128,7 @@ export default function App(): ReactNode {
   return (
     <Session.Provider value={{ user, storeDown }}>
       <div className="flex min-h-screen flex-col">
+        {demo && <DemoBanner />}
         {storeDown && <Banner />}
         <header className="flex items-center justify-between border-b border-rule bg-surface px-4 py-2 lg:hidden print:hidden">
           <span className="font-semibold">Retina CVD/CRAO</span>

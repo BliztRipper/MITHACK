@@ -84,10 +84,12 @@ export interface AuditRow { id: string; time: string; user: string; role: string
 export class ApiError extends Error {
   status: number
   detail: unknown
-  constructor(status: number, detail: unknown) {
+  retryAfter: number | null // seconds, from a 429's Retry-After header
+  constructor(status: number, detail: unknown, retryAfter: number | null = null) {
     super(typeof detail === 'string' ? detail : (detail as { message?: string })?.message ?? `request failed (${status})`)
     this.status = status
     this.detail = detail
+    this.retryAfter = retryAfter
   }
 }
 
@@ -105,8 +107,16 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   if (r.status === 401 && path !== '/auth/login') events.dispatchEvent(new Event('unauthorized'))
   if (r.status === 503) events.dispatchEvent(new Event('store-down'))
   const data = r.headers.get('content-type')?.includes('json') ? await r.json() : null
-  if (!r.ok) throw new ApiError(r.status, data?.detail ?? r.statusText)
+  if (!r.ok) throw new ApiError(r.status, data?.detail ?? r.statusText, Number(r.headers.get('Retry-After')) || null)
   return data as T
+}
+
+/** Demo-mode refusals worth a plain sentence: 429 (wait N minutes) and 422 demo_photo_only. Null for anything else. */
+export function demoMessage(e: unknown): string | null {
+  if (!(e instanceof ApiError)) return null
+  if (e.status === 429) return `Too many attempts, try again in ${Math.max(1, Math.ceil((e.retryAfter ?? 60) / 60))} minutes.`
+  if (e.status === 422 && (e.detail as { code?: string })?.code === 'demo_photo_only') return 'This demo accepts only the sample photos below.'
+  return null
 }
 
 /** 422 detail -> {field: message}; a plain string detail lands under "_". */
@@ -117,13 +127,18 @@ export function fieldErrors(e: unknown): Record<string, string> {
   return { _: e.message }
 }
 
+export interface DemoImage { name: string; label: string; source: string; licence: string }
+export interface DemoAccount { username: string; role: Role; password: string }
+export interface Health { api: string; record_store: 'available' | 'unavailable'; demo?: boolean; demo_accounts?: DemoAccount[] }
+
 export const mediaUrl = (id: string): string => `/api/media/${id}`
 
 export const api = {
   login: (username: string, password: string) => call<User>('POST', '/auth/login', { username, password }),
   logout: () => call<{ ok: true }>('POST', '/auth/logout'),
   me: () => call<User>('GET', '/auth/me'),
-  health: () => call<{ api: string; record_store: 'available' | 'unavailable' }>('GET', '/health'),
+  health: () => call<Health>('GET', '/health'),
+  demoImages: () => call<DemoImage[]>('GET', '/demo-images'),
   about: () => call<About>('GET', '/about'),
   search: (q: string) => call<PatientSummary[]>('POST', '/patients/search', { q }),
   patient: (id: string) => call<PatientDetail>('GET', `/patients/${id}`),
