@@ -86,7 +86,7 @@ def health():
         store = "available"
     except (FhirUnavailable, FhirError, RuntimeError):
         store = "unavailable"
-    return {"api": "ok", "record_store": store}
+    return {"api": "ok", "record_store": store, "demo": deps.DEMO}
 
 
 @app.get("/about")

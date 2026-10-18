@@ -19,6 +19,7 @@ from fhir.client import FhirClient
 from fhir.crypto import KeyStore, master_key_from_env
 
 API = pathlib.Path(__file__).resolve().parent
+DEMO = os.environ.get("DEMO_MODE") == "1"  # public demo (live-demo-deployment): curated photos only, rate limits
 COOKIE, IDLE = "session", 30 * 60  # 30-minute sliding expiry (spec: idle session expires)
 ROLES = ("gp", "reviewer", "admin")
 ID_PATTERN = r"^[A-Za-z0-9\-.]{1,64}$"  # FHIR logical id; blocks "a,Patient/b" OR-injection into searches

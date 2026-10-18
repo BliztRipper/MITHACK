@@ -33,6 +33,7 @@ def analysis_error(case_id: str, e: Exception) -> HTTPException:
 AI_LABEL = "AI-assisted, not a diagnosis"
 NOT_SAVED = "record store unavailable, not saved"
 NO_MODEL = "no-model"
+DEMO_PHOTO_ONLY = {"code": "demo_photo_only", "message": "this public demo analyses only its demo photos: pick one of them"}
 CONSENT_REQUIRED = {"code": "consent_required", "message": "no active consent for retinal image processing"}
 
 
@@ -127,19 +128,21 @@ def create_case(request: Request, patient_id: str = Form(pattern=deps.ID_PATTERN
         inp = (EmergencyInputs if mode == "emergency" else ScreeningInputs).model_validate_json(inputs)
     except ValidationError as e:
         raise RequestValidationError(e.errors(include_url=False, include_context=False)) from None
+    raw = image.file.read(quality.MAX_BYTES + 1)
+    model, sha = deps.model(), hashlib.sha256(raw).hexdigest()
+    hit = analysis.cache_get(sha, model)
+    if deps.DEMO and hit is None:  # before any consent read, decode, encryption or write: nothing of it is kept
+        raise HTTPException(422, DEMO_PHOTO_ONLY)
     try:  # fail closed: no verified consent, no image processing (PDPA s.26)
         read_patient(patient_id)  # 404 for an unknown patient
         if not consent(patient_id)["care"]:
             raise HTTPException(403, CONSENT_REQUIRED)
     except FhirUnavailable:
         raise HTTPException(503, "record store unavailable: consent cannot be checked") from None
-    raw = image.file.read(quality.MAX_BYTES + 1)
     try:
         rgb, fundus = quality.intake(raw)
     except quality.Rejected as e:
         raise HTTPException(400, str(e)) from None  # stores nothing
-    model, sha = deps.model(), hashlib.sha256(raw).hexdigest()
-    hit = analysis.cache_get(sha, model)
     try:
         img, pngs = hit or analysis.image_stage(rgb, model, features=mode == "screening", crao=mode == "emergency")
     except RuntimeError as e:  # SegmentationError and AutoMorph's plain RuntimeError
