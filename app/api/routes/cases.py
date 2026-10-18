@@ -122,6 +122,8 @@ def create_case(request: Request, patient_id: str = Form(pattern=deps.ID_PATTERN
                 inputs: str = Form("{}"), image: UploadFile = File(), u: dict = Depends(CLINICIANS)):
     """mode + inputs (JSON) + image -> quality gate -> segmentation -> Screening risk or Emergency triage ->
     explanation, saved as a preliminary case. If the record store is down the analysis is still returned."""
+    if key := deps.throttle(deps.CASES, request):
+        deps.CASES.hit(key)
     case_id = str(uuid.uuid4())
     request.state.audit = ("C", f"Patient/{patient_id}")
     try:

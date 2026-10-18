@@ -4,8 +4,12 @@ Services are created on first use; routes call deps.fhir() / deps.keys() / deps.
 tests can swap them with monkeypatch.
 """
 import functools
+import math
 import os
 import pathlib
+import threading
+import time
+from collections import defaultdict, deque
 from typing import Annotated
 
 import bcrypt
@@ -74,6 +78,48 @@ def role(*allowed: str):
             raise HTTPException(403, "your role cannot do this")
         return u
     return dep
+
+
+class Limiter:
+    """Sliding window: at most n hits per window seconds per client (design D5, demo mode only).
+    shortcut: in-process memory, right for one API machine; move to Redis if the API ever scales out."""
+    def __init__(self, n: int, window: float):
+        self.n, self.window, self.hits, self.lock = n, window, defaultdict(deque), threading.Lock()
+
+    def wait(self, key: str) -> int:
+        """Seconds until key may act again (0 = now)."""
+        with self.lock:
+            q, now = self.hits[key], time.monotonic()
+            while q and q[0] <= now - self.window:
+                q.popleft()
+            if not q:
+                del self.hits[key]  # idle clients cost no memory
+                return 0
+            return 0 if len(q) < self.n else math.ceil(q[0] + self.window - now)
+
+    def hit(self, key: str):
+        with self.lock:
+            self.hits[key].append(time.monotonic())
+
+
+LOGIN_FAILS, CASES = Limiter(10, 10 * 60), Limiter(30, 60 * 60)
+
+
+def client_ip(request: Request) -> str:
+    """Fly's edge sets Fly-Client-IP; then the first X-Forwarded-For hop (Vercel); then the socket peer."""
+    h = request.headers
+    return (h.get("fly-client-ip") or h.get("x-forwarded-for", "").split(",")[0].strip()
+            or (request.client.host if request.client else "unknown"))
+
+
+def throttle(lim: Limiter, request: Request) -> str | None:
+    """Demo mode: 429 with Retry-After once this client used up lim. Returns the client key (None outside demo)."""
+    if not DEMO:
+        return None
+    key = client_ip(request)
+    if s := lim.wait(key):
+        raise HTTPException(429, "too many requests: try again later", headers={"Retry-After": str(s)})
+    return key
 
 
 @functools.cache

@@ -122,3 +122,67 @@ def test_demo_image_served_by_exact_name(api):
                                   "%2E%2E%2Fmain.py", "rao_rfmid_716.PNG", "images%2Frao_rfmid_716.png"])
 def test_demo_image_unlisted_or_traversal_is_404(api, name):
     assert api.get(f"/demo-images/{name}").status_code == 404
+
+
+@pytest.fixture
+def limits():
+    for lim in (deps.LOGIN_FAILS, deps.CASES):
+        lim.hits.clear()
+    yield
+    for lim in (deps.LOGIN_FAILS, deps.CASES):
+        lim.hits.clear()
+
+
+def bad_login(client, headers, password="wrong"):
+    return client.post("/auth/login", json={"username": "gp1", "password": password}, headers=headers)
+
+
+def test_demo_login_limit_10_failures_per_10_minutes(api, demo, limits):
+    """1.4: the 11th attempt after 10 failures is refused (even with the right password); other clients are not."""
+    a = {"Fly-Client-IP": "203.0.113.1"}
+    assert [bad_login(api, a).status_code for _ in range(10)] == [401] * 10
+    r = bad_login(api, a, "test-pass")
+    assert r.status_code == 429 and "try again later" in r.json()["detail"]
+    assert 590 <= int(r.headers["Retry-After"]) <= 600
+    assert bad_login(api, {"Fly-Client-IP": "203.0.113.2"}, "test-pass").status_code == 200
+
+
+def test_demo_successful_logins_are_not_counted(api, demo, limits):
+    a = {"Fly-Client-IP": "203.0.113.3"}
+    assert [bad_login(api, a, "test-pass").status_code for _ in range(15)] == [200] * 15
+    assert bad_login(api, a).status_code == 401
+
+
+def test_demo_case_limit_30_per_hour(api, demo, limits):
+    """Fly-Client-IP first, then the first X-Forwarded-For hop, then the socket peer."""
+    login(api, "gp1")
+    xff = {"X-Forwarded-For": "198.51.100.7, 10.0.0.1"}
+    codes = [api.post("/cases", data={"patient_id": "p1", "mode": "emergency", "inputs": EMERGENCY},
+                      files={"image": ("x.png", UNKNOWN)}, headers=xff if i % 2 else {"X-Forwarded-For": "198.51.100.7"}
+                      ).status_code for i in range(31)]
+    assert codes == [422] * 30 + [429]
+    r = api.post("/cases", data={"patient_id": "p1", "mode": "emergency", "inputs": EMERGENCY},
+                 files={"image": ("x.png", UNKNOWN)}, headers=xff)
+    assert r.status_code == 429 and 3590 <= int(r.headers["Retry-After"]) <= 3600
+    assert post_case(api, "p1", UNKNOWN).status_code == 422  # socket peer: another client
+    fly = {"Fly-Client-IP": "203.0.113.9", "X-Forwarded-For": "198.51.100.7"}  # Fly's header wins
+    assert api.post("/cases", data={"patient_id": "p1", "mode": "emergency", "inputs": EMERGENCY},
+                    files={"image": ("x.png", UNKNOWN)}, headers=fly).status_code == 422
+
+
+def test_limits_off_outside_demo_mode(api, limits):
+    a = {"Fly-Client-IP": "203.0.113.4"}
+    assert [bad_login(api, a).status_code for _ in range(12)] == [401] * 12
+    assert not deps.LOGIN_FAILS.hits
+
+
+def test_limiter_window_slides(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(deps.time, "monotonic", lambda: now[0])
+    lim = deps.Limiter(2, 60)
+    lim.hit("a"), lim.hit("a")
+    assert lim.wait("a") == 60 and lim.wait("b") == 0
+    now[0] += 59.5
+    assert lim.wait("a") == 1
+    now[0] += 0.5
+    assert lim.wait("a") == 0 and "a" not in lim.hits
