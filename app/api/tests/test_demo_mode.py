@@ -23,7 +23,7 @@ def test_import_main_loads_no_ml_stack():
             "assert analysis.cache_get('33c3877c97c56ec2845cd339e1bea4becb65c4b64f24a424254d3854318e9f38', main.deps.model())\n"
             "analysis.emergency(img, {}, 2, True, False, None)\n"
             f"print(sorted(m for m in {ML!r} if m in sys.modules))\n")
-    env = {k: v for k, v in os.environ.items() if k != "CRAO_MODEL"} | {"DEMO_MODE": "1"}
+    env = {k: v for k, v in os.environ.items() if k != "CRAO_MODEL"} | {"DEMO_MODE": "1", "USERS_FILE": str(deps.API / "users.demo.yaml")}
     out = subprocess.run([sys.executable, "-c", code], cwd=deps.API, env=env, capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
     assert out.stdout.strip() == "[]"
@@ -140,22 +140,22 @@ def bad_login(client, headers, password="wrong"):
 
 def test_demo_login_limit_10_failures_per_10_minutes(api, demo, limits):
     """1.4: the 11th attempt after 10 failures is refused (even with the right password); other clients are not."""
-    a = {"Fly-Client-IP": "203.0.113.1"}
+    a = {"X-Forwarded-For": "203.0.113.1"}
     assert [bad_login(api, a).status_code for _ in range(10)] == [401] * 10
     r = bad_login(api, a, "test-pass")
     assert r.status_code == 429 and "try again later" in r.json()["detail"]
     assert 590 <= int(r.headers["Retry-After"]) <= 600
-    assert bad_login(api, {"Fly-Client-IP": "203.0.113.2"}, "test-pass").status_code == 200
+    assert bad_login(api, {"X-Forwarded-For": "203.0.113.2"}, "test-pass").status_code == 200
 
 
 def test_demo_successful_logins_are_not_counted(api, demo, limits):
-    a = {"Fly-Client-IP": "203.0.113.3"}
+    a = {"X-Forwarded-For": "203.0.113.3"}
     assert [bad_login(api, a, "test-pass").status_code for _ in range(15)] == [200] * 15
     assert bad_login(api, a).status_code == 401
 
 
 def test_demo_case_limit_30_per_hour(api, demo, limits):
-    """Fly-Client-IP first, then the first X-Forwarded-For hop, then the socket peer."""
+    """The first X-Forwarded-For hop, then the socket peer."""
     login(api, "gp1")
     xff = {"X-Forwarded-For": "198.51.100.7, 10.0.0.1"}
     codes = [api.post("/cases", data={"patient_id": "p1", "mode": "emergency", "inputs": EMERGENCY},
@@ -166,13 +166,13 @@ def test_demo_case_limit_30_per_hour(api, demo, limits):
                  files={"image": ("x.png", UNKNOWN)}, headers=xff)
     assert r.status_code == 429 and 3590 <= int(r.headers["Retry-After"]) <= 3600
     assert post_case(api, "p1", UNKNOWN).status_code == 422  # socket peer: another client
-    fly = {"Fly-Client-IP": "203.0.113.9", "X-Forwarded-For": "198.51.100.7"}  # Fly's header wins
+    fly = {"Fly-Client-IP": "203.0.113.9", "X-Forwarded-For": "198.51.100.7"}  # Fly-Client-IP is ignored: same key
     assert api.post("/cases", data={"patient_id": "p1", "mode": "emergency", "inputs": EMERGENCY},
-                    files={"image": ("x.png", UNKNOWN)}, headers=fly).status_code == 422
+                    files={"image": ("x.png", UNKNOWN)}, headers=fly).status_code == 429
 
 
 def test_limits_off_outside_demo_mode(api, limits):
-    a = {"Fly-Client-IP": "203.0.113.4"}
+    a = {"X-Forwarded-For": "203.0.113.4"}
     assert [bad_login(api, a).status_code for _ in range(12)] == [401] * 12
     assert not deps.LOGIN_FAILS.hits
 
@@ -187,6 +187,19 @@ def test_limiter_window_slides(monkeypatch):
     assert lim.wait("a") == 1
     now[0] += 0.5
     assert lim.wait("a") == 0 and "a" not in lim.hits
+
+
+def test_limiter_stays_bounded_under_forged_keys(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr(deps.time, "monotonic", lambda: now[0])
+    lim = deps.Limiter(2, 60)
+    lim.MAX_KEYS = 100
+    for i in range(500):  # all inside the window: nothing expired, so the oldest keys are dropped
+        lim.hit(f"k{i}")
+    assert len(lim.hits) <= 100 and "k499" in lim.hits and "k0" not in lim.hits
+    now[0] += 61  # expired keys are pruned first
+    lim.hit("fresh")
+    assert list(lim.hits) == ["fresh"]
 
 
 class BootStore:
@@ -297,3 +310,57 @@ def test_demo_accounts_sign_in_only_with_demo_file_and_demo_mode(api, monkeypatc
 def test_health_lists_no_logins_outside_demo_mode(api, demo_users):
     api.store.health_check = lambda: True
     assert "demo_accounts" not in api.get("/health").json()
+
+
+def boot_fails(monkeypatch, exc, **attrs):
+    import main
+    store = BootStore(down=0, seeded=20)
+    store.health_check = lambda: (_ for _ in ()).throw(exc)
+    monkeypatch.setattr(deps, "fhir", lambda: store)
+    monkeypatch.setattr(main, "BOOT_RETRY", 0.01)
+    for k, v in attrs.items():
+        monkeypatch.setattr(main, k, v)
+    main.BOOTING.set()
+    return main
+
+
+def test_bootstrap_missing_master_key_stops_startup_naming_the_variable(demo, monkeypatch, caplog):
+    import main
+    from fastapi.testclient import TestClient
+    monkeypatch.delenv("APP_MASTER_KEY")
+    deps.keys.cache_clear()
+    try:
+        with pytest.raises(RuntimeError, match="APP_MASTER_KEY"):
+            with TestClient(main.app):
+                pass
+    finally:
+        deps.keys.cache_clear()
+        main.BOOTING.clear()
+    assert "APP_MASTER_KEY" in caplog.text
+
+
+@pytest.mark.parametrize("status", [401, 403])
+def test_bootstrap_auth_error_is_fatal_not_retried(api, monkeypatch, caplog, status):
+    from fhir.client import FhirError
+    main = boot_fails(monkeypatch, FhirError(status, "denied"), BOOT_DEADLINE=30)
+    main.bootstrap()  # returns at once: retrying would run until the deadline
+    assert main.BOOTING.is_set() and str(status) in caplog.text and "FHIR_USER" in caplog.text
+    main.BOOTING.clear()
+
+
+def test_bootstrap_gives_up_after_the_deadline(api, monkeypatch, caplog):
+    from fhir.client import FhirUnavailable
+    main = boot_fails(monkeypatch, FhirUnavailable("record store unavailable"), BOOT_DEADLINE=0.1)
+    main.bootstrap()
+    assert main.BOOTING.is_set() and "giving up" in caplog.text and "record store unavailable" in caplog.text
+    main.BOOTING.clear()
+
+
+def test_demo_mode_refuses_to_start_without_a_demo_only_users_file():
+    """The private users.yaml must not sign in on the public demo (USERS_FILE unset, or any non-demo file)."""
+    def start(users_file):
+        env = {**os.environ, "DEMO_MODE": "1", "USERS_FILE": users_file}
+        return subprocess.run([sys.executable, "-c", "import deps"], env=env, capture_output=True, text=True)
+    bad = start(os.environ["USERS_FILE"])
+    assert bad.returncode != 0 and "demo_only" in bad.stderr
+    assert start(str(deps.API / "users.demo.yaml")).returncode == 0

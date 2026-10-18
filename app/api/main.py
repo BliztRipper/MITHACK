@@ -27,17 +27,41 @@ from routes import auth, cases, demo, monitoring, patients, review
 log = logging.getLogger("api")
 BOOTING = threading.Event()  # set while the demo store is being seeded: patient routes answer 503
 BOOT_RETRY = 2.0
+BOOT_DEADLINE = float(os.environ.get("BOOT_DEADLINE_S", 300))  # seconds before the bootstrap gives up
+
+
+def preflight():
+    """Config errors stop start-up here, with a log naming the variable (never its value)."""
+    try:
+        deps.keys()
+    except RuntimeError as e:  # master_key_from_env: message names APP_MASTER_KEY
+        log.error("demo start-up refused: %s", e)
+        raise
 
 
 def bootstrap():
-    """Demo mode: wait for the record store, seed it if it came back empty, then open the patient routes."""
+    """Demo mode: wait for the record store, seed it if it came back empty, then open the patient routes.
+    Gives up (patient routes stay 503) on an auth error or after BOOT_DEADLINE seconds."""
+    deadline = time.monotonic() + BOOT_DEADLINE
     while True:
         try:
             seed.bootstrap(deps.fhir(), deps.keys().path)
             break
-        except Exception as e:  # store still booting, or a seed step failed: retry (seeding is idempotent)
-            log.warning("demo bootstrap waiting: %s", type(e).__name__)
-            time.sleep(BOOT_RETRY)
+        except FhirError as e:
+            if e.status in (401, 403):
+                log.error("demo bootstrap failed, not retrying: record store refused the login (%s); check FHIR_USER and FHIR_PASS", e)
+                return
+            if e.status < 500:
+                log.error("demo bootstrap failed, not retrying: %s: %s", type(e).__name__, e)
+                return
+            err = e  # 5xx: the store is still coming up
+        except FhirUnavailable as e:  # store still booting
+            err = e
+        if time.monotonic() >= deadline:
+            log.error("demo bootstrap giving up after %ss: %s: %s", BOOT_DEADLINE, type(err).__name__, err)
+            return
+        log.warning("demo bootstrap waiting: %s: %s", type(err).__name__, err)
+        time.sleep(BOOT_RETRY)
     BOOTING.clear()
     log.info("demo bootstrap done")
 
@@ -45,6 +69,7 @@ def bootstrap():
 @contextlib.asynccontextmanager
 async def lifespan(app):
     if deps.DEMO:
+        preflight()
         BOOTING.set()
         threading.Thread(target=bootstrap, daemon=True).start()
     yield

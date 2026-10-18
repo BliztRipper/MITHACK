@@ -48,6 +48,11 @@ def users() -> dict:
     return d["users"] if DEMO or not d.get("demo_only") else {}  # published demo accounts: demo mode only
 
 
+if DEMO and not yaml.safe_load(pathlib.Path(os.environ.get("USERS_FILE", API / "users.yaml")).read_text()).get("demo_only"):
+    raise RuntimeError("DEMO_MODE=1 needs a demo_only users file (USERS_FILE=users.demo.yaml); "
+                       "refusing to start with real accounts on the public demo")
+
+
 def check_password(username: str, password: str) -> dict | None:
     u = users().get(username)
     ok = bcrypt.checkpw(password.encode(), u["hash"].encode() if u else _DUMMY)
@@ -84,6 +89,8 @@ def role(*allowed: str):
 class Limiter:
     """Sliding window: at most n hits per window seconds per client (design D5, demo mode only).
     shortcut: in-process memory, right for one API machine; move to Redis if the API ever scales out."""
+    MAX_KEYS = 10_000  # forged client keys must not grow memory without bound
+
     def __init__(self, n: int, window: float):
         self.n, self.window, self.hits, self.lock = n, window, defaultdict(deque), threading.Lock()
 
@@ -100,16 +107,22 @@ class Limiter:
 
     def hit(self, key: str):
         with self.lock:
-            self.hits[key].append(time.monotonic())
+            now = time.monotonic()
+            self.hits[key].append(now)
+            if len(self.hits) > self.MAX_KEYS:
+                for k in [k for k, q in self.hits.items() if not q or q[-1] <= now - self.window]:
+                    del self.hits[k]
+                while len(self.hits) > self.MAX_KEYS:  # still over: drop the oldest-inserted keys
+                    del self.hits[next(iter(self.hits))]
 
 
 LOGIN_FAILS, CASES = Limiter(10, 10 * 60), Limiter(30, 60 * 60)
 
 
 def client_ip(request: Request) -> str:
-    """Fly's edge sets Fly-Client-IP; then the first X-Forwarded-For hop (Vercel); then the socket peer."""
-    h = request.headers
-    return (h.get("fly-client-ip") or h.get("x-forwarded-for", "").split(",")[0].strip()
+    """The first X-Forwarded-For hop (Vercel sets it), else the socket peer."""
+    # shortcut: direct requests to the Space can forge X-Forwarded-For, the daily reset bounds the damage; upgrade to a Vercel shared-secret header if abuse appears
+    return (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
             or (request.client.host if request.client else "unknown"))
 
 
