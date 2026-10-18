@@ -182,8 +182,12 @@ tbody tr { transition: transform var(--t-hover) var(--ease-out); }
 .answers b { font-weight: 600; }
 
 /* ---------- cta and footer ---------- */
-.cta { padding: 30svh var(--pad) 16svh; }
+.cta { padding: 16svh var(--pad) 12svh; }
 .cta p { font-size: var(--f-lead); max-width: 34ch; margin-bottom: 24px; }
+.cta { display: grid; grid-template-columns: repeat(12, 1fr); gap: 48px 24px; }
+.cta > div:first-child { grid-column: 1 / 6; }
+.cta > div:last-child { grid-column: 7 / 13; }
+.demo-accounts { list-style: none; padding: 0; margin-top: 32px; display: grid; gap: 12px; font-size: var(--f-lead); }
 .foot { padding: 0 var(--pad) 30px; font-size: var(--f-small); }
 .credits { color: var(--muted); max-width: 66ch; margin-bottom: 48px; }
 .credits b { color: var(--ink); font-weight: 600; }
@@ -247,7 +251,8 @@ html.js .hero.in h1 .ln > span { transform: none; }
   .foot-line { grid-template-columns: 1fr; gap: 8px; }
   .foot-line nav { flex-wrap: wrap; }
   .foot-right { text-align: left; }
-  .cta { padding: 20svh 20px 14svh; }
+  .cta { padding: 20svh 20px 14svh; grid-template-columns: 1fr; }
+  .cta > div:first-child, .cta > div:last-child { grid-column: 1; }
 }
 @media (max-width: 640px) {
   table, thead, tbody, tr, td { display: block; }
