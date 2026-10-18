@@ -8,18 +8,21 @@ export default function Login({ onLogin, accounts = [] }: { onLogin: (u: User) =
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const submit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault()
+  const guest = accounts.find((a) => a.role === 'gp')
+
+  const signIn = async (u: string, p: string): Promise<void> => {
     setBusy(true)
     setError('')
     try {
-      onLogin(await api.login(username, password))
+      onLogin(await api.login(u, p))
     } catch (err) {
       setError(demoMessage(err) ?? (err instanceof ApiError && err.status === 401 ? 'Wrong username or password.' : 'Sign-in failed. Is the API running?'))
     } finally {
       setBusy(false)
     }
   }
+
+  const submit = (e: React.FormEvent): void => { e.preventDefault(); void signIn(username, password) }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
@@ -36,6 +39,11 @@ export default function Login({ onLogin, accounts = [] }: { onLogin: (u: User) =
         </label>
         <ErrorText id="login-error">{error}</ErrorText>
         <button className="btn-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+        {guest && (
+          <button type="button" className="btn-secondary" disabled={busy} onClick={() => void signIn(guest.username, guest.password)}>
+            Continue as guest (GP)
+          </button>
+        )}
         {accounts.length > 0 && (
           <section aria-labelledby="demo-accounts" className="border-t border-rule pt-4">
             <h2 id="demo-accounts" className="mb-2 font-medium">Demo accounts</h2>
