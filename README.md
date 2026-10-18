@@ -56,10 +56,28 @@ cd app/web && npm run dev
 Open http://localhost:5173 and sign in as `gp1` (GP), `oph1` (ophthalmologist reviewer) or `admin1` (admin).
 Health check: `curl http://localhost:5173/api/health`.
 
-## Hosted demo web app
-`app/web/vercel.json` rewrites `/api/:path*` to the Hugging Face Space (`https://blizt-retina-demo.hf.space`, prefix
-stripped, so the session cookie stays same-origin) and every other path to `/index.html` (deep links). JSON cannot
-hold comments, so the reason lives here. Validated by shape only: `vercel build` needs a linked project (group 3).
+## Live demo
+- App: https://retina-app-lilac.vercel.app (Vercel project `retina-app`, root `app/web`). Landing page:
+  https://retina-site-roan.vercel.app (project `retina-site`, root `site`, static).
+- **No hosted API.** Hugging Face now needs a PRO plan for Docker Spaces, so the app runs on the browser-only test DB
+  (`app/web/src/mockdb.ts`, data in `app/web/public/mockdb/`, recorded from a demo-mode API by
+  `app/web/scripts/capture-mockdb.py`). `app/web/vercel.json` only sends every path to `/index.html` (deep links).
+  `/api/*` then answers HTML, which switches the app to the test DB.
+- Logins (public by design): `gp1 / demo-gp`, `oph1 / demo-oph`, `admin1 / demo-admin`, or "Continue as guest (GP)".
+- **Reset:** each browser keeps its own copy in `localStorage` (`retina-mockdb-v1`). Clearing site data resets it.
+  There is no shared state and no reset job.
+- **Deploy / redeploy:** `cd app/web && vercel build --prod && vercel deploy --prebuilt --prod`. Build here, not on
+  Vercel: the About page imports `docs/model-card.md` from outside `app/web`, which a remote build cannot see. The
+  landing page: `cd site && vercel deploy --prod`. To refresh the
+  test DB after API changes, run a demo-mode API locally and re-run `capture-mockdb.py`.
+- **Rollback:** `vercel rollback <previous deployment URL>` (list them with `vercel ls retina-app`).
+- **Teardown:** `vercel remove retina-app` and `vercel remove retina-site`.
+- **Smoke test:** `BASE_URL=https://retina-app-lilac.vercel.app npx playwright test tests/frontend/live-demo.spec.js --project frontend`.
+- **Hosting the real API later:** `deploy/space/` holds the Docker image and `publish.py`, which creates the Space and
+  generates its secrets (`SESSION_SECRET`, `APP_MASTER_KEY`, `IRIS_PASSWORD`; set in Space settings, never printed)
+  plus the `DEMO_PASSWORDS` variable. After it runs, add the rewrite
+  `{ "source": "/api/:path*", "destination": "https://blizt-retina-demo.hf.space/:path*" }` to `app/web/vercel.json`
+  ahead of the catch-all.
 
 ## Reset the demo
 `FHIR_USER=... FHIR_PASS=... app/fhir/reset.sh` recreates IRIS, runs the setup script, deletes
