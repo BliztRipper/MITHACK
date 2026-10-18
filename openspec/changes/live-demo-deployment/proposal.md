@@ -11,7 +11,8 @@ IRIS, without exposing real patients or pretending the prototype is a clinical s
 - The landing page (`site/`) and the clinician web app (`app/web`) are published on Vercel as two projects. The web app
   calls the API through a Vercel rewrite of `/api/*`, so the session cookie stays same-origin.
 - The FastAPI API (`app/api`) and InterSystems IRIS for Health (FHIR R4, still the only record store) run as Docker
-  containers on a container host (Fly.io assumed), CPU only. IRIS is reachable only on the host's private network.
+  one Docker container on a free Hugging Face Space (CPU basic), so the demo costs nothing. IRIS listens only inside the
+  container; the Space exposes only the API.
 - A **demo mode** (`DEMO_MODE=1`) in the API:
   - Analysis accepts only the curated demo photos (matched by SHA-256 against the demo cache). Any other upload is
     refused with a clear message; no live AutoMorph or model inference runs.
@@ -46,10 +47,10 @@ were considered and not used: they would replace IRIS and the FHIR layer.
   and seed, lazy loading of the vision and model modules so the demo container can omit PyTorch and AutoMorph);
   `app/web` (production API base via the Vercel rewrite, demo banner, demo-image URLs, demo login hints); `site/`
   (demo link and credentials).
-- **New files:** API and IRIS Dockerfiles, host configuration (e.g. `fly.toml` for each app), `vercel.json` for each
+- **New files:** API and IRIS Dockerfiles, the Space's Dockerfile and entrypoint, a scheduled GitHub Actions reset workflow, `vercel.json` for each
   Vercel project, a demo requirements file without PyTorch and AutoMorph, and a scheduled reset job.
-- **Dependencies:** Vercel and container-host accounts and CLIs (`vercel`, `flyctl`); the IRIS image must be pinned for
+- **Dependencies:** Vercel and Hugging Face accounts (`vercel` CLI, a Hugging Face write token); the IRIS image must be pinned for
   the host's CPU architecture (the current pin is arm64).
 - **Systems:** a public URL for the landing page, the app and the API; IRIS stays private.
-- **Cost:** small monthly container-host spend (IRIS needs about 2–4 GB of RAM). Vercel's free tier covers both
-  static projects.
+- **Cost:** $0. Vercel Hobby covers both static projects; the Hugging Face Space runs on the free CPU tier; GitHub
+  Actions is free for public repositories. The Space sleeps when idle and takes 1–2 minutes to wake.
