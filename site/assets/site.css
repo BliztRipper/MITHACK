@@ -68,6 +68,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 .bands span { display: block; height: 100%; }
 .b1 { flex: 5; background: var(--bg); } .b2 { flex: 2.5; background: var(--tone-2); } .b3 { flex: 12.5; background: var(--primary); } .b4 { flex: 20; background: var(--ink); }
 .wordmark { font-weight: 700; font-size: var(--f-lead); letter-spacing: -0.01em; margin-top: 40px; }
+.wordmark img { display: block; height: 56px; width: auto; margin-bottom: 12px; }
 .hero h1 { font-size: var(--f-display); font-weight: 500; line-height: 1.04; letter-spacing: -0.025em; margin: 28px 0 24px; max-width: 13ch; }
 .lead { font-size: var(--f-body); max-width: 40ch; margin-bottom: 32px; }
 .hero-links { display: flex; gap: 28px; margin-top: 40px; font-size: var(--f-small); }

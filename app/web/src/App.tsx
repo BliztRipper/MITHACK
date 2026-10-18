@@ -49,7 +49,7 @@ function Nav({ user, path, onSignOut }: { user: User; path: string; onSignOut: (
   const links = ROUTES.filter((r) => r.nav && r.roles.includes(user.role))
   return (
     <div className="flex h-full flex-col">
-      <div className="px-4 py-5 text-xl font-semibold tracking-[-0.02em]">Retina CVD/CRAO</div>
+      <div className="px-4 py-5"><img src="/logo.png" alt="Perfuvision" className="h-9 w-auto" /><div className="mt-2 text-sm font-semibold">Retina CVD/CRAO</div></div>
       <nav aria-label="Main" className="flex-1">
         <ul className="flex flex-col gap-1 px-2">
           {links.map((r) => {
@@ -131,7 +131,7 @@ export default function App(): ReactNode {
         {demo && <DemoBanner />}
         {storeDown && <Banner />}
         <header className="flex items-center justify-between border-b border-rule bg-surface px-4 py-2 lg:hidden print:hidden">
-          <span className="font-semibold">Retina CVD/CRAO</span>
+          <img src="/logo.png" alt="Perfuvision · Retina CVD/CRAO" className="h-7 w-auto" />
           <button ref={toggleRef} className="btn-secondary" aria-expanded={menuOpen} aria-controls="rail" onClick={() => setMenuAt(menuOpen ? null : path)}>
             <Menu size={20} aria-hidden />Menu
           </button>
