@@ -263,10 +263,16 @@ def test_diabetes_40_75_states_statin_group_and_labels_pce_as_intensity_only(stu
     assert b["pce"]["risk"] > 0 and b["pce"]["intensity_only"] == EN["risk.pce_intensity_only"]
 
 
-@pytest.mark.parametrize("field", ["diabetes", "treated_htn", "ascvd", "african_american", "tc", "hdl"])
+@pytest.mark.parametrize("field", ["ascvd", "african_american", "tc", "hdl"])
 def test_screening_requires_explicit_yes_no_inputs_and_lipids(stub, field):
     r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k != field}))
     assert r.status_code == 422 and field in r.text
+
+
+def test_screening_defaults_diabetes_and_treated_htn_to_false(stub, monkeypatch):
+    use(stub, monkeypatch, Store())
+    r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k not in ("diabetes", "treated_htn")}))
+    assert r.status_code == 200
 
 
 def test_non_diabetic_has_no_intensity_only_label_and_age_35_shows_out_of_range_text(stub, monkeypatch):

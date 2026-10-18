@@ -14,7 +14,7 @@ const NUMBERS: NumField[] = [
 ]
 // Equation inputs: explicit yes/no, never defaulted, so a forgotten answer cannot silently lower the risk.
 const ANSWERS: [string, string][] = [
-  ['diabetes', 'Diabetes?'], ['treated_htn', 'On treatment for hypertension?'], ['ascvd', 'Known atherosclerotic CVD?'],
+  ['ascvd', 'Known atherosclerotic CVD?'],
   ['african_american', 'Race group African American? (used by PCE only)'],
 ]
 
