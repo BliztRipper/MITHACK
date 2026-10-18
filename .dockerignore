@@ -1,0 +1,33 @@
+# Build context for deploy/space/Dockerfile (live-demo-deployment D7): allow-list what the image needs...
+*
+!app/api
+!app/fhir/setup.script
+!deploy/space/entrypoint.sh
+# ...then drop secrets, local data, tests and caches inside it.
+**/.keys
+**/demo-logins.txt
+**/users.yaml
+**/data
+**/.env
+**/.env.*
+**/.venv
+**/venv
+**/tests
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/node_modules
+**/.git
+**/.superpowers
+**/.taste-skill
+**/.claude
+**/.omc
+**/.serena
+**/.harness-mem
+**/papers
+**/.DS_Store
+**/*.pt
+**/*.pth
+**/*.onnx
+app/api/vision/automorph
+app/api/vision/automorph_spike.sh
