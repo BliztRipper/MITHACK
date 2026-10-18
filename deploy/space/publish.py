@@ -31,6 +31,7 @@ for key, value in fresh.items():
     if key not in existing or os.environ.get("ROTATE") == "1":
         api.add_space_secret(repo, key, value)
 api.add_space_variable(repo, "DEMO_PASSWORDS", demo)  # public by design (spec public-demo)
+api.add_space_variable(repo, "BOOT_DEADLINE_S", "600")  # cold IRIS boot on the shared CPU can exceed 300 s
 
 folder = subprocess.run(["sh", "deploy/space/assemble.sh"], check=True, capture_output=True, text=True).stdout.strip()
 api.upload_folder(repo_id=repo, repo_type="space", folder_path=folder, commit_message="Deploy retina demo",
