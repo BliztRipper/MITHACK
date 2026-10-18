@@ -9,6 +9,7 @@ import pytest
 from skimage import data as skdata
 
 from vision import quality, segment
+from vision.preprocess import fov_mask
 
 SAMPLE = segment.AUTOMORPH / "images" / "100.png"
 
@@ -50,7 +51,7 @@ def test_overlays_match_image_size_and_avr_is_plausible(seg):
 def test_overlays_sit_on_the_anatomy(seg):
     img = rgb(SAMPLE)
     green = img[..., 1].astype(float)
-    fov = quality.fov_mask(img)
+    fov = fov_mask(img)
     vessel = seg.vessel[..., 3] > 0
     assert green[vessel].mean() < green[fov & ~vessel].mean()  # vessels are dark in the green channel
     x, y = seg.disc_centre

@@ -1,0 +1,11 @@
+# Demo image only (live-demo-deployment D3): serves cached results, so no torch, timm, OpenCV or AutoMorph.
+fastapi
+python-multipart  # UploadFile/Form in POST /cases
+uvicorn
+numpy
+Pillow  # intake(): decode and re-encode the upload
+httpx
+cryptography
+bcrypt
+itsdangerous
+pyyaml

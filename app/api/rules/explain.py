@@ -6,7 +6,6 @@ around the fovea), arcades (vessel mask dilated, minus those two), periphery (re
 """
 from dataclasses import dataclass, field
 
-import cv2
 import numpy as np
 
 from .text import templates
@@ -39,6 +38,7 @@ def regions(shape, disc, dd, vessel=None, fov=None) -> dict[str, np.ndarray]:
     fov = np.ones(shape, bool) if fov is None else fov
     arcades = np.zeros(shape, bool)
     if vessel is not None:
+        import cv2  # here, not at the top: analysis imports this module in the demo image, which has no OpenCV
         k = max(3, int(dd / 4) | 1)  # shortcut: dilation width DD/4 is a guess, tune on real heatmaps
         arcades = cv2.dilate(vessel.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) > 0
     arcades &= ~disc_r & ~macula

@@ -17,7 +17,6 @@ from itsdangerous import BadSignature, URLSafeTimedSerializer
 from fhir import mapping as m
 from fhir.client import FhirClient
 from fhir.crypto import KeyStore, master_key_from_env
-from vision import crao_model
 
 API = pathlib.Path(__file__).resolve().parent
 COOKIE, IDLE = "session", 30 * 60  # 30-minute sliding expiry (spec: idle session expires)
@@ -107,4 +106,8 @@ def keys() -> KeyStore:
 @functools.cache
 def model():
     """None when CRAO_MODEL is unset or missing: results then say "no model loaded"."""
-    return crao_model.load(os.environ.get("CRAO_MODEL"))
+    path = os.environ.get("CRAO_MODEL")
+    if not path:  # no torch import: the demo image has none
+        return None
+    from vision import crao_model
+    return crao_model.load(path)

@@ -6,6 +6,7 @@ import pytest
 
 import analysis
 import deps
+from vision import segment
 from conftest import login
 from test_api_cases import CONSENT
 
@@ -24,7 +25,7 @@ def test_every_cached_case_is_attributed():
 def test_each_cached_case_returns_in_under_2_seconds(live, patient, monkeypatch):
     monkeypatch.setattr(deps, "model", lambda: None)
     monkeypatch.setattr(analysis, "CACHE", CACHE)
-    monkeypatch.setattr(analysis.segment, "segment", lambda *a, **k: pytest.fail("cache miss: pipeline ran"))
+    monkeypatch.setattr(segment, "segment", lambda *a, **k: pytest.fail("cache miss: pipeline ran"))
     login(live, "gp1")
     live.post(f"/patients/{patient}/consent", json=CONSENT)
     files = {hashlib.sha256(p.read_bytes()).hexdigest(): p for p in IMAGES.iterdir() if p.suffix in (".png", ".jpg")}

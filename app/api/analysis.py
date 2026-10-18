@@ -8,14 +8,14 @@ import json
 import pathlib
 from dataclasses import asdict
 
-import cv2
 import numpy as np
 
 from rules import risk
 from rules.explain import LIMIT_KEYS, explain
 from rules.text import CONFIG, templates
 from rules.triage import Case, triage
-from vision import crao_model, heatmap, quality, segment
+# vision (torch, OpenCV, AutoMorph) is imported only where a model or the pipeline runs, i.e. on a cache miss:
+# the demo image (requirements-demo.txt) has none of them and serves cached results only.
 
 T = templates("en")
 CACHE = pathlib.Path(__file__).resolve().parent / "demo_cache"
@@ -24,6 +24,7 @@ OVERLAYS = ("vessel", "artery_vein", "disc", "heatmap")
 
 def png(a: np.ndarray) -> bytes:
     """RGBA (or grey) array -> PNG bytes."""
+    import cv2
     ok, buf = cv2.imencode(".png", cv2.cvtColor(a, cv2.COLOR_RGBA2BGRA) if a.ndim == 3 else a)
     if not ok:
         raise ValueError("could not encode PNG")
@@ -31,6 +32,7 @@ def png(a: np.ndarray) -> bytes:
 
 
 def _decode(b: bytes) -> np.ndarray:
+    import cv2
     return cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_UNCHANGED)
 
 
@@ -44,6 +46,7 @@ def image_stage(rgb: np.ndarray, model, features: bool = True, crao: bool = True
     Returns (json-able dict, {name: PNG bytes}); "cam" is the raw heatmap for the explanation, not an overlay.
     Raises SegmentationError / RuntimeError when AutoMorph itself fails (an analysis error, not a retake).
     """
+    from vision import heatmap, quality, segment
     g = quality.heuristic(rgb)
     img, pngs = {"model_version": version(model), "segmentation": None, "p": None}, {}
     if g.accept:
@@ -94,7 +97,10 @@ def emergency(img: dict, pngs: dict, hours_since_onset, sudden_painless_monocula
               model) -> dict:
     th, p, q = thresholds(model), img["p"], img["quality"]
     t = triage(Case(p, gate_quality(q), hours_since_onset, sudden_painless_monocular, gca_symptoms), thresholds=th)
-    band = crao_model.band(p, *th) if p is not None else None
+    band = None
+    if p is not None:  # p exists only when a model ran, so torch is already there
+        from vision import crao_model
+        band = crao_model.band(p, *th)
     limits = [T[k] for k in LIMIT_KEYS]
     if not q["accept"]:
         expl = {"region": None, "sentences": []}

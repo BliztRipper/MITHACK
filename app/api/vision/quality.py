@@ -8,12 +8,10 @@ must also pass (design D5: both must pass).
 import io
 from dataclasses import dataclass, field
 
-import cv2
 import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from rules.text import CONFIG
-from vision.preprocess import SIZE, fov_mask
 
 MAX_BYTES = 20 * 1024 * 1024
 MAGIC = (b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n")
@@ -57,6 +55,8 @@ def intake(data: bytes) -> tuple[np.ndarray, bytes]:
 
 def is_fundus(rgb: np.ndarray) -> bool:
     """A fundus photo is a bright round field of view on black: dark corners and a near-circular bright region."""
+    import cv2  # OpenCV only for the gate: intake() must work in the demo image, which has none
+    from vision.preprocess import SIZE
     h, w = rgb.shape[:2]
     s = SIZE / max(h, w)
     g = cv2.cvtColor(cv2.resize(rgb, (max(1, round(w * s)), max(1, round(h * s)))), cv2.COLOR_RGB2GRAY)
@@ -75,6 +75,8 @@ def is_fundus(rgb: np.ndarray) -> bool:
 
 def heuristic(rgb: np.ndarray) -> Gate:
     """0..1 score from field of view, exposure and sharpness (shortcut: hand-tuned, swap for an EyeQ-trained model if time allows)."""
+    import cv2
+    from vision.preprocess import SIZE, fov_mask
     if not is_fundus(rgb):
         return Gate(False, 0.0, [NOT_FUNDUS])
     img = cv2.resize(rgb, (SIZE, SIZE))
