@@ -186,3 +186,66 @@ def test_limiter_window_slides(monkeypatch):
     assert lim.wait("a") == 1
     now[0] += 0.5
     assert lim.wait("a") == 0 and "a" not in lim.hits
+
+
+class BootStore:
+    """Stand-in store: /metadata fails `down` times, then holds `seeded` seed patients."""
+    def __init__(self, down, seeded):
+        self.down, self.seeded, self.checks = down, seeded, 0
+
+    def health_check(self):
+        self.checks += 1
+        if self.checks <= self.down:
+            from fhir.client import FhirUnavailable
+            raise FhirUnavailable("booting")
+        return True
+
+    def search(self, rtype, **params):
+        assert rtype == "Patient"
+        return [{"id": str(i)} for i in range(self.seeded)]
+
+
+@pytest.mark.parametrize("seeded,reset", [(0, True), (20, False)])
+def test_bootstrap_waits_for_metadata_then_seeds_only_an_empty_store(api, monkeypatch, seeded, reset):
+    """1.5: the key file (image keys, withdrawal markers) goes only with an unseeded store."""
+    import main
+    from fhir import seed
+    store, ran = BootStore(down=2, seeded=seeded), []
+    monkeypatch.setattr(deps, "fhir", lambda: store)
+    monkeypatch.setattr(seed, "run", lambda f: ran.append(f))
+    monkeypatch.setattr(main, "BOOT_RETRY", 0)
+    deps.keys().path.write_text("{}")
+    main.BOOTING.set()
+    main.bootstrap()
+    assert store.checks == 3 and not main.BOOTING.is_set()
+    assert ran == ([store] if reset else []) and deps.keys().path.exists() is not reset
+
+
+def test_patient_routes_503_while_booting(api):
+    import main
+    main.BOOTING.set()
+    try:
+        assert api.get("/patients").status_code == 503
+        assert api.get("/cases/x").status_code == 503
+        assert api.get("/demo-images").status_code == 200  # not patient data
+    finally:
+        main.BOOTING.clear()
+
+
+@pytest.mark.fhir
+def test_bootstrap_on_reset_store_leaves_20_patients_and_no_key_file(live, fhir, demo):
+    """A freshly reset hosted store is empty: emulate it by removing the seed patients, then start the app."""
+    import main
+    from conftest import purge
+    from fhir import mapping as m
+    for p in fhir.search("Patient", identifier=f"{m.SEED_SYSTEM}|"):
+        purge(fhir, p["id"])
+    deps.keys().path.write_text("{}")
+    with live:  # runs the lifespan: bootstrap in the background
+        t = time.monotonic()
+        while main.BOOTING.is_set() and time.monotonic() - t < 300:
+            time.sleep(0.5)
+        assert not main.BOOTING.is_set()
+    assert len(fhir.search("Patient")) == 20
+    assert len(fhir.search("Patient", identifier=f"{m.SEED_SYSTEM}|")) == 20
+    assert not deps.keys().path.exists()

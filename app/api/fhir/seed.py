@@ -2,6 +2,7 @@
 
 Run: FHIR_USER=... FHIR_PASS=... python -m fhir.seed   (from app/api)
 """
+import pathlib
 import random
 
 from . import mapping as m
@@ -75,6 +76,15 @@ def run(fhir=None):
             r["issued"] = "2026-03-10T10:30:00+07:00"
             _cond(es, f"{hn}-prior-report", r)
         fhir.transaction(es)
+
+
+def bootstrap(fhir, key_file):
+    """Hosted start-up (live-demo-deployment D6): the store restarts empty. Raises until FHIR /metadata answers;
+    then, if the seed patients are missing, drops the old store's image keys and withdrawal markers and seeds."""
+    fhir.health_check()
+    if len(fhir.search("Patient", identifier=f"{m.SEED_SYSTEM}|")) < len(NAMES):
+        pathlib.Path(key_file).unlink(missing_ok=True)
+        run(fhir)
 
 
 if __name__ == "__main__":

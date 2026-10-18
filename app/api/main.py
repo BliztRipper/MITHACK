@@ -6,7 +6,10 @@
 `python main.py` runs uvicorn with RUN (no access log: a request line can carry a query string, and patient
 data must never reach logs). With the uvicorn CLI, pass --no-access-log.
 """
+import contextlib
 import logging
+import threading
+import time
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -15,16 +18,40 @@ from starlette.concurrency import run_in_threadpool
 import analysis
 import deps
 from fhir import mapping as m
+from fhir import seed
 from fhir.client import FhirError, FhirUnavailable
 from rules.text import CONFIG
 from routes import auth, cases, demo, monitoring, patients, review
 
-app = FastAPI(title="Retina CVD/CRAO API")
+log = logging.getLogger("api")
+BOOTING = threading.Event()  # set while the demo store is being seeded: patient routes answer 503
+BOOT_RETRY = 2.0
+
+
+def bootstrap():
+    """Demo mode: wait for the record store, seed it if it came back empty, then open the patient routes."""
+    while True:
+        try:
+            seed.bootstrap(deps.fhir(), deps.keys().path)
+            break
+        except Exception as e:  # store still booting, or a seed step failed: retry (seeding is idempotent)
+            log.warning("demo bootstrap waiting: %s", type(e).__name__)
+            time.sleep(BOOT_RETRY)
+    BOOTING.clear()
+    log.info("demo bootstrap done")
+
+
+@contextlib.asynccontextmanager
+async def lifespan(app):
+    if deps.DEMO:
+        BOOTING.set()
+        threading.Thread(target=bootstrap, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Retina CVD/CRAO API", lifespan=lifespan)
 for r in (auth, patients, cases, review, monitoring, demo):
     app.include_router(r.router)
-
-
-log = logging.getLogger("api")
 
 
 def _no_query(record: logging.LogRecord) -> bool:
@@ -59,6 +86,8 @@ def audit(request: Request, status: int):
 @app.middleware("http")
 async def session_and_audit(request: Request, call_next):
     audited = request.url.path.startswith(PATIENT_DATA)
+    if audited and BOOTING.is_set():  # the store is being reset and seeded: nothing to read or write yet
+        return JSONResponse({"detail": "record store is starting, try again shortly"}, status_code=503)
     try:
         response = await call_next(request)
     except Exception:  # unhandled error: still audit the attempt (outcome 8), then let it propagate
