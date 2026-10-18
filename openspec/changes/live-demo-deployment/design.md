@@ -89,7 +89,8 @@ Vercel) covers `POST /auth/login` (10 failures per 10 minutes) and `POST /cases`
   IRIS empty. The container entrypoint starts IRIS and creates the `DEMO` namespace and FHIR endpoint, then starts the
   API, whose bootstrap:
   1. waits for FHIR `/metadata`;
-  2. if the store holds no seed patients, deletes the key file and seeds (the existing idempotent `fhir.seed`).
+  2. if the store holds fewer than the 20 seed patients, deletes the key file and seeds (the existing idempotent
+     `fhir.seed`); on the Space the store is always empty at boot, so this means "after every restart".
   Patient routes return `503` until this completes.
 - The key file lives on the container's ephemeral disk.
 - Daily reset: a GitHub Actions workflow on a schedule (`cron: '0 19 * * *'`, 02:00 Bangkok) calls the Hugging Face
