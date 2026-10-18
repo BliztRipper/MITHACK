@@ -74,7 +74,7 @@ export const Placeholder = (): ReactNode => <span className="chip-placeholder">p
 
 export function ErrorText({ id, children }: { id?: string; children: ReactNode }): ReactNode {
   if (!children) return null
-  return <p id={id} className="mt-1 flex items-center gap-1 text-sm text-triage-stroke-fg"><CircleAlert size={16} aria-hidden />{children}</p>
+  return <p id={id} role="alert" className="mt-1 flex items-center gap-1 text-sm text-triage-stroke-fg"><CircleAlert size={16} aria-hidden />{children}</p>
 }
 
 export const fmtDate = (s: string | null | undefined): string =>

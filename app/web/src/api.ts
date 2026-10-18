@@ -114,7 +114,10 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 /** Demo-mode refusals worth a plain sentence: 429 (wait N minutes) and 422 demo_photo_only. Null for anything else. */
 export function demoMessage(e: unknown): string | null {
   if (!(e instanceof ApiError)) return null
-  if (e.status === 429) return `Too many attempts, try again in ${Math.max(1, Math.ceil((e.retryAfter ?? 60) / 60))} minutes.`
+  if (e.status === 429) {
+    const min = Math.max(1, Math.ceil((e.retryAfter ?? 60) / 60))
+    return `Too many attempts, try again in ${min} ${min === 1 ? 'minute' : 'minutes'}.`
+  }
   if (e.status === 422 && (e.detail as { code?: string })?.code === 'demo_photo_only') return 'This demo accepts only the sample photos below.'
   return null
 }

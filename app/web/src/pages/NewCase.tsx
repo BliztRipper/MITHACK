@@ -95,7 +95,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
   }
   const pickCached = async (name: string): Promise<void> => {
     const r = await fetch(`/api/demo-images/${name}`)
-    if (!r.ok) return setErrors({ _: `Cached image ${name} is not available (run python -m demo_cache.build).` })
+    if (!r.ok) return setErrors({ _: 'Demo photos are not available right now. Try again in a minute.' })
     pick(new File([await r.blob()], name, { type: name.endsWith('.jpg') ? 'image/jpeg' : 'image/png' }))
   }
   const next = (): void => {
@@ -151,12 +151,16 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
             {preview && <img src={preview} alt="Selected fundus photo" className="h-40 w-40 bg-stage object-contain" />}
           </div>
           <div className="flex flex-wrap gap-2">
-            {demoImages.map((d) => (
-              <div key={d.name} className="flex flex-col items-start gap-1">
-                <button className="btn-secondary" disabled={busy} onClick={() => pickCached(d.name)}>Cached: {d.label} <span className="font-mono text-xs text-muted">{d.name}</span></button>
-                <span className="max-w-xs text-xs text-muted"><b className="font-medium text-ink">{d.licence}</b>. <span className="line-clamp-2" title={d.source}>{d.source}</span></span>
-              </div>
-            ))}
+            {demoImages.map((d) => {
+              const same = demoImages.filter((x) => x.label === d.label)
+              const label = same.length > 1 ? `${d.label} ${same.indexOf(d) + 1}` : d.label
+              return (
+                <div key={d.name} className="flex flex-col items-start gap-1">
+                  <button className="btn-secondary" disabled={busy} onClick={() => pickCached(d.name)}>Cached: {label} <span className="font-mono text-xs text-muted">{d.name}</span></button>
+                  <span className="max-w-xs text-xs text-muted"><b className="font-medium text-ink">{d.licence}</b>. <span className="line-clamp-2" title={d.source}>{d.source}</span></span>
+                </div>
+              )
+            })}
           </div>
           <ErrorText>{errors._}</ErrorText>
           <div>

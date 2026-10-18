@@ -137,7 +137,7 @@ export default function App(): ReactNode {
           </button>
         </header>
         <div className="flex flex-1">
-          <aside id="rail" ref={railRef} className={`${menuOpen ? 'block' : 'hidden'} fixed inset-y-0 left-0 z-20 w-56 overflow-y-auto overscroll-contain border-r border-rule bg-surface lg:static lg:block print:hidden`}>
+          <aside id="rail" ref={railRef} className={`${menuOpen ? 'block' : 'hidden'} fixed inset-y-0 left-0 z-40 w-56 overflow-y-auto overscroll-contain border-r border-rule bg-surface lg:static lg:block print:hidden`}>
             <Nav user={user} path={pathname} onSignOut={signOut} />
           </aside>
           <main className="min-w-0 flex-1 px-4 py-6 lg:px-8 print:p-0">
