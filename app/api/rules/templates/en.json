@@ -54,5 +54,10 @@
  "summary.screening.pce_caveat": "This estimate comes from a calculator developed in the United States and may overestimate risk for Thai patients. Please discuss it with your doctor.",
  "summary.awaiting_review": "Your result is awaiting review by a clinician. Your doctor will tell you the result and the next step.",
  "summary.emergency.crao_confirmed": "Your doctor has confirmed a blocked artery in the eye (a stroke of the eye). You need urgent checks today for stroke and heart causes.",
- "summary.emergency.not_crao": "Your doctor has checked your eye photo and does not think it shows a blocked eye artery. Your doctor will explain the next step for your vision complaint."
+ "summary.emergency.not_crao": "Your doctor has checked your eye photo and does not think it shows a blocked eye artery. Your doctor will explain the next step for your vision complaint.",
+ "risk.not_valid.pce_no_labs": "10-year risk not calculated: add systolic BP, total cholesterol and HDL to calculate it.",
+ "screening.retina_only.narrowing": "Retinal arteriolar narrowing (artery-to-vein ratio outside reference): check blood pressure and lipids.",
+ "screening.retina_only.narrowing.placeholder": "Retinal arteriolar narrowing (artery-to-vein ratio outside a placeholder reference interval, not clinically validated): check blood pressure and lipids.",
+ "screening.retina_only.within": "No retinal arteriolar narrowing (artery-to-vein ratio within reference). Add blood pressure and lipids to calculate 10-year risk.",
+ "screening.retina_only.within.placeholder": "No retinal arteriolar narrowing (artery-to-vein ratio within a placeholder reference interval, not clinically validated). Add blood pressure and lipids to calculate 10-year risk."
 }

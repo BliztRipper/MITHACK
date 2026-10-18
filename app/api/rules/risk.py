@@ -15,7 +15,7 @@ R = CONFIG["risk"]
 class Inputs:
     age: float
     sex: str                      # "male" | "female"
-    sbp: float
+    sbp: float | None = None      # labs are optional: the retina leads, labs add the PCE number
     tc: float | None = None       # mg/dL
     hdl: float | None = None
     dbp: float | None = None
@@ -61,6 +61,8 @@ def pce(i: Inputs) -> Result:
         return Result(label, None, reason="risk.not_valid.sex")
     if not _in("age", i.age, r):
         return Result(label, None, reason="risk.not_valid.pce_age")
+    if None in (i.tc, i.hdl, i.sbp):
+        return Result(label, None, reason="risk.not_valid.pce_no_labs")
     if not ok:
         return Result(label, None, reason="risk.not_valid.pce_range")
     c, mean, s0 = _PCE[f"{race}_{i.sex}"]
@@ -104,10 +106,10 @@ def bypass(i: Inputs) -> str | None:
     return None
 
 
-def htn_stage1(sbp: float, dbp: float | None, risk_pct: float | None, bypass: bool = False) -> str | None:
+def htn_stage1(sbp: float | None, dbp: float | None, risk_pct: float | None, bypass: bool = False) -> str | None:
     """ACC/AHA stage 1: SBP 130-139 or DBP 80-89, with neither in the stage 2 range. In a statin-benefit group
-    (bypass) the PCE number is never the basis for the blood-pressure sentence."""
-    if sbp >= 140 or (dbp is not None and dbp >= 90):
+    (bypass) the PCE number is never the basis for the blood-pressure sentence. No SBP: the stage is unknown."""
+    if sbp is None or sbp >= 140 or (dbp is not None and dbp >= 90):
         return None
     if 130 <= sbp or (dbp is not None and dbp >= 80):
         if bypass:

@@ -39,7 +39,7 @@ function ModeStep({ mode, setMode }: { mode: Mode | null; setMode: (m: Mode) => 
   return (
     <fieldset className="grid max-w-4xl gap-4 md:grid-cols-2">
       <legend className="sr-only">Mode</legend>
-      {opt('screening', 'Screening: 10-year CVD risk', 'Risk factors plus retinal vessel measurements.')}
+      {opt('screening', 'Screening: 10-year CVD risk', 'Retinal vessel measurements from the photo; add lab values for the 10-year risk.')}
       {opt('emergency', 'Emergency: sudden vision loss', 'Use for sudden, painless loss of vision in one eye', <TriangleAlert size={20} className="text-triage-urgent" aria-hidden />)}
     </fieldset>
   )
@@ -125,7 +125,10 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
       if (e instanceof ApiError && (e.status === 403 || e.status === 409)) { setConsentOk(false); setErrors({ _: `Not saved: ${e.message}.` }); return }
       const demo = demoMessage(e)
       if (demo) { setErrors({ _: demo }); return }
-      if (e instanceof ApiError && e.status === 422) { setErrors(fieldErrors(e)); setStep(2); return }
+      if (e instanceof ApiError && e.status === 422) {
+        const fe = fieldErrors(e) // summary too: a field the form does not show would otherwise fail silently
+        setErrors({ ...fe, _: `Not accepted: ${Object.entries(fe).map(([k, m]) => `${k} (${m})`).join(', ')}` }); setStep(2); return
+      }
       setErrors({ _: e instanceof ApiError && e.status === 503 ? 'Cannot verify consent while the record store is down. Analysis is blocked.' : (e as Error).message })
     } finally {
       setBusy(false)
@@ -141,6 +144,7 @@ function Wizard({ patient }: { patient: PatientDetail }): ReactNode {
       {step === 1 && <ConsentStep patientId={pid} onReady={onReady} />}
       {step === 2 && mode && <InputsForm mode={mode} values={values} dates={dates} errors={errors}
         onChange={(k, v) => setValues((old) => ({ ...old, [k]: v }))} />}
+      {step === 2 && <ErrorText>{errors._}</ErrorText>}
       {step === 3 && (result && !result.quality.accept ? <RetakeCard r={result} preview={preview} onRetake={() => pick(null)} /> : (
         <div className="flex max-w-3xl flex-col gap-4">
           <div className="flex flex-col items-start gap-3 rounded-lg border-2 border-dashed border-rule-strong bg-surface p-6">

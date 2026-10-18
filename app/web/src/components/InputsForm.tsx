@@ -3,15 +3,17 @@ import type { Mode, PatientDetail } from '../api'
 import { ageOf, ErrorText, fmtDate } from './ui'
 
 // Plausibility limits mirror the API (routes/cases.py); the API re-checks and its 422 maps back to these fields.
-interface NumField { key: string; label: string; unit?: string; min: number; max: number; required?: boolean; step?: number }
+// Labs are optional (the retina leads); together SBP, total cholesterol and HDL add the 10-year PCE risk.
+interface NumField { key: string; label: string; unit?: string; min: number; max: number; required?: boolean; step?: number; lab?: boolean }
 const NUMBERS: NumField[] = [
   { key: 'age', label: 'Age', unit: 'years', min: 18, max: 110, required: true, step: 1 },
-  { key: 'sbp', label: 'Systolic blood pressure', unit: 'mmHg', min: 60, max: 260, required: true },
-  { key: 'dbp', label: 'Diastolic blood pressure', unit: 'mmHg', min: 30, max: 160 },
-  { key: 'tc', label: 'Total cholesterol', unit: 'mg/dL', min: 50, max: 500, required: true },
-  { key: 'hdl', label: 'HDL cholesterol', unit: 'mg/dL', min: 10, max: 200, required: true },
-  { key: 'ldl', label: 'LDL cholesterol (optional)', unit: 'mg/dL', min: 10, max: 400 },
+  { key: 'sbp', label: 'Systolic blood pressure', unit: 'mmHg', min: 60, max: 260, lab: true },
+  { key: 'dbp', label: 'Diastolic blood pressure', unit: 'mmHg', min: 30, max: 160, lab: true },
+  { key: 'tc', label: 'Total cholesterol', unit: 'mg/dL', min: 50, max: 500, lab: true },
+  { key: 'hdl', label: 'HDL cholesterol', unit: 'mg/dL', min: 10, max: 200, lab: true },
+  { key: 'ldl', label: 'LDL cholesterol', unit: 'mg/dL', min: 10, max: 400, lab: true },
 ]
+const LABS = NUMBERS.filter((f) => f.lab)
 // Equation inputs: explicit yes/no, never defaulted, so a forgotten answer cannot silently lower the risk.
 const ANSWERS: [string, string][] = [
   ['ascvd', 'Known atherosclerotic CVD?'],
@@ -129,11 +131,7 @@ export default function InputsForm({ mode, values: v, dates, errors, onChange }:
     </div>
   )
 
-  return (
-    <div className="grid max-w-4xl gap-4 lg:grid-cols-2">
-      {select('sex', 'Sex', ['male', 'female'])}
-      {select('smoking', 'Smoking', ['never', 'former', 'current'])}
-      {NUMBERS.map((f) => (
+  const number = (f: NumField): ReactNode => (
         <div key={f.key}>
           <label htmlFor={f.key} className="mb-1 block">{f.label}{f.required ? ' (required)' : ''}</label>
           <div className="relative">
@@ -144,7 +142,21 @@ export default function InputsForm({ mode, values: v, dates, errors, onChange }:
           {dates[f.key] && <p className="mt-1 text-sm text-muted">from record, {fmtDate(dates[f.key])}</p>}
           <ErrorText id={`${f.key}-err`}>{errors[f.key]}</ErrorText>
         </div>
-      ))}
+  )
+  const fromRecord = LABS.filter((f) => dates[f.key]).length
+
+  return (
+    <div className="grid max-w-4xl gap-4 lg:grid-cols-2">
+      {select('sex', 'Sex', ['male', 'female'])}
+      {select('smoking', 'Smoking', ['never', 'former', 'current'])}
+      {NUMBERS.filter((f) => !f.lab).map(number)}
+      <details className="rounded-lg border border-rule p-4 lg:col-span-2" open={LABS.some((f) => errors[f.key])}>
+        <summary className="cursor-pointer font-medium">
+          Lab values (optional){fromRecord > 0 && <span className="font-normal text-muted"> · {fromRecord} from record</span>}
+        </summary>
+        <p className="mt-2 text-sm text-muted">The retinal scan does not need them. Add systolic BP, total cholesterol and HDL to also calculate the 10-year risk.</p>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">{LABS.map(number)}</div>
+      </details>
       {ANSWERS.map(([k, label]) => (
         <div key={k}>
           <YesNo name={k} label={`${label} (required)`} value={v[k]} error={errors[k]} onChange={onChange} />

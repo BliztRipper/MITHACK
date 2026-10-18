@@ -50,11 +50,11 @@ class ScreeningInputs(BaseModel):
     sex: Literal["male", "female"]
     smoking: Literal["never", "former", "current"]
     diabetes: bool = False  # not asked in the form: the retina model is meant to flag it
-    sbp: float = Field(ge=60, le=260)
+    sbp: float | None = Field(None, ge=60, le=260)  # labs optional: without them the retina leads (no PCE number)
     dbp: float | None = Field(None, ge=30, le=160)
     treated_htn: bool = False  # not asked in the form, same reason
-    tc: float = Field(ge=50, le=500)   # required: spec "Risk factor inputs" (PCE needs both)
-    hdl: float = Field(ge=10, le=200)
+    tc: float | None = Field(None, ge=50, le=500)
+    hdl: float | None = Field(None, ge=10, le=200)
     ldl: float | None = Field(None, ge=10, le=400)
     african_american: bool
     ascvd: bool

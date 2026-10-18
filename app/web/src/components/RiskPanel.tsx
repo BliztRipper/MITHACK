@@ -41,6 +41,8 @@ export default function RiskPanel({ r }: { r: CaseResult }): ReactNode {
     <section aria-labelledby="risk-h" className="flex flex-col gap-6">
       <h2 id="risk-h" className="sr-only">10-year cardiovascular risk</h2>
       {risk.bypass && <p className="rounded-lg border-2 border-ink p-4 text-lg font-medium">{risk.bypass}</p>}
+      {/* retina-only screening (no labs): the API's conclusion is the retinal finding, so lead with it */}
+      {!risk.bypass && pce.risk === null && r.conclusion !== pce.not_valid && <p className="rounded-lg border-2 border-ink p-4 text-lg font-medium">{r.conclusion}</p>}
       {(!risk.bypass || pce.intensity_only) && (
         <>
           <div className="flex flex-col gap-2">

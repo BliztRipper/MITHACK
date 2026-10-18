@@ -263,10 +263,30 @@ def test_diabetes_40_75_states_statin_group_and_labels_pce_as_intensity_only(stu
     assert b["pce"]["risk"] > 0 and b["pce"]["intensity_only"] == EN["risk.pce_intensity_only"]
 
 
-@pytest.mark.parametrize("field", ["ascvd", "african_american", "tc", "hdl"])
-def test_screening_requires_explicit_yes_no_inputs_and_lipids(stub, field):
+@pytest.mark.parametrize("field", ["ascvd", "african_american"])
+def test_screening_requires_explicit_yes_no_inputs(stub, field):
     r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k != field}))
     assert r.status_code == 422 and field in r.text
+
+
+LABS = ("sbp", "dbp", "tc", "hdl", "ldl")
+
+
+def test_screening_without_labs_leads_with_the_retinal_finding(stub, monkeypatch):
+    import json
+    use(stub, monkeypatch, Store())
+    r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k not in LABS})).json()
+    assert r["risk"]["pce"]["risk"] is None and r["risk"]["pce"]["not_valid"] == EN["risk.not_valid.pce_no_labs"]
+    assert r["risk"]["htn_stage1"] is None
+    assert r["conclusion"] == EN["screening.retina_only.narrowing.placeholder"]
+    assert r["risk"]["enhancers"]["retinal"] == [EN["risk.enhancer.retinal_arteriolar_narrowing.placeholder"]]
+
+
+def test_screening_without_labs_or_a_gradable_photo_says_labs_are_needed(stub, monkeypatch):
+    import json
+    use(stub, monkeypatch, Store())
+    r = post(stub, "screening", json.dumps({k: v for k, v in SCREENING.items() if k not in LABS}), image=dark_sample()).json()
+    assert r["conclusion"] == EN["risk.not_valid.pce_no_labs"]
 
 
 def test_screening_defaults_diabetes_and_treated_htn_to_false(stub, monkeypatch):

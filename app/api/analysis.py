@@ -160,7 +160,10 @@ def screening(img: dict, i) -> dict:
     if meas and meas["avr"]["value"] is not None:
         sentences.insert(0, T["explain.screening.measurements" + ph].format(
             avr=f"{meas['avr']['value']:.2f}", flag="outside" if outside else "within"))
-    conclusion = r["bypass"] or r["pce"]["not_valid"] or f"{p.variant} 10-year risk {p.risk:.1f}% ({band})"
+    if p.reason == "risk.not_valid.pce_no_labs" and outside is not None and not by:  # retina-only screening
+        conclusion = T["screening.retina_only." + ("narrowing" if outside else "within") + ph]
+    else:
+        conclusion = r["bypass"] or r["pce"]["not_valid"] or f"{p.variant} 10-year risk {p.risk:.1f}% ({band})"
     return {"measurements": meas, "risk": r, "explanation": {"region": None, "sentences": sentences},
             "conclusion": conclusion, "risks": [] if p.risk is None else [(p.variant, round(p.risk, 2))],
             "band": band}

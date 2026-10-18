@@ -155,3 +155,9 @@ def test_htn_stage1_in_a_statin_benefit_group_is_not_based_on_the_pce_number():
         k = risk.htn_stage1(135, 85, r, bypass=True)
         assert k == "risk.htn_stage1.bypass" and "below 10%" not in txt(k) and "does not apply" in txt(k)
     assert risk.htn_stage1(150, 85, 6, bypass=True) is None  # stage 2 is unchanged
+
+
+def test_pce_without_lab_values_says_labs_are_needed_and_no_bp_sentence():
+    assert risk.pce(Inputs(age=60, sex="male")).reason == "risk.not_valid.pce_no_labs"
+    assert risk.pce(Inputs(age=60, sex="male", sbp=150, tc=220)).reason == "risk.not_valid.pce_no_labs"
+    assert risk.htn_stage1(None, None, None) is None
