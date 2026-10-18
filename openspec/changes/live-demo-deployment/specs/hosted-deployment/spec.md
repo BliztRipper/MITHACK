@@ -44,9 +44,10 @@ private network.
 - **THEN** its health endpoint reports the record store as available
 
 ### Requirement: Secret handling
-Hosted secrets (session signing key, image master key, record-store login, demo account passwords) SHALL be supplied
+Hosted secrets (session signing key, image master key, record-store login) SHALL be supplied
 by the hosts' secret stores at run time. They SHALL NOT appear in the repository, in any container image, in build
-logs or in responses.
+logs or in responses. The demo account passwords are public by design (see public-demo "Public demo accounts") and
+are exempt.
 
 #### Scenario: Image without secrets
 - **WHEN** the published container images are inspected
