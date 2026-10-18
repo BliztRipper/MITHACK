@@ -39,7 +39,7 @@ function Banner(): ReactNode {
 
 function DemoBanner(): ReactNode {
   return (
-    <div role="status" className="sticky top-0 z-30 border-b-2 border-accent bg-accent-tint px-4 py-2 text-center font-medium text-ink print:hidden">
+    <div role="status" className="sticky top-0 z-30 bg-accent-tint px-4 py-2 text-center font-medium text-ink print:hidden">
       Demo: synthetic patients, not a medical device, data resets daily
     </div>
   )
@@ -49,7 +49,7 @@ function Nav({ user, path, onSignOut }: { user: User; path: string; onSignOut: (
   const links = ROUTES.filter((r) => r.nav && r.roles.includes(user.role))
   return (
     <div className="flex h-full flex-col">
-      <div className="px-4 py-4 text-base font-semibold">Retina CVD/CRAO</div>
+      <div className="px-4 py-5 text-xl font-semibold tracking-[-0.02em]">Retina CVD/CRAO</div>
       <nav aria-label="Main" className="flex-1">
         <ul className="flex flex-col gap-1 px-2">
           {links.map((r) => {
@@ -57,7 +57,7 @@ function Nav({ user, path, onSignOut }: { user: User; path: string; onSignOut: (
             return (
               <li key={r.href}>
                 <Link href={r.href!} aria-current={active ? 'page' : undefined}
-                  className={`block rounded-md px-3 py-2 ${active ? 'bg-accent-tint font-medium text-accent' : 'text-ink hover:bg-sunken'}`}>
+                  className={`block rounded-md px-3 py-2 ${active ? 'bg-accent-tint font-medium text-ink' : 'text-ink hover:bg-sunken'}`}>
                   {r.nav}
                 </Link>
               </li>
@@ -67,7 +67,7 @@ function Nav({ user, path, onSignOut }: { user: User; path: string; onSignOut: (
       </nav>
       <div className="border-t border-rule px-4 py-4">
         <div className="font-medium">{user.name}</div>
-        <div className="mb-3 text-xs uppercase tracking-wide text-muted">{user.role}</div>
+        <div className="mb-3 text-sm text-muted">{{ gp: 'GP', reviewer: 'Reviewer', admin: 'Administrator' }[user.role]}</div>
         <button className="btn-secondary w-full" onClick={onSignOut}><LogOut size={20} aria-hidden />Sign out</button>
       </div>
     </div>

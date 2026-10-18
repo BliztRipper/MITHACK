@@ -51,7 +51,7 @@ export default function ResultView({ r, fundus, overlays, patient, status, signe
         <div>
           <h1 className="text-xl font-semibold">{patient.name} <span className="font-mono text-base font-normal">{patient.hn}</span></h1>
           <p className="text-muted print:text-black">
-            <span className="font-semibold uppercase">{r.mode}</span> · {fmtTime(issued)} · <span className="font-mono">
+            <span className="font-semibold capitalize">{r.mode}</span> · {fmtTime(issued)} · <span className="font-mono">
               quality {q.score.toFixed(2)}, {q.accept ? 'passed' : 'failed'}</span> · model <span className="font-mono">{r.model_version}</span>
           </p>
         </div>

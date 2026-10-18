@@ -28,7 +28,7 @@ export default function Login({ onLogin, accounts = [] }: { onLogin: (u: User) =
     <main className="flex min-h-screen items-center justify-center px-4">
       <form onSubmit={submit} className="card w-full max-w-sm flex flex-col gap-4 p-6" aria-describedby={error ? 'login-error' : undefined}>
         <div>
-          <h1 className="text-xl font-semibold">Retina CVD/CRAO</h1>
+          <h1 className="text-display font-medium">Retina CVD/CRAO</h1>
           <p className="text-muted">Fundus photo to a signed next action: CVD risk screening and sudden vision loss triage.</p>
         </div>
         <label className="flex flex-col gap-1">Username

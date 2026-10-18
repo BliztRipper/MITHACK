@@ -89,7 +89,7 @@ export function ageOf(birth: string | null): number | null {
 }
 
 export function PageTitle({ children }: { children: ReactNode }): ReactNode {
-  return <h1 className="mb-6 text-xl font-semibold">{children}</h1>
+  return <h1 className="mb-8 text-display font-medium">{children}</h1>
 }
 
 /** Load data on mount / when deps change; `reload` re-fetches. */
